@@ -1098,9 +1098,9 @@ function SimDemanda() {
     <div className="space-y-5">
       <div className="plate card p-5 space-y-5">
         <div>
-          <label className="block text-sm text-slate-400 mb-1.5">Sector CIIU</label>
+          <label className="block text-sm text-slate-400 mb-1.5">Sector</label>
           <select value={sector} onChange={(e) => setSector(e.target.value)} className="w-full bg-[#0a0f1f] text-slate-200 text-sm border border-amber-500/20 rounded-lg px-3 py-2.5 focus:outline-none focus:border-amber-500/50">
-            {sectores.map((s) => <option key={s.codigo} value={s.codigo}>{s.codigo} — {s.nombre}</option>)}
+            {sectores.map((s) => <option key={s.codigo} value={s.codigo}>{s.nombre}</option>)}
           </select>
         </div>
 

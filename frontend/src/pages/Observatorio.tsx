@@ -330,7 +330,7 @@ export default function Observatorio() {
           </div>
         </div>
         <p className="text-sm text-white font-semibold mb-4">
-          Selecciona un departamento para ver el desglose de empleo por sector económico (rama CIIU).
+          Selecciona un departamento para ver el desglose de empleo por sector económico.
         </p>
         <div className="mb-4">
           {cargandoDeptos ? (
@@ -357,10 +357,10 @@ export default function Observatorio() {
         {sectoresDepto && sectoresDepto.length > 0 && (
           <ResponsiveContainer width="100%" height={350}>
             <BarChart
-              data={sectoresDepto.slice(0, 15).map((s: any) => ({
-                name: `CIIU ${s.rama_ciiu}`,
-                empleo: s.empleo,
-              }))}
+            data={sectoresDepto.slice(0, 15).map((s: any) => ({
+              name: s.rama_ciiu_nombre || `Sector ${s.rama_ciiu}`,
+              empleo: s.empleo,
+            }))}
               layout="vertical"
               margin={{ left: 10, right: 40 }}
             >

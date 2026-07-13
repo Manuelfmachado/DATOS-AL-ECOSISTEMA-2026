@@ -15,6 +15,7 @@ import pandas as pd
 from fastapi import APIRouter, HTTPException, Query
 from app.db.supabase import supabase
 from app.data.ciuo_nombres import obtener_nombre_ciuo
+from app.data.ciiu_nombres import obtener_nombre_ciiu
 
 router = APIRouter(prefix="/api/observatorio", tags=["observatorio"])
 
@@ -152,6 +153,7 @@ async def get_departamento_sectores(departamento: str, periodo: str = None):
             vistos.add(rama)
             sectores.append({
                 "rama_ciiu": rama,
+                "rama_ciiu_nombre": obtener_nombre_ciiu(rama),
                 "empleo": int(row.get("empleo") or 0),
                 "periodo": row.get("periodo"),
             })
