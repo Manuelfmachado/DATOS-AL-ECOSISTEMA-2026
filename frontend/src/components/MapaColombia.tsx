@@ -178,7 +178,7 @@ export const METRICAS: Record<Metrica, MetricConfig> = {
     label: 'Matriculados SNIES',
     unit: '',
     getter: (d) => d.matriculados_snies ?? null,
-    format: (v) => v >= 1e6 ? `${(v / 1e6).toFixed(1)}M` : v >= 1e3 ? `${(v / 1e3).toFixed(0)}K` : v.toLocaleString(),
+    format: (v) => Math.round(v).toLocaleString("es-CO"),
     colors: ['#1e3a5f', '#3b6ea8', '#fbbf24'],
     lowIsBad: false,
   },

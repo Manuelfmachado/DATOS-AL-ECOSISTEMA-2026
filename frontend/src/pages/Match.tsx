@@ -3,10 +3,16 @@ import Icon from '../components/Icon'
 import api from '../services/api'
 import FuentesBadge from '../components/FuentesBadge'
 
+interface Recurso {
+  tipo: 'SENA' | 'online' | 'certificacion' | 'libre'
+  nombre: string
+}
+
 interface Brecha {
   requisito: string
   peso: number
   como_cubrir: string
+  recursos?: Recurso[]
   checked?: boolean
 }
 
@@ -16,6 +22,15 @@ interface CvResultado {
   fortalezas: string[]
   brechas: Brecha[]
   recomendacion_general: string
+  // Datos reales del backend (ESCO + OLE)
+  esco_ocupacion?: string
+  habilidades_requeridas_esco?: number
+  habilidades_detectadas?: string[]
+  salario_real?: {
+    rango_modal: string
+    total_graduados: number
+    fuente: string
+  }
 }
 
 interface BrechaMercado {
@@ -43,8 +58,10 @@ function TabButton({ active, onClick, icon, label }: TabButtonProps) {
   return (
     <button
       onClick={onClick}
-      className={`flex items-center gap-2 px-4 py-3 text-sm font-medium rounded-lg transition-colors ${
-        active ? 'bg-alba-600 text-white shadow-sm' : 'text-gray-600 hover:bg-gray-100'
+      className={`flex-1 flex items-center justify-center gap-2 py-2.5 text-sm font-semibold rounded-lg transition-all ${
+        active
+          ? 'bg-gradient-to-b from-amber-300/20 to-amber-700/10 text-gold-400 border border-amber-500/50'
+          : 'text-slate-400 hover:text-gold-400 hover:bg-white/[0.04] border border-transparent'
       }`}
     >
       {icon}
@@ -54,15 +71,16 @@ function TabButton({ active, onClick, icon, label }: TabButtonProps) {
 }
 
 function ScoreGauge({ score, label }: { score: number; label: string }) {
-  const color = score >= 75 ? 'text-green-600' : score >= 50 ? 'text-amber-600' : 'text-rose-600'
-  const bg = score >= 75 ? 'bg-green-100' : score >= 50 ? 'bg-amber-100' : 'bg-rose-100'
+  const color = score >= 75 ? 'text-green-400' : score >= 50 ? 'text-amber-400' : 'text-rose-400'
+  const bg = score >= 75 ? 'bg-green-500/10' : score >= 50 ? 'bg-amber-500/10' : 'bg-rose-500/10'
+  const border = score >= 75 ? 'border-green-500/30' : score >= 50 ? 'border-amber-500/30' : 'border-rose-500/30'
   return (
     <div className="flex items-center gap-4">
-      <div className={`w-24 h-24 rounded-full ${bg} flex items-center justify-center border-4 border-white shadow-sm`}>
+      <div className={`w-24 h-24 rounded-full ${bg} border-2 ${border} flex items-center justify-center`}>
         <span className={`text-3xl font-bold ${color}`}>{Math.round(score)}</span>
       </div>
       <div>
-        <p className="text-sm text-gray-500">{label}</p>
+        <p className="text-sm text-slate-400">{label}</p>
         <p className={`text-lg font-semibold ${color}`}>
           {score >= 75 ? 'Alto' : score >= 50 ? 'Medio' : 'Bajo'}
         </p>
@@ -141,7 +159,7 @@ export default function Match() {
     setLoading(false)
   }
 
-  const toggleBrecha = (idx: number, peso: number) => {
+  const toggleBrecha = (idx: number) => {
     setCheckedBrechas((prev) => {
       const next = { ...prev, [idx]: !prev[idx] }
       return next
@@ -158,37 +176,59 @@ export default function Match() {
   }
 
   return (
-    <div>
-      <h1 className="text-3xl font-bold text-gray-900 mb-2 font-display">Match Inteligente</h1>
-      <p className="text-gray-600 mb-6">Conecta perfiles y programas con la demanda laboral real usando IA.</p>
+    <div className="animate-fade-in space-y-5">
+      <div>
+        <h1 className="text-3xl font-bold text-white font-display flex items-center gap-3">
+          <span style={{ color: '#d4af37' }}><Icon.Match size={28} /></span>
+          Match Inteligente
+        </h1>
+        <p className="text-slate-400 text-sm mt-1">
+          Conecta perfiles y programas con la demanda laboral real usando IA.
+        </p>
+      </div>
 
-      <div className="flex flex-wrap gap-2 mb-6">
+      <div className="plate p-1.5 flex gap-1.5">
         <TabButton active={activeTab === 'cv'} onClick={() => setActiveTab('cv')} icon={<Icon.CoachDocumento size={18} />} label="CV vs Vacante" />
         <TabButton active={activeTab === 'pensum'} onClick={() => setActiveTab('pensum')} icon={<Icon.PrediccionUp size={18} />} label="Pensum vs Mercado" />
+      </div>
+
+      {/* Nota metodológica */}
+      <div className="plate card p-4">
+        <div className="flex items-start gap-3">
+          <span className="mt-0.5 text-gold-400"><Icon.Accion.Info size={18} /></span>
+          <div>
+            <p className="text-sm text-slate-200 font-semibold mb-1">¿Cómo funciona este análisis?</p>
+            <p className="text-xs text-slate-400 leading-relaxed">
+              La IA (Gemini 2.5 Flash-Lite) analiza tu perfil o pensum comparándolo con los requisitos de la vacante o las tendencias del mercado laboral.
+              El score es una estimación basada en el conocimiento del modelo sobre el mercado colombiano. Las brechas muestran qué te falta y cómo cubrirlo,
+              con recursos clasificados por tipo: SENA (gratuito), online (plataformas como Coursera), certificaciones y recursos libres.
+            </p>
+          </div>
+        </div>
       </div>
 
       {/* CV vs VACANTE */}
       {activeTab === 'cv' && (
         <div className="space-y-6">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-5">
-              <label className="block text-sm font-semibold text-gray-700 mb-2">Pega tu CV o describe tu perfil</label>
+            <div className="plate card p-5">
+              <label className="block text-sm font-semibold text-slate-200 mb-2">Pega tu CV o describe tu perfil</label>
               <textarea
                 value={cv}
                 onChange={(e) => setCv(e.target.value)}
                 rows={10}
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-alba-500 text-sm"
+                className="w-full px-4 py-3 border border-white/10 rounded-lg focus:ring-2 focus:ring-amber-500/50 text-sm bg-white/[0.03] text-slate-100"
                 placeholder="Ej: Ingeniero de sistemas con 3 años de experiencia..."
               />
             </div>
 
-            <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-5">
-              <label className="block text-sm font-semibold text-gray-700 mb-2">Pega la vacante laboral</label>
+            <div className="plate card p-5">
+              <label className="block text-sm font-semibold text-slate-200 mb-2">Pega la vacante laboral</label>
               <textarea
                 value={vacante}
                 onChange={(e) => setVacante(e.target.value)}
                 rows={10}
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-alba-500 text-sm"
+                className="w-full px-4 py-3 border border-white/10 rounded-lg focus:ring-2 focus:ring-amber-500/50 text-sm bg-white/[0.03] text-slate-100"
                 placeholder="Ej: Desarrollador Full Stack. Requisitos:..."
               />
             </div>
@@ -197,7 +237,7 @@ export default function Match() {
           <button
             onClick={analizarCvVacante}
             disabled={loading || !cv.trim() || !vacante.trim()}
-            className="w-full bg-alba-600 text-white py-3 rounded-lg font-medium hover:bg-alba-700 disabled:opacity-50 flex items-center justify-center gap-2"
+            className="w-full bg-gradient-to-b from-amber-300 to-amber-600 text-[#0a0f1f] py-3 rounded-lg font-bold hover:shadow-lg hover:shadow-amber-500/30 disabled:opacity-50 flex items-center justify-center gap-2"
           >
             {loading ? (
               <><span className="animate-spin inline-block"><Icon.Accion.Buscar size={18} /></span> Analizando con IA...</>
@@ -208,23 +248,74 @@ export default function Match() {
 
           {cvResultado && (
             <div className="space-y-6">
-              <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+              <div className="plate card p-6">
                 <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-6">
                   <ScoreGauge score={cvResultado.score_match} label="Match actual" />
                   <div className="flex-1">
-                    <p className="text-gray-700">{cvResultado.interpretacion}</p>
+                    <p className="text-slate-200">{cvResultado.interpretacion}</p>
                   </div>
-                </div>              </div>
+                </div>
+              </div>
+
+              {/* Datos reales de ESCO + OLE */}
+              {(cvResultado.esco_ocupacion || cvResultado.salario_real) && (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {cvResultado.esco_ocupacion && (
+                    <div className="plate card p-5">
+                      <h3 className="font-bold text-white mb-3 flex items-center gap-2">
+                        <span className="text-blue-400 inline-flex"><Icon.Accion.Info size={18} /></span>
+                        Ocupación ESCO detectada
+                      </h3>
+                      <p className="text-lg font-semibold text-blue-300 mb-2">{cvResultado.esco_ocupacion}</p>
+                      {cvResultado.habilidades_requeridas_esco !== undefined && (
+                        <div className="flex items-center gap-4 text-sm">
+                          <div>
+                            <span className="text-slate-500">Requeridas: </span>
+                            <span className="font-bold text-white">{cvResultado.habilidades_requeridas_esco}</span>
+                          </div>
+                          <div>
+                            <span className="text-slate-500">Detectadas en CV: </span>
+                            <span className="font-bold text-green-400">{cvResultado.habilidades_detectadas?.length || 0}</span>
+                          </div>
+                        </div>
+                      )}
+                      {cvResultado.habilidades_detectadas && cvResultado.habilidades_detectadas.length > 0 && (
+                        <div className="mt-3 flex flex-wrap gap-1">
+                          {cvResultado.habilidades_detectadas.map((h, i) => (
+                            <span key={i} className="text-xs px-2 py-0.5 rounded-full bg-green-500/15 text-green-400 border border-green-500/30">
+                              {h}
+                            </span>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  )}
+
+                  {cvResultado.salario_real && (
+                    <div className="plate card p-5">
+                      <h3 className="font-bold text-white mb-3 flex items-center gap-2">
+                        <span className="text-gold-400 inline-flex"><Icon.EmprendeDinero size={18} /></span>
+                        Salario real de egresados
+                      </h3>
+                      <p className="text-lg font-semibold text-gold-400 mb-2">{cvResultado.salario_real.rango_modal}</p>
+                      <p className="text-sm text-slate-400">
+                        Basado en <strong className="text-white">{Math.round(cvResultado.salario_real.total_graduados).toLocaleString("es-CO")}</strong> graduados reales
+                      </p>
+                      <p className="text-xs text-slate-500 mt-1">Fuente: {cvResultado.salario_real.fuente}</p>
+                    </div>
+                  )}
+                </div>
+              )}
 
               {cvResultado.fortalezas.length > 0 && (
-                <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-                  <h3 className="font-bold text-gray-900 mb-4 flex items-center gap-2">
-                    <span className="text-green-600 inline-flex"><Icon.Accion.Check size={20} /></span>
+                <div className="plate card p-6">
+                  <h3 className="font-bold text-white mb-4 flex items-center gap-2">
+                    <span className="text-green-400 inline-flex"><Icon.Accion.Check size={20} /></span>
                     Fortalezas
                   </h3>
                   <ul className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                     {cvResultado.fortalezas.map((f, i) => (
-                      <li key={i} className="flex items-start gap-2 text-sm text-gray-700">
+                      <li key={i} className="flex items-start gap-2 text-sm text-slate-200">
                         <span className="text-green-500 mt-0.5 inline-flex"><Icon.Accion.Check size={16} /></span>
                         {f}
                       </li>
@@ -234,9 +325,9 @@ export default function Match() {
               )}
 
               {cvResultado.brechas.length > 0 && (
-                <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-                  <h3 className="font-bold text-gray-900 mb-4 flex items-center gap-2">
-                    <span className="text-amber-500 inline-flex"><Icon.Kpi.Desempleo size={20} /></span>
+                <div className="plate card p-6">
+                  <h3 className="font-bold text-white mb-4 flex items-center gap-2">
+                    <span className="text-amber-400 inline-flex"><Icon.Kpi.Desempleo size={20} /></span>
                     ¿Qué te falta? Marca lo que ya cumples o podrías cubrir
                   </h3>
                   <div className="space-y-3">
@@ -244,48 +335,66 @@ export default function Match() {
                       <label
                         key={i}
                         className={`flex items-start gap-3 p-4 rounded-lg border cursor-pointer transition-colors ${
-                          checkedBrechas[i] ? 'bg-green-50 border-green-300' : 'bg-gray-50 border-gray-200 hover:bg-gray-100'
+                          checkedBrechas[i] ? 'bg-green-500/10 border-green-500/30' : 'bg-white/[0.03] border-white/10 hover:bg-white/[0.05]'
                         }`}
                       >
                         <input
                           type="checkbox"
-                          className="mt-1 w-4 h-4 text-alba-600"
+                          className="mt-1 w-4 h-4 text-amber-600"
                           checked={!!checkedBrechas[i]}
-                          onChange={() => toggleBrecha(i, b.peso)}
+                          onChange={() => toggleBrecha(i)}
                         />
                         <div className="flex-1">
-                          <div className="flex items-center justify-between">
-                            <span className="font-semibold text-gray-900">{b.requisito}</span>
-                            <span className="text-xs font-medium bg-amber-100 text-amber-800 px-2 py-0.5 rounded-full">
+                          <div className="flex items-center justify-between mb-2">
+                            <span className="font-semibold text-white">{b.requisito}</span>
+                            <span className="text-xs font-medium bg-amber-500/20 text-amber-400 px-2 py-0.5 rounded-full border border-amber-500/30">
                               +{b.peso} pts
                             </span>
                           </div>
-                          <p className="text-sm text-gray-600 mt-1">{b.como_cubrir}</p>
+                          <p className="text-sm text-slate-300 mb-3">{b.como_cubrir}</p>
+                          {b.recursos && b.recursos.length > 0 && (
+                            <div className="space-y-1">
+                              <p className="text-xs text-slate-500 font-semibold">Recursos recomendados:</p>
+                              {b.recursos.map((r, idx) => (
+                                <div key={idx} className="flex items-center gap-2 text-xs">
+                                  <span className={`px-1.5 py-0.5 rounded font-medium ${
+                                    r.tipo === 'SENA' ? 'bg-green-500/20 text-green-400' :
+                                    r.tipo === 'online' ? 'bg-blue-500/20 text-blue-400' :
+                                    r.tipo === 'certificacion' ? 'bg-purple-500/20 text-purple-400' :
+                                    'bg-slate-500/20 text-slate-400'
+                                  }`}>
+                                    {r.tipo}
+                                  </span>
+                                  <span className="text-slate-300">{r.nombre}</span>
+                                </div>
+                              ))}
+                            </div>
+                          )}
                         </div>
                       </label>
                     ))}
                   </div>
 
-                  <div className="mt-6 p-5 bg-blue-50 border border-blue-100 rounded-xl flex items-center justify-between">
+                  <div className="mt-6 p-5 bg-blue-500/10 border border-blue-500/30 rounded-xl flex items-center justify-between">
                     <div>
-                      <p className="text-sm text-blue-900">Si cubres lo marcado, tu score podría subir a:</p>
-                      <p className="text-xs text-blue-700">El puntaje es una estimación; el orden y la profundidad también importan.</p>
+                      <p className="text-sm text-blue-300">Si cubres lo marcado, tu score podría subir a:</p>
+                      <p className="text-xs text-blue-400/70">El puntaje es una estimación; el orden y la profundidad también importan.</p>
                     </div>
                     <div className="text-right">
-                      <p className="text-3xl font-bold text-blue-700">{Math.round(scoreSimulado())}</p>
-                      <p className="text-xs text-blue-600">puntos</p>
+                      <p className="text-3xl font-bold text-blue-400">{Math.round(scoreSimulado())}</p>
+                      <p className="text-xs text-blue-400/70">puntos</p>
                     </div>
                   </div>
                 </div>
               )}
 
               {cvResultado.recomendacion_general && (
-                <div className="bg-amber-50 border border-amber-100 rounded-xl p-5">
-                  <h4 className="font-semibold text-amber-900 mb-2 flex items-center gap-2">
-                    <span className="text-amber-700 inline-flex"><Icon.EmprendeIdea size={18} /></span>
+                <div className="plate card p-5 bg-amber-500/5 border-amber-500/20">
+                  <h4 className="font-semibold text-amber-300 mb-2 flex items-center gap-2">
+                    <span className="text-amber-400 inline-flex"><Icon.EmprendeIdea size={18} /></span>
                     Recomendación general
                   </h4>
-                  <p className="text-sm text-amber-800">{cvResultado.recomendacion_general}</p>
+                  <p className="text-sm text-amber-200/90">{cvResultado.recomendacion_general}</p>
                 </div>
               )}
             </div>
@@ -296,13 +405,13 @@ export default function Match() {
       {/* PENSUM vs MERCADO */}
       {activeTab === 'pensum' && (
         <div className="space-y-6">
-          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-5">
-            <label className="block text-sm font-semibold text-gray-700 mb-2">Pega el pensum académico o contenido del programa</label>
+          <div className="plate card p-5">
+            <label className="block text-sm font-semibold text-slate-200 mb-2">Pega el pensum académico o contenido del programa</label>
             <textarea
               value={pensum}
               onChange={(e) => setPensum(e.target.value)}
               rows={14}
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-alba-500 text-sm"
+              className="w-full px-4 py-3 border border-white/10 rounded-lg focus:ring-2 focus:ring-amber-500/50 text-sm bg-white/[0.03] text-slate-100"
               placeholder="Ej: Semestre 1: Cálculo, Programación básica..."
             />
           </div>
@@ -310,7 +419,7 @@ export default function Match() {
           <button
             onClick={analizarPensum}
             disabled={loading || !pensum.trim()}
-            className="w-full bg-alba-600 text-white py-3 rounded-lg font-medium hover:bg-alba-700 disabled:opacity-50 flex items-center justify-center gap-2"
+            className="w-full bg-gradient-to-b from-amber-300 to-amber-600 text-[#0a0f1f] py-3 rounded-lg font-bold hover:shadow-lg hover:shadow-amber-500/30 disabled:opacity-50 flex items-center justify-center gap-2"
           >
             {loading ? (
               <><span className="animate-spin inline-block"><Icon.Accion.Buscar size={18} /></span> Analizando con IA...</>
@@ -321,24 +430,24 @@ export default function Match() {
 
           {pensumResultado && (
             <div className="space-y-6">
-              <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+              <div className="plate card p-6">
                 <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-6">
                   <ScoreGauge score={pensumResultado.score_alineacion} label="Alineación con el mercado" />
                   <div className="flex-1">
-                    <p className="text-gray-700">{pensumResultado.interpretacion}</p>
+                    <p className="text-slate-200">{pensumResultado.interpretacion}</p>
                   </div>
                 </div>
               </div>
 
               {pensumResultado.fortalezas.length > 0 && (
-                <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-                  <h3 className="font-bold text-gray-900 mb-4 flex items-center gap-2">
-                    <span className="text-green-600 inline-flex"><Icon.Accion.Check size={20} /></span>
+                <div className="plate card p-6">
+                  <h3 className="font-bold text-white mb-4 flex items-center gap-2">
+                    <span className="text-green-400 inline-flex"><Icon.Accion.Check size={20} /></span>
                     Fortalezas del pensum
                   </h3>
                   <ul className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                     {pensumResultado.fortalezas.map((f, i) => (
-                      <li key={i} className="flex items-start gap-2 text-sm text-gray-700">
+                      <li key={i} className="flex items-start gap-2 text-sm text-slate-200">
                         <span className="text-green-500 mt-0.5 inline-flex"><Icon.Accion.Check size={16} /></span>
                         {f}
                       </li>
@@ -348,29 +457,29 @@ export default function Match() {
               )}
 
               {pensumResultado.brechas_mercado.length > 0 && (
-                <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-                  <h3 className="font-bold text-gray-900 mb-4 flex items-center gap-2">
-                    <span className="text-amber-500 inline-flex"><Icon.Kpi.Desempleo size={20} /></span>
+                <div className="plate card p-6">
+                  <h3 className="font-bold text-white mb-4 flex items-center gap-2">
+                    <span className="text-amber-400 inline-flex"><Icon.Kpi.Desempleo size={20} /></span>
                     Brechas con el mercado laboral
                   </h3>
                   <div className="space-y-3">
                     {pensumResultado.brechas_mercado.map((b, i) => (
-                      <div key={i} className="p-4 rounded-lg border bg-gray-50 border-gray-200">
+                      <div key={i} className="p-4 rounded-lg border bg-white/[0.03] border-white/10">
                         <div className="flex items-center justify-between mb-1">
-                          <span className="font-semibold text-gray-900">{b.area}</span>
+                          <span className="font-semibold text-white">{b.area}</span>
                           <span
                             className={`text-xs font-medium px-2 py-0.5 rounded-full ${
                               b.nivel_importancia === 'alta'
-                                ? 'bg-red-100 text-red-800'
+                                ? 'bg-rose-500/20 text-rose-400 border border-rose-500/30'
                                 : b.nivel_importancia === 'media'
-                                ? 'bg-amber-100 text-amber-800'
-                                : 'bg-blue-100 text-blue-800'
+                                ? 'bg-amber-500/20 text-amber-400 border border-amber-500/30'
+                                : 'bg-blue-500/20 text-blue-400 border border-blue-500/30'
                             }`}
                           >
                             {b.nivel_importancia === 'alta' ? 'Alta importancia' : b.nivel_importancia === 'media' ? 'Media importancia' : 'Baja importancia'}
                           </span>
                         </div>
-                        <p className="text-sm text-gray-600">{b.sugerencia}</p>
+                        <p className="text-sm text-slate-300">{b.sugerencia}</p>
                       </div>
                     ))}
                   </div>
@@ -378,12 +487,12 @@ export default function Match() {
               )}
 
               {pensumResultado.recomendacion_general && (
-                <div className="bg-amber-50 border border-amber-100 rounded-xl p-5">
-                  <h4 className="font-semibold text-amber-900 mb-2 flex items-center gap-2">
-                    <span className="text-amber-700 inline-flex"><Icon.EmprendeIdea size={18} /></span>
+                <div className="plate card p-5 bg-amber-500/5 border-amber-500/20">
+                  <h4 className="font-semibold text-amber-300 mb-2 flex items-center gap-2">
+                    <span className="text-amber-400 inline-flex"><Icon.EmprendeIdea size={18} /></span>
                     Recomendación general
                   </h4>
-                  <p className="text-sm text-amber-800">{pensumResultado.recomendacion_general}</p>
+                  <p className="text-sm text-amber-200/90">{pensumResultado.recomendacion_general}</p>
                 </div>
               )}
             </div>
@@ -391,7 +500,7 @@ export default function Match() {
         </div>
       )}
 
-      <FuentesBadge fuentes={['Gemma 4 vía DeepInfra', 'O*NET', 'ESCO', 'SNIES', 'SENA']} />
+      <FuentesBadge fuentes={['Gemini 2.5 Flash-Lite', 'O*NET', 'ESCO', 'SNIES', 'SENA']} />
     </div>
   )
 }

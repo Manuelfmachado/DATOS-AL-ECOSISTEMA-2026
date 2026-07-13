@@ -88,7 +88,12 @@ def upload_table(table_name: str, records: list, batch_size=500):
 def main():
     # Mapeo archivo CSV → tabla Supabase + columnas permitidas
     tables = {
-        'geih_resumen_departamento.csv': ('geih_resumen_departamento', None),
+        # === CARGADAS ANTERIORMENTE ===
+        'geih_resumen_departamento.csv': ('geih_resumen_departamento', [
+            'departamento', 'ocupados', 'ingreso_promedio', 'ingreso_mediano',
+            'tasa_formalidad', 'mujeres_pct', 'mujeres_cabeza_hogar_pct',
+            'pct_educacion_superior', 'nivel_educativo_etiqueta'
+        ]),
         'geih_desempleo_departamento.csv': ('geih_desempleo_departamento', None),
         'pila_resumen_sector.csv': ('pila_resumen_sector', None),
         'pila_resumen_tipo.csv': ('pila_resumen_tipo', None),
@@ -117,6 +122,50 @@ def main():
         'dnp_medicion_desempeno_municipal.csv': ('dnp_medicion_desempeno_municipal', None),
         'dnp_medicion_desempeno_ultimo.csv': ('dnp_medicion_desempeno_ultimo', None),
         'dnp_desempeno_departamento.csv': ('dnp_desempeno_departamento', None),
+        
+        # === NUEVAS TABLAS A CARGAR ===
+        # GEIH completo
+        'geih_resumen_nacional.csv': ('geih_resumen_nacional', None),
+        'geih_desempleo_mensual.csv': ('geih_desempleo_mensual', None),
+        'geih_empleo_sector_mensual.csv': ('geih_empleo_sector_mensual', None),
+        'geih_informalidad_mensual.csv': ('geih_informalidad_mensual', None),
+        'geih_empleo_depto_sector.csv': ('geih_empleo_depto_sector', None),
+        'geih_salario_ocupacion.csv': ('geih_salario_ocupacion', [
+            'oficio_c8', 'salario_promedio', 'salario_mediano',
+            'empleo_total', 'ocupados_muestra', 'periodo'
+        ]),
+        'geih_extras_departamento.csv': ('geih_extras_departamento', [
+            'departamento', 'mujeres_cabeza_hogar_pct', 'total_jefes_hogar',
+            'pct_educacion_superior', 'nivel_educativo_categoria', 'nivel_educativo_etiqueta'
+        ]),
+        
+        # OLE - Ingresos por carrera
+        'ole_ingresos_por_programa.csv': ('ole_ingresos_por_programa', None),
+        'ole_ingresos_por_area.csv': ('ole_ingresos_por_area', None),
+        'ole_ingresos_por_nivel.csv': ('ole_ingresos_por_nivel', None),
+        'ole_ingresos_por_ies.csv': ('ole_ingresos_por_ies', None),
+        'ole_graduados_por_anio.csv': ('ole_graduados_por_anio', None),
+        
+        # ESCO - Ocupaciones y habilidades
+        'esco_ocupaciones.csv': ('esco_ocupaciones', None),
+        'esco_habilidades.csv': ('esco_habilidades', None),
+        'esco_ocupacion_habilidades.csv': ('esco_ocupacion_habilidades', None),
+        'esco_skill_relations.csv': ('esco_skill_relations', None),
+        'esco_habilidades_verdes.csv': ('esco_habilidades_verdes', None),
+        'esco_habilidades_digitales.csv': ('esco_habilidades_digitales', None),
+        'esco_green_share_ocupaciones.csv': ('esco_green_share_ocupaciones', None),
+        
+        # EMICRON - Micronegocios
+        'emicron_resumen_nacional.csv': ('emicron_resumen_nacional', None),
+        'emicron_por_sector.csv': ('emicron_por_sector', None),
+        'emicron_emprendimiento.csv': ('emicron_emprendimiento', None),
+        'emicron_por_departamento.csv': ('emicron_por_departamento', None),
+        'emicron_inclusion_financiera.csv': ('emicron_inclusion_financiera', None),
+        
+        # World Bank
+        'worldbank_colombia.csv': ('worldbank_colombia', [
+            'indicator_code', 'indicator_name', 'year', 'value', 'country'
+        ]),
     }
     
     print("=" * 70)

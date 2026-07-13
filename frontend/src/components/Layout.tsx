@@ -6,7 +6,6 @@ import emprendeSvg from '../../SVG/nav_EMPRENDER_2.svg?raw'
 import coachSvg from '../../SVG/nav_COACH.svg?raw'
 import inicioSvg from '../../SVG/nav_INICIO.svg?raw'
 import simulacionSvg from '../../SVG/nav_SIMULACION_2.svg?raw'
-
 const SvgIcon = ({ raw }: { raw: string }) => (
   <span className="nav-svg-icon" dangerouslySetInnerHTML={{ __html: raw }} />
 )
@@ -31,16 +30,7 @@ export default function Layout() {
         <span className="screw br" />
 
         <div className="brand">
-          <div className="brand-logo">
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6">
-              <path d="M12 3l8 4.5v9L12 21l-8-4.5v-9L12 3z" />
-              <path d="M12 12l8-4.5M12 12L4 7.5M12 12v9" />
-            </svg>
-          </div>
-          <div className="brand-text">
-            <div className="name"><span className="brand-first">A</span>LBA</div>
-            <div className="sub"><span className="brand-first">A</span>nalítica <span className="brand-first">L</span>aboral <span className="brand-first">B</span>asada en <span className="brand-first">AI</span></div>
-          </div>
+          <img src="/logo-alba.png" alt="ALBA - Analítica Laboral Basada en IA" className="brand-logo-img" />
         </div>
 
         <nav className="nav">

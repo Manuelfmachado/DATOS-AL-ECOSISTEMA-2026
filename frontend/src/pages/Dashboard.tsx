@@ -211,7 +211,7 @@ export default function Dashboard() {
           </div>
           <div>
             <div className="kpi-label text-sm leading-none">Ocupados Colombia</div>
-            <div className="kpi-value text-2xl mt-0.5">{kpis ? Math.round(kpis.ocupados).toLocaleString() : '—'}</div>
+            <div className="kpi-value text-2xl mt-0.5">{kpis ? Math.round(kpis.ocupados).toLocaleString('es-CO') : '—'}</div>
           </div>
         </div>
 

@@ -312,7 +312,7 @@ export default function Simulador() {
                       <LineChart data={chartData} margin={{ top: 5, right: 20, bottom: 5, left: 0 }}>
                         <CartesianGrid strokeDasharray="3 3" />
                         <XAxis dataKey="anio" />
-                        <YAxis tickFormatter={(v) => v >= 1000000 ? `${(v / 1000000).toFixed(1)}M` : v >= 1000 ? `${(v / 1000).toFixed(0)}K` : v} />
+                        <YAxis tickFormatter={(v) => Math.round(v).toLocaleString("es-CO")} />
                         <Tooltip formatter={(value: any) => Number(value).toLocaleString()} />
                         <Legend />
                         {Object.keys(resultado.series || {}).map((key) => (

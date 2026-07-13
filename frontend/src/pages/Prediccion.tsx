@@ -1,18 +1,15 @@
-import { useEffect, useState, type ReactNode } from 'react'
+import { useEffect, useState } from 'react'
 import {
   AreaChart, Area, BarChart, Bar, LineChart, Line, XAxis, YAxis,
   Tooltip, ResponsiveContainer, CartesianGrid, Cell, LabelList,
   ReferenceLine, Legend
 } from 'recharts'
-import Icon from '../components/Icon'
 import api from '../services/api'
 import FuentesBadge from '../components/FuentesBadge'
 import { formatCOP } from '../utils/format'
 
 function compactNum(n: number): string {
-  if (n >= 1_000_000) return `${(n / 1_000_000).toFixed(1)}M`
-  if (n >= 1_000) return `${(n / 1_000).toFixed(0)}K`
-  return n.toLocaleString()
+  return Math.round(n).toLocaleString('es-CO')
 }
 
 interface SeriePrediccion {
@@ -47,6 +44,15 @@ interface Profesion {
 interface Habilidad {
   habilidad: string
   demanda: number
+}
+
+interface SalarioReal {
+  oficio_codigo: number
+  salario_promedio: number
+  salario_mediano: number
+  empleo_total: number
+  ocupados_muestra: number
+  periodo: string
 }
 
 interface SalarioData {
@@ -86,32 +92,6 @@ interface PrediccionData {
 }
 
 
-
-interface GeihPunto {
-  periodo: string
-  valor?: number
-  mediana?: number
-  p10?: number
-  p90?: number
-}
-
-interface GeihSerie {
-  historico: GeihPunto[]
-  prediccion_1ano: GeihPunto[]
-  prediccion_5anos: GeihPunto[]
-}
-
-interface GeihData {
-  modelo: string
-  fuente: string
-  ultimo_periodo_historico: string
-  horizontes: string[]
-  desempleo_nacional: GeihSerie
-  informalidad_nacional: GeihSerie
-  salario_promedio_nacional: GeihSerie
-  sectores: Record<string, GeihSerie>
-}
-
 const COLORS: Record<string, string> = {
   Servicios: '#2563eb',
   Industria: '#0891b2',
@@ -121,26 +101,11 @@ const COLORS: Record<string, string> = {
   baja: '#ff6b6b',
 }
 
-const CIIU_SECTORES: Record<string, string> = {
-  '1': 'Agricultura',
-  '47': 'Comercio al por menor',
-  '56': 'Restaurantes y bebidas',
-  '49': 'Transporte terrestre',
-  '41': 'Construcción de edificios',
-}
-
-const GEIH_INDICADORES: { key: string; label: string; suffix: string; color: string }[] = [
-  { key: 'desempleo_nacional', label: 'Desempleo', suffix: '%', color: '#d4af37' },
-  { key: 'informalidad_nacional', label: 'Informalidad', suffix: '%', color: '#f97316' },
-  { key: 'salario_promedio_nacional', label: 'Salario promedio', suffix: '', color: '#4ade80' },
-]
-
-const TABS: { key: string; label: string; icon: ReactNode }[] = [
-  { key: 'sectores', label: 'Sectores', icon: <Icon.Prediccion size={16} /> },
-  { key: 'profesiones', label: 'Profesiones', icon: <Icon.Match size={16} /> },
-  { key: 'habilidades', label: 'Habilidades', icon: <Icon.PrediccionExito size={16} /> },
-  { key: 'salarios', label: 'Salarios', icon: <Icon.EmprendeDinero size={16} /> },
-  { key: 'mensual', label: 'Predicción mensual', icon: <Icon.ObservatorioLinea size={16} /> },
+const TABS: { key: string; label: string }[] = [
+  { key: 'sectores', label: 'Sectores' },
+  { key: 'profesiones', label: 'Profesiones' },
+  { key: 'habilidades', label: 'Habilidades' },
+  { key: 'salarios', label: 'Salarios' },
 ]
 
 const pctFmt = (n: number) => `${n > 0 ? '+' : ''}${n.toFixed(1)}%`
@@ -154,23 +119,23 @@ const tooltipStyle = {
 export default function Prediccion() {
   const [tab, setTab] = useState('sectores')
   const [data, setData] = useState<PrediccionData | null>(null)
-  const [geihData, setGeihData] = useState<GeihData | null>(null)
   const [todosSectores, setTodosSectores] = useState<any[] | null>(null)
   const [todosSectoresMeta, setTodosSectoresMeta] = useState<any>(null)
+  const [salariosReales, setSalariosReales] = useState<SalarioReal[] | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
 
   useEffect(() => {
     const load = async () => {
       try {
-        const [resumen, sectores, profesiones, habilidades, salarios, geih, todosSec] = await Promise.all([
+        const [resumen, sectores, profesiones, habilidades, salarios, todosSec, salariosReal] = await Promise.all([
           api.get('/prediccion/resumen'),
           api.get('/prediccion/sectores'),
           api.get('/prediccion/profesiones'),
           api.get('/prediccion/habilidades'),
           api.get('/prediccion/salarios'),
-          api.get('/prediccion/geih').catch(() => null),
           api.get('/prediccion/todos-los-sectores'),
+          api.get('/prediccion/salarios-reales?limit=50&ordenar_por=empleo_total').catch(() => null),
         ])
         setData({
           ...resumen.data,
@@ -180,7 +145,9 @@ export default function Prediccion() {
           habilidades: habilidades.data.habilidades,
           salarios: salarios.data,
         })
-        if (geih?.data) setGeihData(geih.data)
+        if (salariosReal?.data?.ocupaciones) {
+          setSalariosReales(salariosReal.data.ocupaciones)
+        }
         if (todosSec?.data?.sectores) {
           setTodosSectores(todosSec.data.sectores)
           setTodosSectoresMeta({
@@ -205,8 +172,7 @@ export default function Prediccion() {
     <div className="animate-fade-in space-y-5">
       {/* Header */}
       <div>
-        <h1 className="text-3xl font-bold text-white font-display flex items-center gap-3">
-          <span style={{ color: '#d4af37' }}><Icon.Prediccion size={28} /></span>
+        <h1 className="text-3xl font-bold text-white font-display">
           Predicción IA
         </h1>
         <p className="text-slate-400 text-sm mt-1">
@@ -216,8 +182,7 @@ export default function Prediccion() {
 
       {loading && (
         <div className="plate card rounded-2xl h-64 flex items-center justify-center">
-          <div className="text-slate-500 text-sm flex items-center gap-2">
-            <span className="animate-spin inline-block"><Icon.Accion.Buscar size={16} /></span>
+          <div className="text-slate-500 text-sm">
             Cargando predicciones...
           </div>
         </div>
@@ -243,8 +208,7 @@ export default function Prediccion() {
                     : 'text-slate-400 hover:text-gold-400 hover:bg-white/[0.04] border border-transparent'
                 }`}
               >
-                {t.icon}
-                {t.label}
+                 {t.label}
               </button>
             ))}
           </div>
@@ -293,7 +257,7 @@ export default function Prediccion() {
                     {/* Nota metodológica */}
                     <div className="plate card p-4">
                       <div className="flex items-start gap-3">
-                        <span className="mt-0.5 text-gold-400"><Icon.Accion.Info size={18} /></span>
+                        
                         <div>
                           <p className="text-sm text-slate-200 font-semibold mb-1">¿Qué muestran estas cifras?</p>
                           <p className="text-xs text-slate-400 leading-relaxed">
@@ -344,11 +308,11 @@ export default function Prediccion() {
                           <div className="space-y-2">
                             <div>
                               <p className="text-xs text-slate-500 mb-1">Empleados en {anioBase}</p>
-                              <p className="text-xl font-bold text-white font-display">{s.empleo_actual.toLocaleString('es-CO')}</p>
+                              <p className="text-xl font-bold text-white font-display">{Math.round(s.empleo_actual).toLocaleString('es-CO')}</p>
                             </div>
                             <div>
                               <p className="text-xs text-slate-500 mb-1">Proyección 2035</p>
-                              <p className="text-xl font-bold text-white font-display">{s.empleo_10y.toLocaleString('es-CO')}</p>
+                              <p className="text-xl font-bold text-white font-display">{Math.round(s.empleo_10y).toLocaleString('es-CO')}</p>
                             </div>
                             <div className="pt-2 border-t border-gold-500/20">
                               <p className="text-xs text-slate-500 mb-1">Crecimiento</p>
@@ -384,7 +348,7 @@ export default function Prediccion() {
                           <YAxis
                             stroke="#64748b"
                             fontSize={12}
-                            tickFormatter={(v) => `${(v / 1_000_000).toFixed(1)}M`}
+                            tickFormatter={(v) => Math.round(v).toLocaleString('es-CO')}
                             width={55}
                           />
                           <Tooltip
@@ -421,7 +385,52 @@ export default function Prediccion() {
           {/* ================= PROFESIONES ================= */}
           {tab === 'profesiones' && (
             <div className="space-y-5">
-              {/* Top 3 destacadas */}
+              {/* Nota metodológica */}
+              <div className="plate card p-4">
+                <div className="flex items-start gap-3">
+                  
+                  <div>
+                    <p className="text-sm text-slate-200 font-semibold mb-1">¿Qué muestran estas cifras?</p>
+                    <p className="text-xs text-slate-400 leading-relaxed">
+                      Las 21 profesiones con mayor proyección de demanda laboral en Colombia. El crecimiento es de demanda (no salarial).
+                      Los salarios son estimaciones mensuales promedio en pesos colombianos para 2025, proyectados con inflación del 3.5% anual.
+                      Fuente: O*NET, ESCO y WEF Future of Jobs, adaptado al contexto colombiano.
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Gráfico de crecimiento de demanda */}
+              <div className="plate card p-5">
+                <div className="flex items-center justify-between mb-4 pb-2 border-b border-gold-500/20">
+                  <h2 className="text-xl font-bold text-white font-display">Crecimiento de demanda a 10 años</h2>
+                  <span className="text-sm text-gold-400 uppercase tracking-wider">O*NET + ESCO + WEF</span>
+                </div>
+                <p className="text-xs text-slate-500 mb-4">
+                  Top 10 profesiones ordenadas por crecimiento esperado de demanda 2025-2035.
+                </p>
+                <ResponsiveContainer width="100%" height={380}>
+                  <BarChart data={data.profesiones.slice(0, 10)} layout="vertical" margin={{ left: 10, right: 60 }}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.04)" horizontal={false} />
+                    <XAxis type="number" stroke="#64748b" fontSize={11} tickFormatter={(v) => `+${v}%`} />
+                    <YAxis type="category" dataKey="profesion" stroke="#94a3b8" fontSize={11} width={200} />
+                    <Tooltip
+                      contentStyle={{ background: '#0a0f1f', border: '1px solid rgba(212,175,55,0.3)', borderRadius: '10px', color: '#e9ecf5', fontSize: 13 }}
+                      formatter={(v: any, name: string, props: any) => {
+                        const p = data.profesiones.find((x) => x.profesion === props.payload.profesion)
+                        return [`+${v}% demanda → ${formatCOP(p?.salario_10a_cop || 0)}/mes en 2035`, 'Proyección 10 años']
+                      }}
+                    />
+                    <Bar dataKey="crecimiento_10a_pct" radius={[0, 4, 4, 0]}>
+                      {data.profesiones.slice(0, 10).map((p, i) => (
+                        <Cell key={i} fill={p.demanda === 'alta' ? COLORS.alta : p.demanda === 'media' ? COLORS.media : COLORS.baja} />
+                      ))}
+                    </Bar>
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
+
+              {/* Tarjetas top 3 */}
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 {data.profesiones.slice(0, 3).map((p, i) => (
                   <div key={i} className="plate card p-5 relative overflow-hidden">
@@ -430,16 +439,22 @@ export default function Prediccion() {
                     </div>
                     <div className="flex items-center gap-2 mb-1">
                       <span className="w-8 h-8 rounded-lg border border-amber-500/40 bg-amber-500/10 flex items-center justify-center text-gold-400">
-                        {i === 0 ? <Icon.PrediccionExito size={16} /> : i === 1 ? <Icon.PrediccionUp size={16} /> : <Icon.Match size={16} />}
+                        {true ? "" : ""}
                       </span>
                       <span className="text-xs text-slate-400 uppercase tracking-wider font-semibold">{p.sector}</span>
                     </div>
                     <h3 className="font-bold text-white text-lg mb-3 pr-10">{p.profesion}</h3>
-                    <div className="flex items-baseline gap-2 mb-2">
-                      <span className="text-3xl font-bold text-green-400 font-display">+{p.crecimiento_10a_pct}%</span>
-                      <span className="text-xs text-slate-500">demanda en 10 años</span>
+                    <div className="space-y-2">
+                      <div>
+                        <p className="text-xs text-slate-500 mb-1">Crecimiento de demanda</p>
+                        <p className="text-2xl font-bold text-green-400 font-display">+{p.crecimiento_10a_pct}%</p>
+                        <p className="text-xs text-slate-500">en 10 años (2025-2035)</p>
+                      </div>
+                      <div className="pt-2 border-t border-gold-500/20">
+                        <p className="text-xs text-slate-500 mb-1">Salario mensual 2025</p>
+                        <p className="text-xl font-bold text-gold-400 font-display">${Math.round(p.salario_mensual_cop).toLocaleString("es-CO")}</p>
+                      </div>
                     </div>
-                    <p className="text-sm text-slate-400">Salario hoy: <strong className="text-gold-400">{formatCOP(p.salario_mensual_cop)}</strong></p>
                   </div>
                 ))}
               </div>
@@ -448,7 +463,7 @@ export default function Prediccion() {
               <div className="plate card p-5">
                 <div className="flex items-center justify-between mb-4 pb-2 border-b border-gold-500/20">
                   <h2 className="text-xl font-bold text-white font-display flex items-center gap-2">
-                    <Icon.Match size={20} /> Ranking completo de profesiones
+                     Ranking completo de profesiones
                   </h2>
                   <span className="text-sm text-gold-400 uppercase tracking-wider font-semibold">{data.profesiones.length} profesiones</span>
                 </div>
@@ -462,7 +477,7 @@ export default function Prediccion() {
                         <th className="px-3 py-3">Profesión</th>
                         <th className="px-3 py-3">Demanda</th>
                         <th className="px-3 py-3 text-right">Crec. 10 años</th>
-                        <th className="px-3 py-3 text-right">Salario hoy</th>
+                        <th className="px-3 py-3 text-right">Salario 2025</th>
                         <th className="px-3 py-3 text-right">Salario 2035</th>
                       </tr>
                     </thead>
@@ -483,15 +498,15 @@ export default function Prediccion() {
                                   : 'bg-rose-500/15 text-rose-400 border border-rose-500/30'
                               }`}
                             >
-                              {p.demanda === 'alta' ? <Icon.Accion.Arriba size={12} /> : p.demanda === 'baja' ? <Icon.Accion.Abajo size={12} /> : '—'}
+                              {'—'}
                               {p.demanda}
                             </span>
                           </td>
                           <td className={`px-3 py-3 text-right font-bold ${p.crecimiento_10a_pct >= 0 ? 'text-green-400' : 'text-rose-400'}`}>
                             {pctFmt(p.crecimiento_10a_pct)}
                           </td>
-                          <td className="px-3 py-3 text-right text-slate-300">{formatCOP(p.salario_mensual_cop)}</td>
-                          <td className="px-3 py-3 text-right font-semibold text-white">{formatCOP(p.salario_10a_cop)}</td>
+                          <td className="px-3 py-3 text-right text-slate-300">${Math.round(p.salario_mensual_cop).toLocaleString("es-CO")}</td>
+                          <td className="px-3 py-3 text-right font-semibold text-white">${Math.round(p.salario_10a_cop).toLocaleString("es-CO")}</td>
                         </tr>
                       ))}
                     </tbody>
@@ -504,15 +519,31 @@ export default function Prediccion() {
           {/* ================= HABILIDADES ================= */}
           {tab === 'habilidades' && (
             <div className="space-y-5">
+              {/* Nota metodológica */}
+              <div className="plate card p-4">
+                <div className="flex items-start gap-3">
+                  
+                  <div>
+                    <p className="text-sm text-slate-200 font-semibold mb-1">¿Qué muestran estas cifras?</p>
+                    <p className="text-xs text-slate-400 leading-relaxed">
+                      Las 20 habilidades más demandadas para el futuro laboral en Colombia. La puntuación va de 0 a 100,
+                      donde valores más altos indican mayor importancia. Fuente: Future of Jobs Report del Foro Económico Mundial (WEF),
+                      adaptado al contexto colombiano mediante análisis de ofertas laborales locales.
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Gráfico de habilidades */}
               <div className="plate card p-5">
                 <div className="flex items-center justify-between mb-4 pb-2 border-b border-gold-500/20">
                   <h2 className="text-xl font-bold text-white font-display flex items-center gap-2">
-                    <Icon.PrediccionExito size={20} /> Top 10 habilidades más demandadas
+                     Top 10 habilidades más demandadas
                   </h2>
-                  <span className="text-sm text-gold-400 uppercase tracking-wider font-semibold">WEF</span>
+                  <span className="text-sm text-gold-400 uppercase tracking-wider font-semibold">WEF Future of Jobs</span>
                 </div>
                 <p className="text-sm text-slate-500 mb-4">
-                  Puntuación 0–100. Más alta = más importante para el futuro laboral. Fuente: Future of Jobs del Foro Económico Mundial, adaptado al contexto colombiano.
+                  Puntuación 0–100. Más alta = más importante para el futuro laboral.
                 </p>
                 <ResponsiveContainer width="100%" height={420}>
                   <BarChart
@@ -542,22 +573,80 @@ export default function Prediccion() {
                 </ResponsiveContainer>
               </div>
 
-              {/* Leyenda de niveles */}
-              <div className="grid grid-cols-3 gap-3">
-                <div className="plate card p-3 text-center">
-                  <div className="w-3 h-3 rounded-full mx-auto mb-1" style={{ backgroundColor: COLORS.alta }} />
-                  <p className="text-sm font-bold text-green-400">Alta (85+)</p>
+              {/* Tarjetas de niveles */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                <div className="plate card p-4 text-center">
+                  <div className="w-3 h-3 rounded-full mx-auto mb-2" style={{ backgroundColor: COLORS.alta }} />
+                  <p className="text-sm font-bold text-green-400 mb-1">Alta (85+)</p>
                   <p className="text-xs text-slate-500">Crítico para el futuro</p>
+                  <p className="text-xs text-slate-400 mt-2">
+                    {data.habilidades.filter(h => h.demanda >= 85).length} habilidades
+                  </p>
                 </div>
-                <div className="plate card p-3 text-center">
-                  <div className="w-3 h-3 rounded-full mx-auto mb-1" style={{ backgroundColor: COLORS.media }} />
-                  <p className="text-sm font-bold text-amber-400">Media (70–84)</p>
+                <div className="plate card p-4 text-center">
+                  <div className="w-3 h-3 rounded-full mx-auto mb-2" style={{ backgroundColor: COLORS.media }} />
+                  <p className="text-sm font-bold text-amber-400 mb-1">Media (70–84)</p>
                   <p className="text-xs text-slate-500">Muy relevante</p>
+                  <p className="text-xs text-slate-400 mt-2">
+                    {data.habilidades.filter(h => h.demanda >= 70 && h.demanda < 85).length} habilidades
+                  </p>
                 </div>
-                <div className="plate card p-3 text-center">
-                  <div className="w-3 h-3 rounded-full mx-auto mb-1" style={{ backgroundColor: COLORS.baja }} />
-                  <p className="text-sm font-bold text-rose-400">Baja (&lt;70)</p>
+                <div className="plate card p-4 text-center">
+                  <div className="w-3 h-3 rounded-full mx-auto mb-2" style={{ backgroundColor: COLORS.baja }} />
+                  <p className="text-sm font-bold text-rose-400 mb-1">Baja (&lt;70)</p>
                   <p className="text-xs text-slate-500">Importante de reforzar</p>
+                  <p className="text-xs text-slate-400 mt-2">
+                    {data.habilidades.filter(h => h.demanda < 70).length} habilidades
+                  </p>
+                </div>
+              </div>
+
+              {/* Tabla completa */}
+              <div className="plate card p-5">
+                <div className="flex items-center justify-between mb-4 pb-2 border-b border-gold-500/20">
+                  <h2 className="text-xl font-bold text-white font-display flex items-center gap-2">
+                     Ranking completo de habilidades
+                  </h2>
+                  <span className="text-sm text-gold-400 uppercase tracking-wider font-semibold">{data.habilidades.length} habilidades</span>
+                </div>
+                <p className="text-sm text-slate-500 mb-4">
+                  Todas las habilidades evaluadas según su importancia para el mercado laboral futuro.
+                </p>
+                <div className="overflow-x-auto">
+                  <table className="w-full text-sm text-left">
+                    <thead>
+                      <tr className="text-xs text-slate-400 uppercase tracking-wider border-b border-white/[0.08]">
+                        <th className="px-3 py-3">#</th>
+                        <th className="px-3 py-3">Habilidad</th>
+                        <th className="px-3 py-3">Nivel</th>
+                        <th className="px-3 py-3 text-right">Puntuación</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-white/[0.04]">
+                      {data.habilidades.map((h, i) => (
+                        <tr key={i} className="hover:bg-white/[0.02] transition-colors">
+                          <td className="px-3 py-3 text-slate-500 font-mono">{i + 1}</td>
+                          <td className="px-3 py-3">
+                            <div className="font-semibold text-slate-200">{h.habilidad}</div>
+                          </td>
+                          <td className="px-3 py-3">
+                            <span
+                              className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium ${
+                                h.demanda >= 85
+                                  ? 'bg-green-500/15 text-green-400 border border-green-500/30'
+                                  : h.demanda >= 70
+                                  ? 'bg-amber-500/15 text-amber-400 border border-amber-500/30'
+                                  : 'bg-rose-500/15 text-rose-400 border border-rose-500/30'
+                              }`}
+                            >
+                              {h.demanda >= 85 ? 'Alta' : h.demanda >= 70 ? 'Media' : 'Baja'}
+                            </span>
+                          </td>
+                          <td className="px-3 py-3 text-right font-bold text-gold-400">{h.demanda}/100</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
                 </div>
               </div>
             </div>
@@ -565,23 +654,99 @@ export default function Prediccion() {
 
           {/* ================= SALARIOS ================= */}
           {tab === 'salarios' && (
-            <div className="space-y-4">
-              {/* Tabla salarios por profesión */}
+            <div className="space-y-5">
+              {/* Nota metodológica */}
+              <div className="plate card p-4">
+                <div className="flex items-start gap-3">
+                  
+                  <div>
+                    <p className="text-sm text-slate-200 font-semibold mb-1">¿Qué muestran estas cifras?</p>
+                    <p className="text-xs text-slate-400 leading-relaxed">
+                      Proyección salarial mensual por profesión en pesos colombianos. Los salarios de 2025 son estimaciones
+                      basadas en GEIH del DANE y fuentes de mercado laboral. Las proyecciones a 2030 y 2035 aplican un
+                      crecimiento real del 3.5% anual, consistente con las tendencias históricas de Colombia.
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Gráfico de salarios */}
               <div className="plate card p-5">
                 <div className="flex items-center justify-between mb-4 pb-2 border-b border-gold-500/20">
                   <h2 className="text-xl font-bold text-white font-display flex items-center gap-2">
-                    <Icon.EmprendeDinero size={20} /> Proyección salarial por profesión
+                     Proyección salarial por profesión
                   </h2>
-                  <span className="text-sm text-gold-400 uppercase tracking-wider font-semibold">Ordenado por salario actual</span>
+                  <span className="text-sm text-gold-400 uppercase tracking-wider font-semibold">GEIH + 3.5% anual</span>
                 </div>
+                <p className="text-xs text-slate-500 mb-4">
+                  Top 10 profesiones ordenadas por salario mensual en 2025. Proyección a 2035 con crecimiento real del 3.5% anual.
+                </p>
+                <ResponsiveContainer width="100%" height={380}>
+                  <BarChart data={data.profesiones.slice(0, 10).sort((a, b) => b.salario_mensual_cop - a.salario_mensual_cop)} layout="vertical" margin={{ left: 10, right: 60 }}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.04)" horizontal={false} />
+                    <XAxis type="number" stroke="#64748b" fontSize={11} tickFormatter={(v) => `$${Math.round(v).toLocaleString("es-CO")}`} />
+                    <YAxis type="category" dataKey="profesion" stroke="#94a3b8" fontSize={11} width={200} />
+                    <Tooltip
+                      contentStyle={{ background: '#0a0f1f', border: '1px solid rgba(212,175,55,0.3)', borderRadius: '10px', color: '#e9ecf5', fontSize: 13 }}
+                      formatter={(v: any, name: string) => {
+                        const label = name === 'Salario 2035' ? 'Salario proyectado 2035' : 'Salario actual 2025'
+                        return [formatCOP(v), label]
+                      }}
+                    />
+                    <Legend formatter={(v: string) => <span style={{ color: '#e9ecf5', fontSize: 12 }}>{v}</span>} />
+                    <Bar dataKey="salario_mensual_cop" name="Salario 2025" fill="#d4af37" radius={[0, 4, 4, 0]} />
+                    <Bar dataKey="salario_10a_cop" name="Salario 2035" fill="#4ade80" radius={[0, 4, 4, 0]} />
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
+
+              {/* Tarjetas de salarios */}
+              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
+                {data.profesiones.slice(0, 10).sort((a, b) => b.salario_mensual_cop - a.salario_mensual_cop).map((p, i) => {
+                  const crecSalarial10 = ((p.salario_10a_cop / p.salario_mensual_cop) - 1) * 100
+                  return (
+                    <div key={i} className="plate card p-4 text-center">
+                      <p className="text-xs text-slate-400 uppercase tracking-wider mb-3 font-semibold">{p.profesion}</p>
+                      <div className="space-y-2">
+                        <div>
+                          <p className="text-xs text-slate-500 mb-1">Salario 2025</p>
+                          <p className="text-lg font-bold text-gold-400 font-display">${Math.round(p.salario_mensual_cop).toLocaleString("es-CO")}</p>
+                        </div>
+                        <div>
+                          <p className="text-xs text-slate-500 mb-1">Salario 2035</p>
+                          <p className="text-lg font-bold text-white font-display">${Math.round(p.salario_10a_cop).toLocaleString("es-CO")}</p>
+                        </div>
+                        <div className="pt-2 border-t border-gold-500/20">
+                          <p className="text-xs text-slate-500 mb-1">Crecimiento</p>
+                          <p className="text-lg font-bold text-green-400">
+                            +{crecSalarial10.toFixed(1)}%
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  )
+                })}
+              </div>
+
+              {/* Tabla completa */}
+              <div className="plate card p-5">
+                <div className="flex items-center justify-between mb-4 pb-2 border-b border-gold-500/20">
+                  <h2 className="text-xl font-bold text-white font-display flex items-center gap-2">
+                     Ranking completo de salarios
+                  </h2>
+                  <span className="text-sm text-gold-400 uppercase tracking-wider font-semibold">Ordenado por salario 2025</span>
+                </div>
+                <p className="text-sm text-slate-500 mb-4">
+                  Todas las profesiones con proyección salarial a 5 y 10 años.
+                </p>
                 <div className="overflow-x-auto">
                   <table className="w-full text-sm text-left">
                     <thead>
                       <tr className="text-xs text-slate-400 uppercase tracking-wider border-b border-white/[0.08]">
                         <th className="px-3 py-3">Profesión</th>
-                        <th className="px-3 py-3 text-right">Hoy</th>
-                        <th className="px-3 py-3 text-right">2030</th>
-                        <th className="px-3 py-3 text-right">2035</th>
+                        <th className="px-3 py-3 text-right">Salario 2025</th>
+                        <th className="px-3 py-3 text-right">Salario 2030</th>
+                        <th className="px-3 py-3 text-right">Salario 2035</th>
                         <th className="px-3 py-3 text-right">Crec. 10 años</th>
                       </tr>
                     </thead>
@@ -597,9 +762,9 @@ export default function Prediccion() {
                                 <div className="font-semibold text-slate-200">{p.profesion}</div>
                                 <div className="text-xs text-slate-500">{p.sector}</div>
                               </td>
-                              <td className="px-3 py-3 text-right text-slate-300">{formatCOP(p.salario_mensual_cop)}</td>
-                              <td className="px-3 py-3 text-right text-slate-300">{formatCOP(p.salario_5a_cop)}</td>
-                              <td className="px-3 py-3 text-right font-semibold text-white">{formatCOP(p.salario_10a_cop)}</td>
+                              <td className="px-3 py-3 text-right text-slate-300">${Math.round(p.salario_mensual_cop).toLocaleString("es-CO")}</td>
+                              <td className="px-3 py-3 text-right text-slate-300">${Math.round(p.salario_5a_cop).toLocaleString("es-CO")}</td>
+                              <td className="px-3 py-3 text-right font-semibold text-white">${Math.round(p.salario_10a_cop).toLocaleString("es-CO")}</td>
                               <td className="px-3 py-3 text-right font-bold text-green-400">+{crecSalarial10.toFixed(1)}%</td>
                             </tr>
                           )
@@ -608,356 +773,54 @@ export default function Prediccion() {
                   </table>
                 </div>
               </div>
+
+              {/* Salarios reales del DANE GEIH (406 ocupaciones) */}
+              {salariosReales && salariosReales.length > 0 && (
+                <div className="plate card p-5">
+                  <div className="flex items-center justify-between mb-4 pb-2 border-b border-gold-500/20">
+                    <h2 className="text-xl font-bold text-white font-display flex items-center gap-2">
+                      Salarios reales por ocupación — DANE GEIH
+                    </h2>
+                    <span className="text-sm text-green-400 uppercase tracking-wider font-semibold">{salariosReales.length} ocupaciones</span>
+                  </div>
+                  <p className="text-xs text-slate-500 mb-4">
+                    Datos oficiales de la Gran Encuesta Integrada de Hogares (GEIH) del DANE. Salarios reales observados en {salariosReales[0]?.periodo}, ordenados por empleo total.
+                    A diferencia de las proyecciones de arriba, estos son datos <strong className="text-slate-300">reales observados</strong>, no estimaciones.
+                  </p>
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-sm text-left">
+                      <thead>
+                        <tr className="text-xs text-slate-400 uppercase tracking-wider border-b border-white/[0.08]">
+                          <th className="px-3 py-3">Código oficio</th>
+                          <th className="px-3 py-3 text-right">Salario promedio</th>
+                          <th className="px-3 py-3 text-right">Salario mediano</th>
+                          <th className="px-3 py-3 text-right">Empleo total</th>
+                          <th className="px-3 py-3 text-right">Muestra</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-white/[0.04]">
+                        {salariosReales.map((s, i) => (
+                          <tr key={i} className="hover:bg-white/[0.02] transition-colors">
+                            <td className="px-3 py-3 font-semibold text-slate-200">{s.oficio_codigo}</td>
+                            <td className="px-3 py-3 text-right text-gold-400 font-semibold">${Math.round(s.salario_promedio).toLocaleString('es-CO')}</td>
+                            <td className="px-3 py-3 text-right text-slate-300">${Math.round(s.salario_mediano).toLocaleString('es-CO')}</td>
+                            <td className="px-3 py-3 text-right text-slate-300">{Math.round(s.empleo_total).toLocaleString('es-CO')}</td>
+                            <td className="px-3 py-3 text-right text-slate-500">{s.ocupados_muestra}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              )}
             </div>
           )}
 
-          {/* ================= MENSUAL GEIH ================= */}
-          {tab === 'mensual' && (
-            <GeihMensual geihData={geihData} />
-          )}
         </>
       )}
 
-      <FuentesBadge fuentes={['World Bank Open Data', 'Chronos T5 Small', 'GEIH DANE mensual', 'O*NET', 'ESCO', 'WEF Future of Jobs']} />
+      <FuentesBadge fuentes={['World Bank Open Data', 'Chronos T5 Small', 'O*NET', 'ESCO', 'WEF Future of Jobs', 'DANE GEIH']} />
     </div>
   )
 }
 
-// ===========================================================================
-// Componente: GeihMensual — Predicción mensual con Chronos T5 sobre GEIH
-// ===========================================================================
-
-type HorizonteKey = 'prediccion_1ano' | 'prediccion_5anos'
-
-function GeihMensual({ geihData }: { geihData: GeihData | null }) {
-  const [indicador, setIndicador] = useState('desempleo_nacional')
-  const [horizonte, setHorizonte] = useState<HorizonteKey>('prediccion_1ano')
-  const [vista, setVista] = useState<'nacional' | 'sector'>('nacional')
-  const [sectorSel, setSectorSel] = useState('1')
-
-  if (!geihData) {
-    return (
-      <div className="plate card rounded-2xl p-8 text-center">
-        <div className="text-slate-500 text-sm">
-          No hay predicciones mensuales GEIH disponibles. Ejecuta el script de Chronos GEIH para generarlas.
-        </div>
-      </div>
-    )
-  }
-
-  const indicadorMeta = GEIH_INDICADORES.find((i) => i.key === indicador)!
-  const serie: GeihSerie | undefined =
-    vista === 'nacional'
-      ? (geihData as any)[indicador] as GeihSerie
-      : geihData.sectores[sectorSel]
-
-  if (!serie) {
-    return (
-      <div className="plate card rounded-2xl p-8 text-center text-slate-500 text-sm">
-        Sin datos para esta selección.
-      </div>
-    )
-  }
-
-  const predArr = serie[horizonte]
-  const ultimoHist = serie.historico[serie.historico.length - 1]
-  const ultimoPred = predArr[predArr.length - 1]
-  const primerPred = predArr[0]
-
-  const chartData = [
-    ...serie.historico.map((h) => ({
-      periodo: h.periodo,
-      valor: h.valor ?? null,
-      mediana: null as number | null,
-      p10: null as number | null,
-      p90: null as number | null,
-      esPrediccion: false,
-    })),
-    ...predArr.map((p) => ({
-      periodo: p.periodo,
-      valor: null as number | null,
-      mediana: p.mediana ?? null,
-      p10: p.p10 ?? null,
-      p90: p.p90 ?? null,
-      esPrediccion: true,
-    })),
-  ]
-
-  const ultimoValor = ultimoHist.valor ?? null
-  const valorFinal = ultimoPred.mediana ?? null
-  const valorInicialPred = primerPred.mediana ?? null
-
-  const deltaPct = valorFinal != null && valorInicialPred != null && valorInicialPred !== 0
-    ? ((valorFinal - valorInicialPred) / Math.abs(valorInicialPred)) * 100
-    : null
-
-  const suffix = vista === 'nacional' ? indicadorMeta.suffix : ''
-  const colorLinea = vista === 'nacional' ? indicadorMeta.color : '#d4af37'
-
-  const fmtValor = (v: number | null | undefined) => {
-    if (v == null) return '—'
-    if (vista === 'nacional' && indicador === 'salario_promedio_nacional') return formatCOP(v)
-    if (vista === 'sector') return `${Math.round(v).toLocaleString('es-CO')}`
-    return `${v.toFixed(1)}${suffix}`
-  }
-
-  const tituloIndicador =
-    vista === 'nacional'
-      ? indicadorMeta.label
-      : CIIU_SECTORES[sectorSel] || `Sector CIIU ${sectorSel}`
-
-  const unidadDescripcion =
-    vista === 'nacional'
-      ? indicador === 'salario_promedio_nacional'
-        ? 'salario promedio mensual (COP)'
-        : `tasa de ${indicadorMeta.label.toLowerCase()} (%)`
-      : 'empleo total (personas)'
-
-  const nomHorizonte = horizonte === 'prediccion_1ano' ? '1 año (12 meses)' : '5 años (60 meses)'
-
-  return (
-    <div className="space-y-5">
-      {/* Selectores */}
-      <div className="plate p-4 flex flex-wrap items-center gap-4">
-        <div className="flex gap-1.5">
-          <button
-            onClick={() => setVista('nacional')}
-            className={`px-4 py-2 text-sm font-semibold rounded-lg transition-all ${
-              vista === 'nacional'
-                ? 'bg-gradient-to-b from-amber-300/20 to-amber-700/10 text-gold-400 border border-amber-500/50'
-                : 'text-slate-400 hover:text-gold-400 border border-transparent'
-            }`}
-          >
-            Nacional
-          </button>
-          <button
-            onClick={() => setVista('sector')}
-            className={`px-4 py-2 text-sm font-semibold rounded-lg transition-all ${
-              vista === 'sector'
-                ? 'bg-gradient-to-b from-amber-300/20 to-amber-700/10 text-gold-400 border border-amber-500/50'
-                : 'text-slate-400 hover:text-gold-400 border border-transparent'
-            }`}
-          >
-            Por sector CIIU
-          </button>
-        </div>
-
-        {vista === 'nacional' ? (
-          <div className="flex gap-1.5">
-            {GEIH_INDICADORES.map((ind) => (
-              <button
-                key={ind.key}
-                onClick={() => setIndicador(ind.key)}
-                className={`px-3 py-2 text-sm font-semibold rounded-lg transition-all ${
-                  indicador === ind.key
-                    ? 'bg-gradient-to-b from-amber-300/20 to-amber-700/10 text-gold-400 border border-amber-500/50'
-                    : 'text-slate-400 hover:text-gold-400 border border-transparent'
-                }`}
-              >
-                {ind.label}
-              </button>
-            ))}
-          </div>
-        ) : (
-          <select
-            value={sectorSel}
-            onChange={(e) => setSectorSel(e.target.value)}
-            className="bg-[#0a0f1f] text-slate-200 text-sm border border-amber-500/30 rounded-lg px-3 py-2 focus:outline-none focus:border-amber-500/60"
-          >
-            {Object.entries(CIIU_SECTORES).map(([code, name]) => (
-              <option key={code} value={code}>{name}</option>
-            ))}
-          </select>
-        )}
-
-        <div className="flex gap-1.5 ml-auto">
-          <button
-            onClick={() => setHorizonte('prediccion_1ano')}
-            className={`px-3 py-2 text-sm font-semibold rounded-lg transition-all ${
-              horizonte === 'prediccion_1ano'
-                ? 'bg-gradient-to-b from-amber-300/20 to-amber-700/10 text-gold-400 border border-amber-500/50'
-                : 'text-slate-400 hover:text-gold-400 border border-transparent'
-            }`}
-          >
-            1 año
-          </button>
-          <button
-            onClick={() => setHorizonte('prediccion_5anos')}
-            className={`px-3 py-2 text-sm font-semibold rounded-lg transition-all ${
-              horizonte === 'prediccion_5anos'
-                ? 'bg-gradient-to-b from-amber-300/20 to-amber-700/10 text-gold-400 border border-amber-500/50'
-                : 'text-slate-400 hover:text-gold-400 border border-transparent'
-            }`}
-          >
-            5 años
-          </button>
-        </div>
-      </div>
-
-      {/* KPIs */}
-      <div className="grid grid-cols-3 gap-3">
-        <div className="plate card p-4 text-center">
-          <p className="text-xs text-slate-400 uppercase tracking-wider mb-1">{geihData.ultimo_periodo_historico}</p>
-          <p className="text-2xl font-bold text-white font-display">{fmtValor(ultimoValor)}</p>
-          <p className="text-xs text-slate-500 mt-1">Último dato histórico</p>
-        </div>
-        <div className="plate card p-4 text-center">
-          <p className="text-xs text-slate-400 uppercase tracking-wider mb-1">{nomHorizonte}</p>
-          <p className="text-2xl font-bold text-gold-400 font-display">{fmtValor(valorFinal)}</p>
-          <p className="text-xs text-slate-500 mt-1">Predicción final</p>
-        </div>
-        <div className="plate card p-4 text-center">
-          <p className="text-xs text-slate-400 uppercase tracking-wider mb-1">Cambio proyectado</p>
-          <p className={`text-2xl font-bold font-display ${deltaPct == null ? 'text-slate-400' : deltaPct >= 0 ? 'text-green-400' : 'text-rose-400'}`}>
-            {deltaPct == null ? '—' : `${deltaPct > 0 ? '+' : ''}${deltaPct.toFixed(1)}%`}
-          </p>
-          <p className="text-xs text-slate-500 mt-1">En {horizonte === 'prediccion_1ano' ? '1 año' : '5 años'}</p>
-        </div>
-      </div>
-
-      {/* Gráfico de línea con bandas */}
-      <div className="plate card p-5">
-        <div className="flex items-center justify-between mb-4 pb-2 border-b border-gold-500/20">
-          <h2 className="text-xl font-bold text-white font-display flex items-center gap-2">
-            <Icon.ObservatorioLinea size={20} /> {tituloIndicador}
-          </h2>
-          <span className="text-sm text-gold-400 uppercase tracking-wider font-semibold">Chronos T5 · {nomHorizonte}</span>
-        </div>
-        <p className="text-sm text-slate-500 mb-4">
-          Histórico mensual {serie.historico[0]?.periodo}–{geihData.ultimo_periodo_historico} (línea sólida) ·
-          Predicción {predArr[0]?.periodo}–{ultimoPred.periodo} con banda de confianza al 80% (línea punteada).
-          Unidad: {unidadDescripcion}.
-        </p>
-        <ResponsiveContainer width="100%" height={380}>
-          <LineChart data={chartData} margin={{ top: 10, right: 20, left: 10, bottom: 5 }}>
-            <defs>
-              <linearGradient id="geihBandFill" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stopColor={colorLinea} stopOpacity={0.15} />
-                <stop offset="100%" stopColor={colorLinea} stopOpacity={0.03} />
-              </linearGradient>
-            </defs>
-            <CartesianGrid strokeDasharray="3 3" stroke="#1e2329" />
-            <XAxis
-              dataKey="periodo"
-              stroke="#475569"
-              fontSize={10}
-              tickLine={false}
-              axisLine={false}
-              interval={Math.max(1, Math.floor(chartData.length / 12))}
-              tickFormatter={(v: string) => v}
-            />
-            <YAxis
-              stroke="#475569"
-              fontSize={11}
-              tickLine={false}
-              axisLine={false}
-              tickFormatter={(v: number) => {
-                if (vista === 'nacional' && indicador === 'salario_promedio_nacional') {
-                  return `${(v / 1_000_000).toFixed(1)}M`
-                }
-                if (vista === 'sector') {
-                  return `${(v / 1_000_000).toFixed(1)}M`
-                }
-                return `${v.toFixed(1)}${suffix}`
-              }}
-              width={70}
-            />
-            <Tooltip
-              {...tooltipStyle}
-              formatter={(v: number, name: string) => {
-                if (v == null) return ['—', '']
-                const labels: Record<string, string> = {
-                  valor: 'Histórico',
-                  mediana: 'Predicción',
-                  p10: 'Mínimo (p10)',
-                  p90: 'Máximo (p90)',
-                }
-                return [fmtValor(v), labels[name] || name]
-              }}
-            />
-            <ReferenceLine
-              x={geihData.ultimo_periodo_historico}
-              stroke="#d4af37"
-              strokeDasharray="5 5"
-              label={{ value: 'Predicción', position: 'top', fill: '#d4af37', fontSize: 11 }}
-            />
-            {/* Banda de confianza */}
-            <Area type="monotone" dataKey="p90" stroke="none" fill="url(#geihBandFill)" connectNulls name="p90" />
-            <Area type="monotone" dataKey="p10" stroke="none" fill="#0a1226" connectNulls name="p10" />
-            {/* Histórico */}
-            <Line
-              type="monotone"
-              dataKey="valor"
-              stroke={colorLinea}
-              strokeWidth={2.5}
-              dot={false}
-              connectNulls
-              name="valor"
-            />
-            {/* Predicción */}
-            <Line
-              type="monotone"
-              dataKey="mediana"
-              stroke={colorLinea}
-              strokeWidth={2}
-              strokeDasharray="6 4"
-              dot={false}
-              connectNulls
-              name="mediana"
-            />
-          </LineChart>
-        </ResponsiveContainer>
-        <div className="flex items-center justify-center gap-6 mt-3 text-sm flex-wrap">
-          <div className="flex items-center gap-2">
-            <span className="w-6 h-0.5 rounded" style={{ backgroundColor: colorLinea }} />
-            <span className="text-slate-400">Histórico</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <span className="w-6 h-0.5 rounded border-t-2 border-dashed" style={{ borderColor: colorLinea }} />
-            <span className="text-slate-400">Predicción (mediana)</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <span className="w-4 h-4 rounded" style={{ background: `linear-gradient(${colorLinea}20, ${colorLinea}05)` }} />
-            <span className="text-slate-400">Banda de confianza (80%)</span>
-          </div>
-        </div>
-      </div>
-
-      {/* Resumen de sectores CIIU disponibles (solo en vista nacional) */}
-      {vista === 'nacional' && (
-        <div className="plate card p-5">
-          <div className="flex items-center justify-between mb-4 pb-2 border-b border-gold-500/20">
-            <h2 className="text-lg font-bold text-white font-display flex items-center gap-2">
-              <Icon.Match size={18} /> Sectores CIIU con predicción mensual
-            </h2>
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-5 gap-3">
-            {Object.entries(CIIU_SECTORES).map(([code, name]) => {
-              const sec = geihData.sectores[code]
-              if (!sec) return null
-              const histUlt = sec.historico[sec.historico.length - 1]
-              const predUlt = sec.prediccion_1ano[sec.prediccion_1ano.length - 1]
-              const empHist = histUlt?.valor ?? 0
-              const empPred = predUlt?.mediana ?? 0
-              const crec = empHist > 0 ? ((empPred - empHist) / empHist) * 100 : 0
-              return (
-                <button
-                  key={code}
-                  onClick={() => { setVista('sector'); setSectorSel(code); setHorizonte('prediccion_1ano') }}
-                  className="plate card p-3 text-left hover:border-amber-500/40 transition-all group"
-                >
-                  <p className="text-xs text-slate-500 mb-1">CIIU {code}</p>
-                  <p className="text-sm font-semibold text-slate-200 group-hover:text-gold-400 transition-colors">{name}</p>
-                  <p className="text-lg font-bold text-white font-display mt-2">{(empPred / 1_000_000).toFixed(2)}M</p>
-                  <p className={`text-xs font-medium ${crec >= 0 ? 'text-green-400' : 'text-rose-400'}`}>
-                    {crec >= 0 ? '+' : ''}{crec.toFixed(1)}% en 1 año
-                  </p>
-                </button>
-              )
-            })}
-          </div>
-        </div>
-      )}
-    </div>
-  )
-}

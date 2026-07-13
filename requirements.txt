@@ -1,0 +1,36 @@
+# Dependencias Python de ALBA
+# Instalar con: pip install -r requirements.txt
+
+# Backend
+fastapi>=0.104.0
+uvicorn>=0.24.0
+pydantic>=2.5.0
+
+# Base de datos
+supabase>=2.0.0
+python-dotenv>=1.0.0
+
+# IA / LLM
+google-generativeai>=0.3.0
+openai>=1.10.0
+httpx>=0.25.0
+
+# ML / Forecasting
+pandas>=2.1.0
+numpy>=1.26.0
+scikit-learn>=1.3.0
+xgboost>=2.0.0
+prophet>=1.1.5
+chronos-forecasting>=0.1.0
+torch>=2.1.0
+
+# RAG
+pymupdf>=1.23.0
+
+# Voz
+faster-whisper>=1.0.0
+edge-tts>=6.1.0
+
+# Utilidades
+requests>=2.31.0
+python-multipart>=0.0.6

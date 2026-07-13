@@ -63,15 +63,107 @@ class PensumRequest(BaseModel):
 
 @router.post("/cv-vacante")
 async def analizar_cv_vacante(req: CvVacanteRequest):
-    """Analiza el match entre un CV/perfil y una vacante laboral usando LLM (Gemini + fallback DeepInfra)."""
+    """Analiza el match entre un CV/perfil y una vacante laboral usando ESCO + OLE + LLM."""
     try:
+        # 1. Extraer ocupación de la vacante (primeras palabras clave)
+        vacante_palabras = req.vacante.split('\n')[0][:50]  # Primera línea o título
+        
+        # 2. Buscar ocupación en ESCO
+        esco_data = None
+        habilidades_requeridas = []
+        try:
+            r_occ = supabase.table("esco_ocupaciones").select("*").ilike("nombre", f"%{vacante_palabras}%").limit(1).execute()
+            if r_occ.data:
+                occ_nombre = r_occ.data[0].get("nombre")
+                r_skills = supabase.table("esco_ocupacion_habilidades").select("*").eq("ocupacion_nombre", occ_nombre).execute()
+                habilidades_requeridas = [s.get("habilidad_nombre") for s in r_skills.data if s.get("habilidad_nombre")]
+                esco_data = {
+                    "ocupacion": occ_nombre,
+                    "habilidades_esenciales": [s.get("habilidad_nombre") for s in r_skills.data if s.get("tipo_relacion") == "essential"],
+                    "habilidades_opcionales": [s.get("habilidad_nombre") for s in r_skills.data if s.get("tipo_relacion") == "optional"],
+                }
+        except Exception as e:
+            print(f"[Match] Error buscando ESCO: {e}")
+        
+        # 3. Buscar salarios reales en OLE (si hay programa relacionado)
+        ole_data = None
+        try:
+            programa_busqueda = vacante_palabras.split()[0] if vacante_palabras else ""
+            if programa_busqueda:
+                r_ole = supabase.table("ole_ingresos_por_programa").select("*").ilike("programa", f"%{programa_busqueda}%").order("graduados", desc=True).limit(10).execute()
+                if r_ole.data:
+                    # Calcular rango modal
+                    rangos = {}
+                    for row in r_ole.data:
+                        rango = row.get("rango_ingreso")
+                        if rango:
+                            if rango not in rangos:
+                                rangos[rango] = 0
+                            rangos[rango] += int(row.get("graduados") or 0)
+                    if rangos:
+                        rango_modal = max(rangos.items(), key=lambda x: x[1])[0]
+                        total_graduados = sum(rangos.values())
+                        ole_data = {
+                            "rango_modal": rango_modal,
+                            "total_graduados": total_graduados,
+                            "fuente": "OLE-MEN 2001-2022"
+                        }
+        except Exception as e:
+            print(f"[Match] Error buscando OLE: {e}")
+        
+        # 4. Usar LLM para análisis cualitativo (interpretación, recursos)
         if is_gemini_available():
-            return gemini_match_cv_vacante(req.cv, req.vacante)
-        return deepinfra_match_cv_vacante(req.cv, req.vacante)
+            resultado = gemini_match_cv_vacante(req.cv, req.vacante)
+        else:
+            resultado = deepinfra_match_cv_vacante(req.cv, req.vacante)
+        
+        # 5. Si tenemos ESCO, ajustar score basado en datos reales
+        if esco_data and habilidades_requeridas:
+            # Extraer habilidades del CV (simple: palabras clave comunes)
+            cv_lower = req.cv.lower()
+            habilidades_cv = [h for h in habilidades_requeridas if h.lower() in cv_lower]
+            
+            # Score real basado en intersección
+            if habilidades_requeridas:
+                score_real = round(len(habilidades_cv) / len(habilidades_requeridas) * 100)
+                # Promediar con score del LLM (50% cada uno)
+                score_llm = resultado.get("score_match", 50)
+                resultado["score_match"] = round((score_real + score_llm) / 2)
+                
+                # Añadir metadatos de ESCO
+                resultado["esco_ocupacion"] = esco_data["ocupacion"]
+                resultado["habilidades_requeridas_esco"] = len(habilidades_requeridas)
+                resultado["habilidades_detectadas"] = habilidades_cv
+        
+        # 6. Si tenemos OLE, añadir datos de salarios reales
+        if ole_data:
+            resultado["salario_real"] = ole_data
+        
+        # 7. Normalizar pesos de brechas para que sumen exactamente (100 - score)
+        score = resultado.get("score_match", 0)
+        brechas = resultado.get("brechas", [])
+        if brechas:
+            peso_total = sum(b.get("peso", 0) for b in brechas)
+            peso_objetivo = max(0, 100 - score)
+            if peso_total > 0:
+                for b in brechas:
+                    b["peso"] = round(b.get("peso", 0) / peso_total * peso_objetivo)
+        
+        return resultado
     except Exception as e:
         print(f"[Match] Gemini falló ({e}), usando DeepInfra fallback.")
         try:
-            return deepinfra_match_cv_vacante(req.cv, req.vacante)
+            resultado = deepinfra_match_cv_vacante(req.cv, req.vacante)
+            # Normalizar pesos también en fallback
+            score = resultado.get("score_match", 0)
+            brechas = resultado.get("brechas", [])
+            if brechas:
+                peso_total = sum(b.get("peso", 0) for b in brechas)
+                peso_objetivo = max(0, 100 - score)
+                if peso_total > 0:
+                    for b in brechas:
+                        b["peso"] = round(b.get("peso", 0) / peso_total * peso_objetivo)
+            return resultado
         except Exception as e2:
             raise HTTPException(status_code=500, detail=str(e2))
 

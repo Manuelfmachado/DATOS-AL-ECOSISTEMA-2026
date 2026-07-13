@@ -98,6 +98,73 @@ async def get_departamento_detalle(departamento: str):
         raise HTTPException(status_code=500, detail=str(e))
 
 
+@router.get("/departamentos/{departamento}/sectores")
+async def get_departamento_sectores(departamento: str, periodo: str = None):
+    """Empleo por sector económico en un departamento (GEIH depto-sector, 95K registros).
+    
+    Datos oficiales del DANE: empleo desglosado por departamento y rama CIIU.
+    """
+    try:
+        depto_norm = _norm_depto(departamento)
+        
+        # Mapeo de nombre de departamento a código DIVIPOLA
+        DEPTO_DIVIPOLA = {
+            "BOGOTA": 11, "ANTIOQUIA": 5, "ATLANTICO": 8, "BOLIVAR": 13,
+            "BOYACA": 15, "CALDAS": 17, "CAQUETA": 18, "CASANARE": 19,
+            "CAUCA": 20, "CESAR": 21, "CHOCO": 27, "CORDOBA": 23,
+            "CUNDINAMARCA": 25, "GUAINIA": 94, "GUAVIARE": 95, "HUILA": 41,
+            "LA GUAJIRA": 44, "MAGDALENA": 47, "META": 50, "NARINO": 52,
+            "NORTE DE SANTANDER": 54, "PUTUMAYO": 86, "QUINDIO": 63,
+            "RISARALDA": 66, "ARCHIPIELAGO DE SAN ANDRES": 88, "SANTANDER": 68,
+            "SUCRE": 70, "TOLIMA": 73, "VALLE DEL CAUCA": 76, "VAUPES": 97,
+            "VICHADA": 99, "AMAZONAS": 91,
+        }
+        
+        depto_id = DEPTO_DIVIPOLA.get(depto_norm)
+        if depto_id is None:
+            raise HTTPException(status_code=404, detail=f"Departamento '{departamento}' no encontrado")
+        
+        # Consultar empleo por sector
+        query = supabase.table("geih_empleo_depto_sector").select("*").eq("dpto", depto_id)
+        
+        if not periodo:
+            # Usar el periodo más reciente
+            latest = supabase.table("geih_empleo_depto_sector").select("periodo").eq("dpto", depto_id).order("periodo", desc=True).limit(1).execute()
+            if latest.data:
+                query = query.eq("periodo", latest.data[0].get("periodo"))
+        
+        r = query.order("empleo", desc=True).limit(50).execute()
+        
+        if not r.data:
+            raise HTTPException(status_code=404, detail=f"No hay datos de empleo por sector para {departamento}")
+        
+        # Procesar resultados y eliminar duplicados por rama_ciiu
+        vistos = set()
+        sectores = []
+        for row in r.data:
+            rama = row.get("rama_ciiu")
+            if rama in vistos:
+                continue
+            vistos.add(rama)
+            sectores.append({
+                "rama_ciiu": rama,
+                "empleo": int(row.get("empleo") or 0),
+                "periodo": row.get("periodo"),
+            })
+        
+        return {
+            "departamento": depto_norm,
+            "fuente": "DANE GEIH - Empleo por departamento y sector",
+            "total_sectores": len(sectores),
+            "periodo": sectores[0]["periodo"] if sectores else None,
+            "sectores": sectores,
+        }
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
 @router.get("/sectores-formales")
 async def get_sectores_formales(limit: int = 50):
     """Top sectores por cotizantes formales (PILA)."""
@@ -236,11 +303,13 @@ async def get_mapa_metricas():
             for r in matching_rows_all:
                 key = _norm_depto(r.get("departamento", ""))
                 muj = r.get("mujeres_cabeza_hogar_pct")
-                edu = r.get("nivel_educativo_prom")
+                edu = r.get("pct_educacion_superior")
+                etiqueta = r.get("nivel_educativo_etiqueta")
                 if muj is not None or edu is not None:
                     extras_map[key] = {
                         "mujeres_cabeza_hogar_pct": round(muj, 1) if muj is not None else None,
-                        "nivel_educativo_prom": round(edu, 1) if edu is not None else None,
+                        "pct_educacion_superior": round(edu, 1) if edu is not None else None,
+                        "nivel_educativo_etiqueta": etiqueta,
                     }
         except Exception:
             pass
@@ -265,9 +334,9 @@ async def get_mapa_metricas():
             d_norm = d.get("departamento_norm")
             extra = extras_map.get(d_norm)
             if extra:
-                d["mujeres_cabeza_hogar_pct"] = extra["mujeres_cabeza_hogar_pct"]
-                d["pct_educacion_superior"] = extra["pct_educacion_superior"]
-                d["nivel_educativo_etiqueta"] = extra["nivel_educativo_etiqueta"]
+                d["mujeres_cabeza_hogar_pct"] = extra.get("mujeres_cabeza_hogar_pct")
+                d["pct_educacion_superior"] = extra.get("pct_educacion_superior")
+                d["nivel_educativo_etiqueta"] = extra.get("nivel_educativo_etiqueta")
             else:
                 d["mujeres_cabeza_hogar_pct"] = None
                 d["pct_educacion_superior"] = None

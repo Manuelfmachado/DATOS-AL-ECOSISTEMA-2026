@@ -1,0 +1,70 @@
+IdEquipo-proyecto-abierto-ia/
+Intermedio-ia/
+│
+├── RECURSOS/                                          # Es la subcarpeta dedicada exclusivamente al material visual. 
+│   ├── Presentacion.pptx                              # Archivo de PowerPoint original                 
+│   ├── presentacion.pdf                               # Presentación exportada a PDF
+│   ├── portada.png                                    # Imagen de la diapositiva principal
+│
+├── README.md                                          # Guía principal del proyecto (Ficha técnica y resultados)
+├── LICENSE                                            # Tipo de licencia abierta (ej. MIT, Apache 2.0)
+├── .gitignore                                         # Exclusión de archivos pesados, credenciales y temporales
+├── requirements.txt                                   # Dependencias del proyecto (Scikit-Learn, Pandas, etc.)
+├── environment.yml
+├── Changelog.md                                       # Registro cronológico de versiones y cambios.
+│
+├── docs/                                              # Documentación técnica del proyecto para evaluación
+│   ├── architecture.md                                # Diagrama de arquitectura e integración de fuentes
+│   └── data_dictionary.md                             # Definición de las 10-20 variables del consolidado
+│   ├── planteamiento_problema.md                      # Definición clara del problema
+│   ├── marco_metodologico.md                          # CRISP-ML
+│   ├── fuentes_datos.md                               # Enlaces a
+│   └── conclusiones.md                                # Hallazgos. Limitaciones. Próximos pasos
+│   └── validación_guide.md                            # Guía detallada para que pares validen los resultados
+│
+├── data/                                              # Gestión del ciclo de vida de los datos (GitLFS)
+│   ├── 01_raw/                                        # Datos fuentes originales (incluye dataset datos.gov.co)
+│   ├── 02_intermediate/                               # Datos con limpieza inicial y tipos corregidos
+│   ├── 03_primary/                                    # Datos transformados, integrados y consolidados
+│   └── 04_model_output/                               # Predicciones generadas y resultados finales
+│
+├── notebooks/                                          # Experimentación y análisis exploratorio
+│   ├── 01_EDA_exploracion_datos.ipynb                 # Experimentación y análisis exploratorio
+│   ├── 02_limpieza_transformacion.ipynb               # Limpieza, Codificación, Normalización
+│   ├── 03_analisis_descriptivo.ipynb                  # Estadísticas básicas, Correlaciones
+│   ├── 04_modelo_predictivo.ipynb                     # Entrenamiento simple, Validación básica
+│   └── 05_reportes_automaticos.ipynb                  # Reportes, Gráficos dinámicos
+│
+├── src/                                               # Código fuente modularizado y productivo
+│   ├── __init__.py
+│   ├── config.py                                      # Parámetros globales y rutas del proyecto
+│   ├── data_cleaning.py                               # Scripts de limpieza y tratamiento de nulos/atípicos
+│   ├── feature_engineering.py                         # Creación de variables y codificación de NLP básico
+│   ├── pipeline_integration.py                        # Unión y consolidación de los conjuntos de datos
+│   ├── model_training.py                              # Entrenamiento de algoritmos avanzados y tuning
+│   └── model_evaluation.py                            # Generación de matrices, curvas ROC e insights
+│
+├── models/                                            # Almacenamiento local de artefactos (o links a MLflow)
+│   ├── advanced_ensemble.pkl                          # Modelo entrenado (Random Forest / Gradient Boosting)
+│   └── clustering_segments.pkl                        # Modelo de segmentación no supervisado
+│
+├── reports/                                           # Resultados visibles
+│   ├── figures/
+│   │   ├── distribuciones.png
+│   │   ├── correlaciones.png
+│   │   └── matriz_confusion.png
+│   │
+│   └── reporte_final.pdf
+│
+├── tests/                                             # Pruebas unitarias y de calidad de datos (Great Expectations)
+│   ├── test_data_quality.py                           # Validación de rangos, nulos y tipos en las variables
+│   └── test_model_inference.py                        # Pruebas de consistencia en la predicción del modelo
+│
+├── pipelines/
+│   └── pipeline_ml.py
+│
+├── .github/                                           # Configuración de GitHub Actions (.github/workflows/ci.yml)
+    └── workflows/
+        └── ci.yml
+(Alternativa GitLab)                                    # # GitLab CI (.gitlab-ci.yml) 
+└── .gitlab-ci.yml

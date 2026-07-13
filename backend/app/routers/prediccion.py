@@ -82,6 +82,54 @@ async def salarios():
     return data.get("salarios", {})
 
 
+@router.get("/salarios-reales")
+async def salarios_reales_geih(limit: int = 50, ordenar_por: str = "empleo_total"):
+    """Salarios reales por ocupación del DANE GEIH (406 ocupaciones).
+    
+    Datos oficiales de la Gran Encuesta Integrada de Hogares (GEIH) del DANE.
+    Incluye salario promedio, mediano y empleo total por ocupación.
+    
+    Args:
+        limit: Número máximo de ocupaciones a devolver (default 50)
+        ordenar_por: Campo para ordenar ('empleo_total', 'salario_promedio', 'salario_mediano')
+    """
+    try:
+        # Validar campo de ordenamiento
+        campos_validos = ["empleo_total", "salario_promedio", "salario_mediano"]
+        if ordenar_por not in campos_validos:
+            ordenar_por = "empleo_total"
+        
+        # Consultar tabla geih_salario_ocupacion
+        r = supabase.table("geih_salario_ocupacion").select("*").order(ordenar_por, desc=True).limit(limit).execute()
+        
+        if not r.data:
+            raise HTTPException(status_code=404, detail="No hay datos de salarios en geih_salario_ocupacion")
+        
+        # Procesar resultados
+        ocupaciones = []
+        for row in r.data:
+            ocupaciones.append({
+                "oficio_codigo": row.get("oficio_c8"),
+                "salario_promedio": round(float(row.get("salario_promedio") or 0), 0),
+                "salario_mediano": round(float(row.get("salario_mediano") or 0), 0),
+                "empleo_total": round(float(row.get("empleo_total") or 0), 0),
+                "ocupados_muestra": int(row.get("ocupados_muestra") or 0),
+                "periodo": row.get("periodo"),
+            })
+        
+        return {
+            "fuente": "DANE GEIH - Gran Encuesta Integrada de Hogares",
+            "descripcion": "Salarios reales por ocupación (datos oficiales del DANE)",
+            "total_ocupaciones": len(ocupaciones),
+            "periodo": ocupaciones[0]["periodo"] if ocupaciones else None,
+            "ocupaciones": ocupaciones,
+        }
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
 # ============================================================================
 # NUEVOS ENDPOINTS: Predicciones Chronos T5 sobre GEIH mensual (52 meses)
 # ============================================================================

@@ -3,15 +3,12 @@ import {
   BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid,
   Cell, LineChart, Line, Legend,
 } from 'recharts'
-import Icon from '../components/Icon'
 import api from '../services/api'
 import FuentesBadge from '../components/FuentesBadge'
 import { formatCOP } from '../utils/format'
 
 function compactNum(n: number): string {
-  if (n >= 1_000_000) return `${(n / 1_000_000).toFixed(1)}M`
-  if (n >= 1_000) return `${(n / 1_000).toFixed(0)}K`
-  return n.toLocaleString()
+  return Math.round(n).toLocaleString('es-CO')
 }
 
 function cleanDepto(name: string): string {
@@ -32,6 +29,9 @@ const MACRO_COLORS = ['#d4af37', '#3b82f6', '#22c55e', '#a855f7', '#f97316', '#e
 export default function Observatorio() {
   const [data, setData] = useState<any>(null)
   const [loading, setLoading] = useState(true)
+  const [deptoSeleccionado, setDeptoSeleccionado] = useState<string | null>(null)
+  const [sectoresDepto, setSectoresDepto] = useState<any[] | null>(null)
+  const [loadingSectores, setLoadingSectores] = useState(false)
 
   useEffect(() => {
     Promise.all([
@@ -58,6 +58,19 @@ export default function Observatorio() {
       console.error('[Observatorio]', e)
     }).finally(() => setLoading(false))
   }, [])
+
+  const cargarSectoresDepto = async (depto: string) => {
+    setDeptoSeleccionado(depto)
+    setLoadingSectores(true)
+    setSectoresDepto(null)
+    try {
+      const res = await api.get(`/observatorio/departamentos/${encodeURIComponent(depto)}/sectores`)
+      setSectoresDepto(res.data.sectores)
+    } catch {
+      setSectoresDepto(null)
+    }
+    setLoadingSectores(false)
+  }
 
   if (loading) {
     return (
@@ -164,7 +177,7 @@ export default function Observatorio() {
         <div className="plate card p-5">
           <div className="flex items-center justify-between mb-4 pb-2 border-b border-gold-500/20">
             <h2 className="text-xl font-bold text-white font-display flex items-center gap-2">
-              <Icon.Kpi.Trabajo size={20} /> Tendencias del empleo
+              Tendencias del empleo
             </h2>
             <span className="text-sm text-gold-400 uppercase tracking-wider font-semibold">GEIH {tend.periodo}</span>
           </div>
@@ -172,7 +185,7 @@ export default function Observatorio() {
             <LineChart margin={{ top: 10, right: 30, left: 10, bottom: 5 }}>
               <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" />
               <XAxis dataKey="ano" stroke="#64748b" fontSize={12} allowDuplicatedCategory={false} />
-              <YAxis stroke="#64748b" fontSize={12} tickFormatter={(v) => `${(v / 1_000_000).toFixed(1)}M`} />
+              <YAxis stroke="#64748b" fontSize={12} tickFormatter={(v) => Math.round(v).toLocaleString("es-CO")} />
               <Tooltip {...chartTooltip} formatter={(v: number) => [compactNum(v), 'Empleados']} />
               <Legend formatter={(v: string) => <span style={{ color: '#e9ecf5', fontSize: 12 }}>{v}</span>} />
               {tend.sectores.map((s: any, i: number) => (
@@ -198,7 +211,7 @@ export default function Observatorio() {
         {/* Dónde hay más empleo */}
         <div className="plate card p-5">
           <h2 className="text-lg font-bold text-white font-display mb-3 flex items-center gap-2">
-            <Icon.Kpi.Trabajo size={18} /> Empleo por departamento
+            Empleo por departamento
           </h2>
           <ResponsiveContainer width="100%" height={260}>
             <BarChart
@@ -252,6 +265,69 @@ export default function Observatorio() {
             ))}
           </div>
         </div>
+      </div>
+
+      {/* ================================================================ */}
+      {/* 3.5 Empleo por sector departamental (GEIH depto-sector, 95K filas) */}
+      {/* ================================================================ */}
+      <div className="plate card p-5">
+        <div className="flex items-center justify-between mb-4 pb-2 border-b border-gold-500/20">
+          <h2 className="text-xl font-bold text-white font-display">Empleo por sector — DANE GEIH</h2>
+          <span className="text-sm text-gold-400 uppercase tracking-wider font-semibold">Datos reales del DANE</span>
+        </div>
+        <p className="text-xs text-slate-500 mb-4">
+          Selecciona un departamento para ver el desglose de empleo por sector económico (rama CIIU). Datos oficiales del DANE GEIH.
+        </p>
+        <div className="flex flex-wrap gap-2 mb-4">
+          {deptosEmpleo.slice(0, 12).map((d: any) => {
+            const nombre = d.departamento
+            const activo = deptoSeleccionado === nombre
+            return (
+              <button
+                key={nombre}
+                onClick={() => cargarSectoresDepto(nombre)}
+                className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
+                  activo
+                    ? 'bg-gradient-to-b from-amber-300 to-amber-600 text-[#0a0f1f]'
+                    : 'bg-white/[0.04] text-slate-300 hover:bg-white/[0.08] border border-white/10'
+                }`}
+              >
+                {cleanDepto(nombre)}
+              </button>
+            )
+          })}
+        </div>
+
+        {loadingSectores && (
+          <p className="text-slate-500 text-sm">Cargando sectores...</p>
+        )}
+
+        {sectoresDepto && sectoresDepto.length > 0 && (
+          <ResponsiveContainer width="100%" height={350}>
+            <BarChart
+              data={sectoresDepto.slice(0, 15).map((s: any) => ({
+                name: `CIIU ${s.rama_ciiu}`,
+                empleo: s.empleo,
+              }))}
+              layout="vertical"
+              margin={{ left: 10, right: 40 }}
+            >
+              <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.04)" horizontal={false} />
+              <XAxis type="number" stroke="#64748b" fontSize={11} tickFormatter={(v) => compactNum(v)} />
+              <YAxis type="category" dataKey="name" stroke="#94a3b8" fontSize={11} width={100} />
+              <Tooltip {...chartTooltip} formatter={(v: number) => [v.toLocaleString(), 'Empleo']} />
+              <Bar dataKey="empleo" radius={[0, 4, 4, 0]}>
+                {sectoresDepto.slice(0, 15).map((_: any, i: number) => (
+                  <Cell key={i} fill={i < 3 ? '#d4af37' : i < 6 ? '#3b82f6' : '#64748b'} />
+                ))}
+              </Bar>
+            </BarChart>
+          </ResponsiveContainer>
+        )}
+
+        {deptoSeleccionado && !loadingSectores && (!sectoresDepto || sectoresDepto.length === 0) && (
+          <p className="text-slate-500 text-sm">No hay datos de empleo por sector para este departamento.</p>
+        )}
       </div>
 
       {/* ================================================================ */}

@@ -62,10 +62,13 @@ def match_cv_vacante(cv: str, vacante: str) -> dict[str, Any]:
         '  "score_match": number,\n'
         '  "interpretacion": string,\n'
         '  "fortalezas": [string],\n'
-        '  "brechas": [{"requisito": string, "peso": number, "como_cubrir": string}],\n'
+        '  "brechas": [{"requisito": string, "peso": number, "como_cubrir": string, "recursos": [{"tipo": string, "nombre": string}]}],\n'
         '  "recomendacion_general": string\n'
         "}\n"
-        "El score debe ser entre 0 y 100. El peso de cada brecha debe ser entre 5 y 25. "
+        "El score debe ser entre 0 y 100. El peso de cada brecha debe ser proporcional a su importancia, "
+        "y la suma de todos los pesos debe ser exactamente (100 - score_match). "
+        "Para cada brecha, sugiere 2-3 recursos clasificados por tipo: "
+        "'SENA' (cursos gratuitos del SENA), 'online' (Coursera, Platzi, edX), 'certificacion' (AWS, Google, TOEFL), 'libre' (documentación, tutoriales). "
         "Sé honesto, objetivo y útil."
     )
     user = f"CV / PERFIL:\n{cv}\n\nVACANTE LABORAL:\n{vacante}"

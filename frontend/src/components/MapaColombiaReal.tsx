@@ -170,7 +170,7 @@ const METRICAS: Record<Metrica, {
     label: 'Matriculados educación superior',
     unit: '',
     getter: (d) => d.matriculados_snies ?? null,
-    format: (v) => v >= 1e6 ? (v / 1e6).toFixed(1) + 'M' : v >= 1e3 ? (v / 1e3).toFixed(0) + 'K' : v.toLocaleString(),
+    format: (v) => Math.round(v).toLocaleString("es-CO"),
     stops: [100000, 500000, 1500000, 5000000],
     palette: ['#1e3a5f', '#3b6ea8', '#7da3d6', '#fbbf24'],
     inverse: false,

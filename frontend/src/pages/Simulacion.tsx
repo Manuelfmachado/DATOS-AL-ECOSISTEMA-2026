@@ -493,9 +493,9 @@ function SimQuePasaSi() {
                 <YAxis
                   stroke="#64748b"
                   tick={{ fontSize: 12 }}
-                  tickFormatter={(v: number) => 'COP' + (v >= 1_000_000 ? (v / 1_000_000).toFixed(1) + 'M' : (v / 1_000).toFixed(0) + 'K')}
+                  tickFormatter={(v: number) => `$${Math.round(v).toLocaleString("es-CO")}`}
                 />
-                <Tooltip contentStyle={{ background: '#0a0f1f', border: '1px solid rgba(212,175,55,0.35)', borderRadius: '10px', color: '#e9ecf5' }} formatter={(v: number, name: string) => { const e = result.escenarios.find((x) => x.tipo === name); return ['COP' + (v >= 1_000_000 ? (v / 1_000_000).toFixed(1) + 'M' : (v / 1_000).toFixed(0) + 'K'), e?.label || name] }} />
+                <Tooltip contentStyle={{ background: '#0a0f1f', border: '1px solid rgba(212,175,55,0.35)', borderRadius: '10px', color: '#e9ecf5' }} formatter={(v: number, name: string) => { const e = result.escenarios.find((x) => x.tipo === name); return [`$${Math.round(v).toLocaleString("es-CO")}`, e?.label || name] }} />
                 <Legend formatter={(val: string) => { const e = result.escenarios.find((x) => x.tipo === val); return e?.label || val }} />
                 {result.escenarios.map((e) => (
                   <Line
@@ -708,8 +708,8 @@ function SimTrayectoria() {
                   fontSize={12}
                   tickLine={false}
                   axisLine={false}
-                  tickFormatter={(v) => `$${(v / 1_000_000).toFixed(1)}M`}
-                  width={60}
+                  tickFormatter={(v) => `$${Math.round(v).toLocaleString("es-CO")}`}
+                  width={80}
                 />
                 <Tooltip
                   {...tooltipStyle}
@@ -732,7 +732,7 @@ function SimTrayectoria() {
                         <g>
                           <circle cx={x} cy={y} r={5} fill="#d4af37" />
                           <text x={x} y={y - 14} textAnchor="middle" fill="#d4af37" fontSize={13} fontWeight={700}>
-                            ${((value as number) / 1_000_000).toFixed(1)}M
+                            $${Math.round(value as number).toLocaleString("es-CO")}
                           </text>
                         </g>
                       )
@@ -1148,7 +1148,7 @@ function SimDemanda() {
               <LineChart data={chartData} margin={{ top: 10, right: 20, left: 10, bottom: 5 }}>
                 <CartesianGrid strokeDasharray="3 3" stroke="#1e2329" />
                 <XAxis dataKey="mes" stroke="#475569" fontSize={11} tickLine={false} axisLine={false} />
-                <YAxis stroke="#475569" fontSize={11} tickLine={false} axisLine={false} tickFormatter={(v) => `${(v / 1_000_000).toFixed(1)}M`} width={60} />
+                <YAxis stroke="#475569" fontSize={11} tickLine={false} axisLine={false} tickFormatter={(v) => Math.round(v).toLocaleString("es-CO")} width={80} />
                 <Tooltip {...tooltipStyle} formatter={(v: number, name: string) => {
                   const labels: Record<string, string> = { base: 'Predicción base', escenario: 'Con escenario' }
                   return [formatNumber(Math.round(v)), labels[name] || name]
