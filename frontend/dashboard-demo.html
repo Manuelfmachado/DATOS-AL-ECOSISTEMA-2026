@@ -1,0 +1,1038 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>ALBA — Inteligencia Laboral</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;600;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+<style>
+  :root {
+    --bg-deep: #050813;
+    --bg-base: #0a1226;
+
+    /* Paleta metálica */
+    --metal-top:   #2a3550;
+    --metal-mid:   #1a2238;
+    --metal-bot:   #0c1224;
+    --metal-edge:  #0a0f1f;
+    --metal-rim:   rgba(212, 175, 55, 0.55);
+    --metal-rim-2: rgba(120, 140, 180, 0.18);
+    --metal-hi:    rgba(255, 255, 255, 0.10);
+    --metal-lo:    rgba(0, 0, 0, 0.55);
+
+    --line:  rgba(212, 175, 55, 0.35);
+    --line-soft: rgba(255, 255, 255, 0.06);
+
+    --gold: #d4af37;
+    --gold-soft: #e6c66a;
+    --gold-deep: #a98628;
+    --text: #e9ecf5;
+    --text-dim: #9aa3b8;
+    --text-mute: #6b7390;
+    --green: #4ade80;
+    --green-soft: rgba(74, 222, 128, 0.15);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html, body {
+    background: var(--bg-deep);
+    color: var(--text);
+    font-family: "Inter", system-ui, -apple-system, sans-serif;
+    font-size: 14px;
+    line-height: 1.5;
+    min-height: 100vh;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  body {
+    background:
+      radial-gradient(1200px 700px at 80% -10%, rgba(212, 175, 55, 0.08), transparent 60%),
+      radial-gradient(900px 600px at -10% 100%, rgba(60, 90, 180, 0.10), transparent 60%),
+      var(--bg-deep);
+    position: relative;
+  }
+
+  /* Textura brushed sutil de fondo */
+  body::before {
+    content: "";
+    position: fixed; inset: 0;
+    background-image:
+      repeating-linear-gradient(90deg, rgba(255,255,255,0.012) 0 1px, transparent 1px 3px);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .app {
+    display: grid;
+    grid-template-columns: 280px 1fr;
+    min-height: 100vh;
+    position: relative;
+    z-index: 1;
+  }
+
+  /* ====================================================== */
+  /*  LÁMINA METÁLICA — platina con borde dorado            */
+  /* ====================================================== */
+  .plate {
+    position: relative;
+    border-radius: 14px;
+    background:
+      linear-gradient(180deg,
+        var(--metal-top) 0%,
+        var(--metal-mid) 35%,
+        var(--metal-bot) 100%);
+    border: 1px solid rgba(212, 175, 55, 0.45);
+    box-shadow:
+      /* halo dorado exterior sutil */
+      0 0 0 1px rgba(212, 175, 55, 0.08),
+      /* sombra exterior profunda */
+      0 18px 38px -12px rgba(0, 0, 0, 0.75),
+      0 6px 14px -6px rgba(0, 0, 0, 0.55),
+      /* bisel interior superior (luz) */
+      inset 0 1px 0 rgba(255, 255, 255, 0.14),
+      /* bisel interior inferior (sombra) */
+      inset 0 -1px 0 rgba(0, 0, 0, 0.55),
+      /* líneas finas internas */
+      inset 1px 0 0 rgba(255, 255, 255, 0.05),
+      inset -1px 0 0 rgba(0, 0, 0, 0.35);
+    overflow: hidden;
+    transition: all 0.3s ease;
+  }
+
+  /* Brillo metálico cepillado + reflejo superior */
+  .plate::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background:
+      linear-gradient(180deg,
+        rgba(255, 255, 255, 0.14) 0%,
+        rgba(255, 255, 255, 0.04) 8%,
+        transparent 22%),
+      repeating-linear-gradient(90deg,
+        rgba(255, 255, 255, 0.018) 0 1px,
+        transparent 1px 2px),
+      linear-gradient(180deg, rgba(212, 175, 55, 0.18), transparent 30%);
+    pointer-events: none;
+    mix-blend-mode: screen;
+    transition: opacity 0.3s ease;
+  }
+
+  /* Borde dorado biselado (rim) */
+  .plate::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: 14px;
+    padding: 1px;
+    background: linear-gradient(180deg,
+      rgba(212, 175, 55, 0.85) 0%,
+      rgba(212, 175, 55, 0.35) 25%,
+      rgba(120, 140, 180, 0.15) 50%,
+      rgba(212, 175, 55, 0.35) 75%,
+      rgba(212, 175, 55, 0.75) 100%);
+    -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+    -webkit-mask-composite: xor;
+            mask-composite: exclude;
+    pointer-events: none;
+    transition: opacity 0.3s ease;
+    opacity: 0.7;
+  }
+
+  /* HOVER: borde dorado se intensifica + halo dorado */
+  .plate:hover {
+    border-color: rgba(212, 175, 55, 0.95);
+    box-shadow:
+      0 0 0 1px rgba(212, 175, 55, 0.45),
+      0 0 32px -4px rgba(212, 175, 55, 0.55),
+      0 0 60px -8px rgba(212, 175, 55, 0.30),
+      0 18px 38px -12px rgba(0, 0, 0, 0.75),
+      0 6px 14px -6px rgba(0, 0, 0, 0.55),
+      inset 0 1px 0 rgba(255, 255, 255, 0.20),
+      inset 0 -1px 0 rgba(0, 0, 0, 0.55),
+      inset 1px 0 0 rgba(255, 255, 255, 0.08),
+      inset -1px 0 0 rgba(0, 0, 0, 0.35);
+    transform: translateY(-2px);
+  }
+
+  .plate:hover::after {
+    opacity: 1;
+    background: linear-gradient(180deg,
+      rgba(255, 220, 130, 1) 0%,
+      rgba(212, 175, 55, 0.7) 25%,
+      rgba(212, 175, 55, 0.4) 50%,
+      rgba(212, 175, 55, 0.7) 75%,
+      rgba(255, 220, 130, 1) 100%);
+  }
+
+  .plate:hover::before {
+    background:
+      linear-gradient(180deg,
+        rgba(255, 255, 255, 0.20) 0%,
+        rgba(212, 175, 55, 0.10) 8%,
+        transparent 22%),
+      repeating-linear-gradient(90deg,
+        rgba(255, 255, 255, 0.025) 0 1px,
+        transparent 1px 2px),
+      linear-gradient(180deg, rgba(212, 175, 55, 0.35), transparent 30%);
+  }
+
+  /* ====================================================== */
+  /*  SIDEBAR (lámina vertical con tornillos)               */
+  /* ====================================================== */
+  .sidebar {
+    background:
+      linear-gradient(180deg,
+        #1b2541 0%,
+        #121a2f 40%,
+        #0a0f1f 100%);
+    border-right: 1px solid var(--metal-edge);
+    padding: 26px 18px 22px;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    box-shadow:
+      inset -1px 0 0 rgba(255, 255, 255, 0.06),
+      6px 0 22px -8px rgba(0, 0, 0, 0.7);
+  }
+
+  /* Brillo cepillado sidebar */
+  .sidebar::before {
+    content: "";
+    position: absolute; inset: 0;
+    background:
+      linear-gradient(180deg, rgba(255,255,255,0.10) 0%, transparent 14%),
+      repeating-linear-gradient(90deg, rgba(255,255,255,0.02) 0 1px, transparent 1px 3px);
+    pointer-events: none;
+  }
+
+  /* Línea dorada vertical en el borde */
+  .sidebar::after {
+    content: "";
+    position: absolute;
+    top: 0; right: 0; bottom: 0;
+    width: 1px;
+    background: linear-gradient(180deg,
+      transparent 0%,
+      rgba(212, 175, 55, 0.35) 20%,
+      rgba(212, 175, 55, 0.15) 80%,
+      transparent 100%);
+  }
+
+  /* Tornillos decorativos */
+  .screw {
+    position: absolute;
+    width: 10px; height: 10px;
+    border-radius: 50%;
+    background:
+      radial-gradient(circle at 35% 30%, #5a6480 0%, #2a3148 40%, #0d1224 100%);
+    box-shadow:
+      inset 0 1px 0 rgba(255,255,255,0.25),
+      inset 0 -1px 0 rgba(0,0,0,0.6),
+      0 1px 2px rgba(0,0,0,0.6);
+    z-index: 2;
+  }
+  .screw::after {
+    content: "";
+    position: absolute;
+    top: 50%; left: 20%; right: 20%;
+    height: 1px;
+    background: rgba(0,0,0,0.6);
+    transform: translateY(-50%) rotate(35deg);
+  }
+  .screw.tl { top: 12px; left: 12px; }
+  .screw.tr { top: 12px; right: 12px; }
+  .screw.bl { bottom: 12px; left: 12px; }
+  .screw.br { bottom: 12px; right: 12px; }
+
+  .brand {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 6px 8px 26px;
+    position: relative;
+    z-index: 1;
+  }
+
+  .brand-logo {
+    width: 44px; height: 44px;
+    /* cromo biselado */
+    background:
+      linear-gradient(135deg, #4a5673 0%, #2a3148 50%, #161c30 100%);
+    display: grid; place-items: center;
+    color: var(--gold);
+    position: relative;
+    clip-path: polygon(25% 5%, 75% 5%, 100% 50%, 75% 95%, 25% 95%, 0% 50%);
+    box-shadow:
+      inset 0 1px 0 rgba(255,255,255,0.30),
+      inset 0 -1px 0 rgba(0,0,0,0.50),
+      0 4px 10px rgba(0,0,0,0.6);
+    border: 1px solid rgba(212, 175, 55, 0.5);
+  }
+
+  .brand-text { line-height: 1.05; }
+  .brand-text .name {
+    font-family: "Playfair Display", serif;
+    font-size: 24px;
+    font-weight: 600;
+    color: var(--gold);
+    letter-spacing: 0.5px;
+    text-shadow: 0 1px 0 rgba(0,0,0,0.6);
+  }
+  .brand-text .sub {
+    font-size: 9px;
+    letter-spacing: 2.2px;
+    color: var(--text-dim);
+    text-transform: uppercase;
+    margin-top: 4px;
+  }
+
+  .nav {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    margin-top: 6px;
+    position: relative;
+    z-index: 1;
+  }
+
+  .nav-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 14px;
+    border-radius: 10px;
+    cursor: pointer;
+    color: var(--text-dim);
+    transition: all 0.3s ease;
+    position: relative;
+    border: 1px solid rgba(212, 175, 55, 0.40);
+    background: linear-gradient(180deg,
+      rgba(212, 175, 55, 0.04) 0%,
+      rgba(0, 0, 0, 0.15) 100%);
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.08),
+      inset 0 -1px 0 rgba(0, 0, 0, 0.40);
+  }
+
+  .nav-item:hover {
+    color: var(--gold);
+    border-color: rgba(212, 175, 55, 0.95);
+    background: linear-gradient(180deg,
+      rgba(212, 175, 55, 0.10) 0%,
+      rgba(212, 175, 55, 0.02) 100%);
+    box-shadow:
+      0 0 0 1px rgba(212, 175, 55, 0.35),
+      0 0 18px -2px rgba(212, 175, 55, 0.45),
+      inset 0 1px 0 rgba(255, 255, 255, 0.14),
+      inset 0 -1px 0 rgba(0, 0, 0, 0.45);
+    transform: translateX(2px);
+  }
+
+  .nav-item.active {
+    background:
+      linear-gradient(180deg,
+        rgba(212, 175, 55, 0.18) 0%,
+        rgba(212, 175, 55, 0.06) 100%);
+    color: var(--gold);
+    border: 1px solid rgba(212, 175, 55, 0.95);
+    box-shadow:
+      0 0 0 1px rgba(212, 175, 55, 0.35),
+      0 0 22px -2px rgba(212, 175, 55, 0.55),
+      inset 0 1px 0 rgba(255, 255, 255, 0.18),
+      inset 0 -1px 0 rgba(0, 0, 0, 0.45);
+  }
+
+  .nav-item.active::before {
+    content: "";
+    position: absolute;
+    left: -1px; top: 8px; bottom: 8px;
+    width: 3px;
+    background: linear-gradient(180deg, var(--gold-soft), var(--gold-deep));
+    border-radius: 2px;
+    box-shadow: 0 0 8px var(--gold);
+  }
+
+  .nav-left { display: flex; align-items: center; gap: 12px; }
+  .nav-icon { width: 20px; height: 20px; color: currentColor; }
+  .nav-label { font-size: 14px; font-weight: 500; }
+  .nav-num { font-size: 11px; color: var(--text-mute); letter-spacing: 0.5px; }
+  .nav-item.active .nav-num { color: var(--gold-deep); }
+
+  .sidebar-spacer { flex: 1; }
+
+  .user {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 10px;
+    border-radius: 10px;
+    background: linear-gradient(180deg, rgba(255,255,255,0.03), rgba(0,0,0,0.20));
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    box-shadow:
+      inset 0 1px 0 rgba(255,255,255,0.05),
+      inset 0 -1px 0 rgba(0,0,0,0.35);
+    margin-top: 12px;
+    position: relative;
+    z-index: 1;
+  }
+
+  .avatar {
+    width: 38px; height: 38px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--gold-soft), var(--gold-deep));
+    color: #0a0f1f;
+    display: grid; place-items: center;
+    font-weight: 700;
+    box-shadow:
+      inset 0 1px 0 rgba(255,255,255,0.5),
+      inset 0 -1px 0 rgba(0,0,0,0.3),
+      0 2px 6px rgba(0,0,0,0.5);
+  }
+
+  .user-info { flex: 1; min-width: 0; }
+  .user-name { font-size: 13px; font-weight: 600; color: var(--text); }
+  .user-email { font-size: 11px; color: var(--text-mute); }
+
+  /* ====================================================== */
+  /*  MAIN                                                   */
+  /* ====================================================== */
+  .main {
+    padding: 28px 36px 40px;
+    min-width: 0;
+  }
+
+  .topbar {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 24px;
+    margin-bottom: 26px;
+  }
+
+  .hello {
+    font-family: "Playfair Display", serif;
+    font-size: 38px;
+    font-weight: 600;
+    color: var(--text);
+    letter-spacing: 0.3px;
+    text-shadow: 0 1px 0 rgba(0,0,0,0.4);
+  }
+  .hello .wave { display: inline-block; transform: translateY(2px); margin-left: 4px; }
+  .hello-sub {
+    color: var(--text-dim);
+    font-size: 14px;
+    margin-top: 6px;
+  }
+
+  .top-actions { display: flex; align-items: center; gap: 12px; }
+
+  .bell {
+    position: relative;
+    width: 42px; height: 42px;
+    border-radius: 10px;
+    border: 1px solid var(--metal-edge);
+    background: linear-gradient(180deg, #232d48 0%, #131a2e 100%);
+    display: grid; place-items: center;
+    color: var(--text-dim);
+    cursor: pointer;
+    box-shadow:
+      inset 0 1px 0 rgba(255,255,255,0.10),
+      inset 0 -1px 0 rgba(0,0,0,0.50),
+      0 4px 10px rgba(0,0,0,0.5);
+  }
+  .bell:hover { color: var(--gold); }
+
+  .bell-badge {
+    position: absolute;
+    top: -4px; right: -4px;
+    background: linear-gradient(135deg, var(--gold-soft), var(--gold));
+    color: #0a0f1f;
+    font-size: 10px;
+    font-weight: 700;
+    width: 18px; height: 18px;
+    border-radius: 50%;
+    display: grid; place-items: center;
+    border: 2px solid var(--bg-deep);
+    box-shadow: 0 0 10px rgba(212,175,55,0.6);
+  }
+
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 16px;
+    border-radius: 10px;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    border: 1px solid transparent;
+    font-family: inherit;
+  }
+
+  .btn-outline {
+    color: var(--gold);
+    background: linear-gradient(180deg, #1c2540 0%, #0f1628 100%);
+    border-color: rgba(212, 175, 55, 0.5);
+    box-shadow:
+      inset 0 1px 0 rgba(255,255,255,0.10),
+      inset 0 -1px 0 rgba(0,0,0,0.50),
+      0 4px 12px rgba(0,0,0,0.4);
+  }
+  .btn-outline:hover {
+    background: linear-gradient(180deg, #243054 0%, #131c34 100%);
+    box-shadow:
+      inset 0 1px 0 rgba(255,255,255,0.15),
+      0 0 22px rgba(212, 175, 55, 0.30);
+  }
+
+  .btn-gold {
+    color: #0a0f1f;
+    background: linear-gradient(180deg, #f3d77a 0%, #d4af37 50%, #a98628 100%);
+    border-color: rgba(255, 220, 130, 0.6);
+    font-weight: 700;
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.55),
+      inset 0 -1px 0 rgba(0, 0, 0, 0.35),
+      0 6px 18px rgba(212, 175, 55, 0.30);
+    text-shadow: 0 1px 0 rgba(255, 255, 255, 0.25);
+  }
+  .btn-gold:hover { box-shadow: 0 0 26px rgba(212, 175, 55, 0.5); }
+
+  /* ====================================================== */
+  /*  KPI cards                                              */
+  /* ====================================================== */
+  .kpi-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 18px;
+    margin-bottom: 18px;
+  }
+
+  .card {
+    padding: 22px 24px;
+    position: relative;
+    z-index: 1;
+  }
+
+  .kpi {
+    display: flex;
+    align-items: center;
+    gap: 18px;
+    position: relative;
+  }
+
+  .kpi-icon {
+    width: 64px; height: 64px;
+    border-radius: 50%;
+    background:
+      radial-gradient(circle at 35% 30%, #5a4a1e 0%, #2a2210 60%, #15110a 100%);
+    border: 1px solid rgba(212, 175, 55, 0.55);
+    display: grid; place-items: center;
+    color: var(--gold);
+    box-shadow:
+      inset 0 2px 0 rgba(255, 220, 130, 0.30),
+      inset 0 -2px 0 rgba(0, 0, 0, 0.50),
+      0 4px 12px rgba(0, 0, 0, 0.55);
+  }
+
+  .kpi-label { font-size: 13px; color: var(--text-dim); }
+  .kpi-value {
+    font-family: "Playfair Display", serif;
+    font-size: 38px;
+    font-weight: 600;
+    color: var(--text);
+    line-height: 1.1;
+    margin-top: 4px;
+    text-shadow: 0 1px 0 rgba(0,0,0,0.4);
+  }
+  .kpi-delta {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 12px;
+    color: var(--green);
+    margin-top: 8px;
+    padding: 2px 8px;
+    border-radius: 999px;
+    background: var(--green-soft);
+    border: 1px solid rgba(74, 222, 128, 0.3);
+  }
+  .kpi-delta .vs { color: var(--text-mute); margin-left: 4px; font-weight: 400; }
+
+  /* ====================================================== */
+  /*  PANELS                                                 */
+  /* ====================================================== */
+  .row-2 {
+    display: grid;
+    grid-template-columns: 1.05fr 1.15fr;
+    gap: 18px;
+  }
+
+  .panel-head {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    margin-bottom: 18px;
+    position: relative;
+    z-index: 1;
+  }
+  .panel-title {
+    font-family: "Playfair Display", serif;
+    font-size: 22px;
+    font-weight: 600;
+    color: var(--text);
+    text-shadow: 0 1px 0 rgba(0,0,0,0.4);
+  }
+  .panel-sub { font-size: 13px; color: var(--text-dim); margin-top: 4px; }
+
+  .map-area {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 18px;
+    align-items: center;
+    position: relative;
+    z-index: 1;
+  }
+
+  .map {
+    width: 100%;
+    height: 280px;
+    position: relative;
+  }
+  .map svg { width: 100%; height: 100%; }
+
+  .rank { display: flex; flex-direction: column; gap: 10px; }
+  .rank-title {
+    font-size: 13px;
+    color: var(--text-dim);
+    margin-bottom: 4px;
+    border-bottom: 1px solid var(--line-soft);
+    padding-bottom: 8px;
+  }
+
+  .rank-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 6px 0;
+  }
+  .rank-num {
+    width: 22px; height: 22px;
+    border-radius: 50%;
+    background: linear-gradient(180deg, #3a3255 0%, #1a1428 100%);
+    color: var(--gold);
+    font-size: 11px;
+    font-weight: 700;
+    display: grid; place-items: center;
+    border: 1px solid rgba(212, 175, 55, 0.45);
+    box-shadow:
+      inset 0 1px 0 rgba(255,255,255,0.15),
+      inset 0 -1px 0 rgba(0,0,0,0.4);
+  }
+  .rank-name { flex: 1; font-size: 14px; color: var(--text); }
+  .rank-pct {
+    font-family: "Playfair Display", serif;
+    font-size: 16px;
+    color: var(--text);
+    font-weight: 500;
+  }
+
+  .panel-foot {
+    margin-top: 18px;
+    padding-top: 14px;
+    border-top: 1px solid var(--line-soft);
+    position: relative;
+    z-index: 1;
+  }
+  .link {
+    color: var(--gold);
+    font-size: 13px;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    cursor: pointer;
+    text-decoration: none;
+  }
+  .link:hover { color: var(--gold-soft); }
+
+  /* ====================================================== */
+  /*  CHART                                                  */
+  /* ====================================================== */
+  .chart {
+    height: 220px;
+    position: relative;
+    margin: 4px 0 16px;
+    z-index: 1;
+  }
+  .chart svg { width: 100%; height: 100%; display: block; }
+
+  .legend {
+    display: flex;
+    align-items: center;
+    gap: 18px;
+    font-size: 12px;
+    color: var(--text-dim);
+    margin-top: 4px;
+    position: relative;
+    z-index: 1;
+  }
+  .dot {
+    width: 10px; height: 10px;
+    border-radius: 50%;
+    display: inline-block;
+    margin-right: 6px;
+    vertical-align: middle;
+  }
+  .dot.gold { background: var(--gold); box-shadow: 0 0 8px var(--gold); }
+  .dot.gold-soft { background: var(--gold-soft); }
+  .dot.gray { background: #4a5468; }
+
+  /* ====================================================== */
+  /*  Responsive                                            */
+  /* ====================================================== */
+  @media (max-width: 1100px) {
+    .row-2 { grid-template-columns: 1fr; }
+    .kpi-grid { grid-template-columns: 1fr; }
+  }
+  @media (max-width: 820px) {
+    .app { grid-template-columns: 1fr; }
+    .sidebar { display: none; }
+    .map-area { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+<div class="app">
+
+  <!-- ============ SIDEBAR ============ -->
+  <aside class="sidebar">
+    <span class="screw tl"></span>
+    <span class="screw tr"></span>
+    <span class="screw bl"></span>
+    <span class="screw br"></span>
+
+    <div class="brand">
+      <div class="brand-logo">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6">
+          <path d="M12 3l8 4.5v9L12 21l-8-4.5v-9L12 3z"/>
+          <path d="M12 12l8-4.5M12 12L4 7.5M12 12v9"/>
+        </svg>
+      </div>
+      <div class="brand-text">
+        <div class="name">ALBA</div>
+        <div class="sub">Inteligencia Laboral</div>
+      </div>
+    </div>
+
+    <nav class="nav">
+      <div class="nav-item active">
+        <div class="nav-left">
+          <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+          <span class="nav-label">Inicio</span>
+        </div>
+        <span class="nav-num">01</span>
+      </div>
+
+      <div class="nav-item">
+        <div class="nav-left">
+          <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg>
+          <span class="nav-label">Observatorio</span>
+        </div>
+        <span class="nav-num">02</span>
+      </div>
+
+      <div class="nav-item">
+        <div class="nav-left">
+          <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 17l6-6 4 4 8-8"/><path d="M14 7h7v7"/></svg>
+          <span class="nav-label">Simulador</span>
+        </div>
+        <span class="nav-num">03</span>
+      </div>
+
+      <div class="nav-item">
+        <div class="nav-left">
+          <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M2 9l10-5 10 5-10 5L2 9z"/><path d="M6 11v5c3 2 9 2 12 0v-5"/></svg>
+          <span class="nav-label">Alerta Curricular</span>
+        </div>
+        <span class="nav-num">04</span>
+      </div>
+
+      <div class="nav-item">
+        <div class="nav-left">
+          <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1.5" fill="currentColor"/></svg>
+          <span class="nav-label">Match</span>
+        </div>
+        <span class="nav-num">05</span>
+      </div>
+
+      <div class="nav-item">
+        <div class="nav-left">
+          <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></svg>
+          <span class="nav-label">Coach IA</span>
+        </div>
+        <span class="nav-num">06</span>
+      </div>
+    </nav>
+
+    <div class="sidebar-spacer"></div>
+
+    <div class="user">
+      <div class="avatar">M</div>
+      <div class="user-info">
+        <div class="user-name">María González</div>
+        <div class="user-email">maria@correo.com</div>
+      </div>
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color: var(--text-mute)"><polyline points="6 9 12 15 18 9"/></svg>
+    </div>
+  </aside>
+
+  <!-- ============ MAIN ============ -->
+  <main class="main">
+
+    <!-- Top bar -->
+    <header class="topbar">
+      <div>
+        <h1 class="hello">Hola, María<span class="wave">👋</span></h1>
+        <p class="hello-sub">Bienvenida a tu plataforma de inteligencia laboral.</p>
+      </div>
+      <div class="top-actions">
+        <button class="bell" aria-label="Notificaciones">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.7 21a2 2 0 0 1-3.4 0"/></svg>
+          <span class="bell-badge">3</span>
+        </button>
+        <button class="btn btn-outline">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          Exportar reporte
+        </button>
+      </div>
+    </header>
+
+    <!-- KPIs -->
+    <section class="kpi-grid">
+      <div class="plate card">
+        <div class="kpi">
+          <div class="kpi-icon">
+            <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+          </div>
+          <div>
+            <div class="kpi-label">Perfiles analizados</div>
+            <div class="kpi-value">12,458</div>
+            <span class="kpi-delta">↑ 12.5%<span class="vs"> vs. mes anterior</span></span>
+          </div>
+        </div>
+      </div>
+
+      <div class="plate card">
+        <div class="kpi">
+          <div class="kpi-icon">
+            <svg width="30" height="30" viewBox="0 0 24 24" fill="currentColor"><polygon points="12 2 15 9 22 9.3 16.5 14 18.5 21 12 17 5.5 21 7.5 14 2 9.3 9 9"/></svg>
+          </div>
+          <div>
+            <div class="kpi-label">Match promedio</div>
+            <div class="kpi-value">78%</div>
+            <span class="kpi-delta">↑ 6%<span class="vs"> vs. mes anterior</span></span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Observatorio + Simulador -->
+    <section class="row-2">
+
+      <!-- Observatorio -->
+      <div class="plate card">
+        <div class="panel-head">
+          <div>
+            <h2 class="panel-title">Observatorio Laboral</h2>
+            <p class="panel-sub">Tendencias del mercado laboral</p>
+          </div>
+        </div>
+
+        <div class="map-area">
+          <div class="map">
+            <svg viewBox="0 0 300 360" xmlns="http://www.w3.org/2000/svg">
+              <defs>
+                <radialGradient id="cityGlow" cx="50%" cy="50%" r="50%">
+                  <stop offset="0%" stop-color="#ffd766" stop-opacity="0.95"/>
+                  <stop offset="40%" stop-color="#d4af37" stop-opacity="0.4"/>
+                  <stop offset="100%" stop-color="#d4af37" stop-opacity="0"/>
+                </radialGradient>
+                <linearGradient id="colombia" x1="0%" y1="0%" x2="100%" y2="100%">
+                  <stop offset="0%" stop-color="#1a2542"/>
+                  <stop offset="100%" stop-color="#0e1730"/>
+                </linearGradient>
+              </defs>
+
+              <path d="M120,20 L160,18 L175,30 L185,55 L210,70 L230,95 L240,115
+                       L235,135 L245,150 L255,170 L240,185 L230,210 L235,235
+                       L225,260 L210,285 L195,310 L175,330 L150,345 L120,340
+                       L95,320 L80,295 L70,265 L60,240 L55,210 L45,180 L40,155
+                       L50,130 L60,105 L75,80 L90,55 L105,35 Z"
+                    fill="url(#colombia)" stroke="#d4af37" stroke-width="1.2" stroke-opacity="0.5"/>
+
+              <path d="M120,20 L160,18 M175,30 L185,55 M210,70 L230,95 M60,105 L75,80
+                       M120,90 L170,100 M90,140 L160,150 M80,180 L180,190 M100,220 L200,225
+                       M110,260 L190,265 M130,300 L180,300 M150,345 L120,340"
+                    stroke="#d4af37" stroke-width="0.5" stroke-opacity="0.25" fill="none"/>
+
+              <g>
+                <circle cx="155" cy="120" r="22" fill="url(#cityGlow)"/>
+                <circle cx="155" cy="120" r="3" fill="#ffd766"/>
+              </g>
+              <g>
+                <circle cx="125" cy="180" r="14" fill="url(#cityGlow)" opacity="0.85"/>
+                <circle cx="125" cy="180" r="2.5" fill="#ffd766"/>
+              </g>
+              <g>
+                <circle cx="180" cy="100" r="11" fill="url(#cityGlow)" opacity="0.8"/>
+                <circle cx="180" cy="100" r="2" fill="#ffd766"/>
+              </g>
+              <g>
+                <circle cx="145" cy="240" r="10" fill="url(#cityGlow)" opacity="0.7"/>
+                <circle cx="145" cy="240" r="2" fill="#ffd766"/>
+              </g>
+              <g>
+                <circle cx="105" cy="220" r="9" fill="url(#cityGlow)" opacity="0.7"/>
+                <circle cx="105" cy="220" r="1.8" fill="#ffd766"/>
+              </g>
+              <g>
+                <circle cx="170" cy="270" r="8" fill="url(#cityGlow)" opacity="0.6"/>
+                <circle cx="170" cy="270" r="1.8" fill="#ffd766"/>
+              </g>
+              <g>
+                <circle cx="135" cy="300" r="7" fill="url(#cityGlow)" opacity="0.5"/>
+                <circle cx="135" cy="300" r="1.5" fill="#ffd766"/>
+              </g>
+              <g>
+                <circle cx="90" cy="260" r="7" fill="url(#cityGlow)" opacity="0.5"/>
+                <circle cx="90" cy="260" r="1.5" fill="#ffd766"/>
+              </g>
+            </svg>
+          </div>
+
+          <div class="rank">
+            <div class="rank-title">Áreas con mayor demanda</div>
+            <div class="rank-item">
+              <span class="rank-num">1</span>
+              <span class="rank-name">Tecnología</span>
+              <span class="rank-pct">23.4%</span>
+            </div>
+            <div class="rank-item">
+              <span class="rank-num">2</span>
+              <span class="rank-name">Ingeniería</span>
+              <span class="rank-pct">18.7%</span>
+            </div>
+            <div class="rank-item">
+              <span class="rank-num">3</span>
+              <span class="rank-name">Salud</span>
+              <span class="rank-pct">14.2%</span>
+            </div>
+            <div class="rank-item">
+              <span class="rank-num">4</span>
+              <span class="rank-name">Ventas</span>
+              <span class="rank-pct">9.8%</span>
+            </div>
+            <div class="rank-item">
+              <span class="rank-num">5</span>
+              <span class="rank-name">Educación</span>
+              <span class="rank-pct">7.1%</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="panel-foot">
+          <a class="link" href="#">Ver observatorio
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+          </a>
+        </div>
+      </div>
+
+      <!-- Simulador -->
+      <div class="plate card">
+        <div class="panel-head">
+          <div>
+            <h2 class="panel-title">Simulador de escenarios</h2>
+            <p class="panel-sub">Explora posibles futuros</p>
+          </div>
+          <button class="btn btn-gold">Ir al simulador</button>
+        </div>
+
+        <div class="chart">
+          <svg viewBox="0 0 600 240" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+              <linearGradient id="goldFill" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stop-color="#d4af37" stop-opacity="0.35"/>
+                <stop offset="100%" stop-color="#d4af37" stop-opacity="0"/>
+              </linearGradient>
+              <linearGradient id="goldSoftFill" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stop-color="#e6c66a" stop-opacity="0.18"/>
+                <stop offset="100%" stop-color="#e6c66a" stop-opacity="0"/>
+              </linearGradient>
+            </defs>
+
+            <g stroke="rgba(255,255,255,0.05)" stroke-width="1">
+              <line x1="0" y1="20"  x2="600" y2="20"/>
+              <line x1="0" y1="80"  x2="600" y2="80"/>
+              <line x1="0" y1="140" x2="600" y2="140"/>
+              <line x1="0" y1="200" x2="600" y2="200"/>
+            </g>
+
+            <g fill="#6b7390" font-size="10" font-family="Inter">
+              <text x="-2" y="22" text-anchor="end">100</text>
+              <text x="-2" y="82" text-anchor="end">75</text>
+              <text x="-2" y="142" text-anchor="end">50</text>
+              <text x="-2" y="202" text-anchor="end">25</text>
+              <text x="-2" y="232" text-anchor="end">0</text>
+            </g>
+
+            <path d="M0,180 C50,178 100,182 150,176 C200,170 250,178 300,172 C350,166 400,172 450,168 C500,164 550,170 600,168"
+                  fill="none" stroke="#4a5468" stroke-width="1.5" stroke-dasharray="2 3"/>
+
+            <path d="M0,140 C50,130 100,140 150,128 C200,116 250,124 300,110 C350,96 400,108 450,100 C500,92 550,102 600,90 L600,240 L0,240 Z"
+                  fill="url(#goldSoftFill)"/>
+            <path d="M0,140 C50,130 100,140 150,128 C200,116 250,124 300,110 C350,96 400,108 450,100 C500,92 550,102 600,90"
+                  fill="none" stroke="#e6c66a" stroke-width="2.2"/>
+
+            <path d="M0,100 C50,80 100,100 150,82 C200,64 250,84 300,68 C350,52 400,72 450,58 C500,44 550,62 600,46 L600,240 L0,240 Z"
+                  fill="url(#goldFill)"/>
+            <path d="M0,100 C50,80 100,100 150,82 C200,64 250,84 300,68 C350,52 400,72 450,58 C500,44 550,62 600,46"
+                  fill="none" stroke="#d4af37" stroke-width="2.2"/>
+
+            <g fill="#d4af37">
+              <circle cx="0"   cy="100" r="3"/>
+              <circle cx="100" cy="100" r="3"/>
+              <circle cx="200" cy="64"  r="3"/>
+              <circle cx="300" cy="68"  r="3"/>
+              <circle cx="400" cy="72"  r="3"/>
+              <circle cx="500" cy="44"  r="3"/>
+              <circle cx="600" cy="46"  r="3"/>
+            </g>
+
+            <g fill="#6b7390" font-size="10" font-family="Inter" text-anchor="middle">
+              <text x="20"  y="232">May</text>
+              <text x="120" y="232">Jun</text>
+              <text x="220" y="232">Jul</text>
+              <text x="320" y="232">Ago</text>
+              <text x="420" y="232">Sep</text>
+              <text x="520" y="232">Oct</text>
+            </g>
+          </svg>
+        </div>
+
+        <div class="legend">
+          <span><span class="dot gold"></span>Escenario optimista</span>
+          <span><span class="dot gold-soft"></span>Escenario base</span>
+          <span><span class="dot gray"></span>Escenario pesimista</span>
+        </div>
+      </div>
+
+    </section>
+  </main>
+</div>
+</body>
+</html>
