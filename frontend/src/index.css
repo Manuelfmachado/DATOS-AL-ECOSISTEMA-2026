@@ -262,6 +262,10 @@ body::before {
   box-shadow: inset -1px 0 0 rgba(255, 255, 255, 0.06), 6px 0 22px -8px rgba(0, 0, 0, 0.7);
 }
 
+.sidebar-pushed {
+  margin-left: 320px;
+}
+
 .sidebar::before {
   content: "";
   position: absolute; inset: 0;
@@ -631,9 +635,16 @@ body::before {
   .row-2 { grid-template-columns: 1fr; }
   .kpi-grid { grid-template-columns: 1fr; }
 }
+
+@media (max-width: 1024px) {
+  .sidebar-pushed { margin-left: 280px; }
+}
+
 @media (max-width: 820px) {
   .app { grid-template-columns: 1fr; }
   .sidebar { display: none; }
+  .sidebar-pushed { margin-left: 0; }
+  .main-pushed { margin-left: 0; }
   .map-area { grid-template-columns: 1fr; }
 }
 
@@ -745,3 +756,85 @@ select option { background: var(--metal-mid) !important; color: var(--text) !imp
 
 /* Focus ring dorado */
 .focus\:ring-alba-500:focus { box-shadow: 0 0 0 2px rgba(212, 175, 55, 0.25) !important; }
+
+/* ============================================================================
+   SIDEBAR CHAT IA
+   ============================================================================ */
+.sidebar-chat {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 320px;
+  height: 100vh;
+  background: linear-gradient(180deg, #0d1324 0%, #070b17 100%);
+  border-right: 1px solid rgba(212, 175, 55, 0.35);
+  box-shadow: 4px 0 24px rgba(0, 0, 0, 0.5);
+  z-index: 60;
+  display: flex;
+  flex-direction: column;
+  padding: 16px;
+}
+
+.sidebar-chat-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-bottom: 12px;
+  border-bottom: 1px solid rgba(212, 175, 55, 0.25);
+  margin-bottom: 12px;
+}
+
+.sidebar-chat-messages {
+  flex: 1;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding-right: 4px;
+}
+
+.sidebar-chat-bubble {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+}
+
+.sidebar-chat-bubble.user {
+  flex-direction: row-reverse;
+}
+
+.sidebar-chat-bubble-content {
+  max-width: calc(100% - 28px);
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  padding: 10px 12px;
+}
+
+.sidebar-chat-bubble.assistant .sidebar-chat-bubble-content {
+  background: rgba(212, 175, 55, 0.08);
+  border-color: rgba(212, 175, 55, 0.25);
+}
+
+.sidebar-chat-input {
+  padding-top: 12px;
+  border-top: 1px solid rgba(212, 175, 55, 0.25);
+  margin-top: 12px;
+}
+
+.sidebar-chat-messages::-webkit-scrollbar {
+  width: 6px;
+}
+
+.sidebar-chat-messages::-webkit-scrollbar-thumb {
+  background: rgba(212, 175, 55, 0.35);
+  border-radius: 3px;
+}
+
+@media (max-width: 1024px) {
+  .sidebar-chat { width: 280px; }
+}
+
+@media (max-width: 768px) {
+  .sidebar-chat { width: 100vw; z-index: 100; }
+}

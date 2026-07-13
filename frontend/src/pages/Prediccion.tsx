@@ -312,22 +312,22 @@ export default function Prediccion() {
                     </div>
 
                     {/* Tarjetas de todos los sectores */}
-                    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       {todosSectores.map((s: any, i: number) => (
-                        <div key={s.sector} className="plate card p-4 text-center group relative">
-                          <p className="text-lg font-bold text-white mb-2">{s.sector}</p>
-                          <div className="space-y-2">
-                            <div>
-                              <p className="kpi-label uppercase tracking-wider mb-1">Empleados en {anioBase}</p>
-                              <p className="text-xl font-bold text-white font-display">{Math.round(s.empleo_actual).toLocaleString('es-CO')}</p>
+                        <div key={s.sector} className="plate card p-6 text-center group relative">
+                          <p className="text-2xl font-bold text-white mb-4 font-display">{s.sector}</p>
+                          <div className="space-y-4">
+                            <div className="flex flex-col">
+                              <p className="text-xs text-slate-400 uppercase tracking-wider mb-1">Empleados en {anioBase}</p>
+                              <p className="text-3xl font-bold text-gold-400 font-display">{Math.round(s.empleo_actual).toLocaleString('es-CO')}</p>
                             </div>
-                            <div>
-                              <p className="kpi-label uppercase tracking-wider mb-1">Proyección 2035</p>
-                              <p className="text-xl font-bold text-white font-display">{Math.round(s.empleo_10y).toLocaleString('es-CO')}</p>
+                            <div className="flex flex-col">
+                              <p className="text-xs text-slate-400 uppercase tracking-wider mb-1">Proyección 2035</p>
+                              <p className="text-3xl font-bold text-gold-400 font-display">{Math.round(s.empleo_10y).toLocaleString('es-CO')}</p>
                             </div>
-                            <div className="pt-2 border-t border-gold-500/20">
-                              <p className="kpi-label uppercase tracking-wider mb-1">Crecimiento</p>
-                              <p className="text-lg font-bold" style={{ color: COLORS[i % COLORS.length] }}>
+                            <div className="pt-4 border-t border-gold-500/20">
+                              <p className="text-xs text-slate-400 uppercase tracking-wider mb-1">Crecimiento</p>
+                              <p className="text-2xl font-bold" style={{ color: COLORS[i % COLORS.length] }}>
                                 +{s.variacion_10y_pct}%
                               </p>
                             </div>

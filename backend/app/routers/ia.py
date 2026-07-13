@@ -20,6 +20,7 @@ class AnalizarWidgetRequest(BaseModel):
     filters: dict[str, Any] | None = None  # Filtros activos
     data: list[dict[str, Any]] | dict[str, Any] | None = None  # Datos del widget
     question: str  # Pregunta del usuario
+    historial: list[dict[str, Any]] | None = None  # Historial de la conversación
 
 
 class AnalizarWidgetResponse(BaseModel):
@@ -43,7 +44,14 @@ Analiza los datos del widget proporcionados y responde de forma clara, concisa y
 Si hay tendencias o patrones, identifícalos. Si hay anomalías, explícalas.
 Usa datos específicos del widget para respaldar tu respuesta.
 Si no hay datos suficientes, indícalo claramente.
-Responde en español de Colombia."""
+Responde en español de Colombia.
+Puedes usar Markdown básico (**negrita**, *cursiva*) para resaltar puntos importantes."""
+
+    historial_txt = ""
+    if req.historial:
+        historial_txt = "\n\n## Historial de la conversación\n" + "\n".join(
+            [f"- **{'Usuario' if h.get('role') == 'user' else 'ALBA'}**: {h.get('content', '')}" for h in req.historial]
+        )
 
     user = f"""## Contexto del widget
 - **Dashboard**: {req.dashboard}
@@ -52,7 +60,7 @@ Responde en español de Colombia."""
 - **Filtros activos**: {req.filters or "Ninguno"}
 
 ## Datos del widget
-{req.data}
+{req.data}{historial_txt}
 
 ## Pregunta del usuario
 {req.question}

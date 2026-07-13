@@ -1,5 +1,5 @@
-import { useState } from 'react'
-import AnalizarIAModal from './AnalizarIAModal'
+import { useChat } from '../context/ChatContext'
+import albaChatBotSvg from '../../SVG/ALBA CHAT BOT.svg?raw'
 
 interface AnalizarIAButtonProps {
   dashboard: string
@@ -18,28 +18,16 @@ export default function AnalizarIAButton({
   data,
   className = '',
 }: AnalizarIAButtonProps) {
-  const [isOpen, setIsOpen] = useState(false)
+  const { openChat } = useChat()
 
   return (
-    <>
-      <button
-        onClick={() => setIsOpen(true)}
-        className={`inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-gold-400 bg-gold-500/10 border border-gold-500/30 rounded-lg hover:bg-gold-500/20 hover:border-gold-500/50 transition-all ${className}`}
-        title="Analizar con IA"
-      >
-        <span>🤖</span>
-        <span>Analizar con IA</span>
-      </button>
-
-      <AnalizarIAModal
-        isOpen={isOpen}
-        onClose={() => setIsOpen(false)}
-        dashboard={dashboard}
-        widgetTitle={widgetTitle}
-        widgetType={widgetType}
-        filters={filters}
-        data={data}
-      />
-    </>
+    <button
+      onClick={() => openChat({ dashboard, widgetTitle, widgetType, filters, data })}
+      className={`inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-gold-400 bg-gold-500/10 border border-gold-500/30 rounded-lg hover:bg-gold-500/20 hover:border-gold-500/50 transition-all ${className}`}
+      title="Analizar con IA"
+    >
+      <span className="nav-svg-icon flex items-center justify-center" dangerouslySetInnerHTML={{ __html: albaChatBotSvg }} style={{ width: 32, height: 32 }} />
+      <span>Analizar con IA</span>
+    </button>
   )
 }
