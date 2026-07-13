@@ -7,6 +7,7 @@ import {
 import api from '../services/api'
 import FuentesBadge from '../components/FuentesBadge'
 import { formatCOP } from '../utils/format'
+import AnalizarIAButton from '../components/AnalizarIAButton'
 
 function compactNum(n: number): string {
   return Math.round(n).toLocaleString('es-CO')
@@ -173,10 +174,10 @@ export default function Prediccion() {
     <div className="animate-fade-in space-y-5">
       {/* Header */}
       <div>
-        <h1 className="text-3xl font-bold text-white font-display">
+        <h1 className="text-5xl font-bold text-white font-display">
           Predicción IA
         </h1>
-        <p className="text-slate-400 text-sm mt-1">
+        <p className="text-base text-white font-semibold mt-1">
           Proyecciones del mercado laboral colombiano a 5 y 10 años. Basadas en datos del Banco Mundial con Chronos T5.
         </p>
       </div>
@@ -203,10 +204,10 @@ export default function Prediccion() {
               <button
                 key={t.key}
                 onClick={() => setTab(t.key)}
-                className={`flex-1 flex items-center justify-center gap-2 py-2.5 text-sm font-semibold rounded-lg transition-all ${
+                className={`flex-1 py-3 text-xl font-bold rounded-lg transition-all ${
                   tab === t.key
-                    ? 'bg-gradient-to-b from-amber-300/20 to-amber-700/10 text-gold-400 border border-amber-500/50'
-                    : 'text-slate-400 hover:text-gold-400 hover:bg-white/[0.04] border border-transparent'
+                    ? 'bg-gradient-to-b from-amber-300/20 to-amber-700/10 text-white border border-amber-500/50'
+                    : 'text-white hover:text-gold-400 hover:bg-white/[0.04] border border-transparent'
                 }`}
               >
                  {t.label}
@@ -274,8 +275,17 @@ export default function Prediccion() {
                     {/* Crecimiento proyectado */}
                     <div className="plate card p-5">
                       <div className="flex items-center justify-between mb-4 pb-2 border-b border-gold-500/20">
-                        <h2 className="text-xl font-bold text-white font-display">Crecimiento proyectado a 10 años</h2>
-                        <span className="text-sm text-gold-400 uppercase tracking-wider">GEIH + Chronos T5</span>
+                        <h2 className="text-2xl font-bold text-white font-display">Crecimiento proyectado a 10 años</h2>
+                        <div className="flex items-center gap-3">
+                          <AnalizarIAButton
+                            dashboard="prediccion"
+                            widgetTitle="Crecimiento proyectado a 10 años"
+                            widgetType="grafico"
+                            data={barData}
+                            filters={{ anioBase, periodoHistorico }}
+                          />
+                          <span className="text-sm text-gold-400 uppercase tracking-wider">GEIH + Chronos T5</span>
+                        </div>
                       </div>
                       <p className="text-xs text-slate-500 mb-4">
                         10 macrosectores colombianos. Ordenados por crecimiento esperado {anioBase}-2035.
@@ -305,18 +315,18 @@ export default function Prediccion() {
                     <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
                       {todosSectores.map((s: any, i: number) => (
                         <div key={s.sector} className="plate card p-4 text-center group relative">
-                          <p className="text-xs text-slate-400 uppercase tracking-wider mb-3 font-semibold">{s.sector}</p>
+                          <p className="text-lg font-bold text-white mb-2">{s.sector}</p>
                           <div className="space-y-2">
                             <div>
-                              <p className="text-xs text-slate-500 mb-1">Empleados en {anioBase}</p>
+                              <p className="kpi-label uppercase tracking-wider mb-1">Empleados en {anioBase}</p>
                               <p className="text-xl font-bold text-white font-display">{Math.round(s.empleo_actual).toLocaleString('es-CO')}</p>
                             </div>
                             <div>
-                              <p className="text-xs text-slate-500 mb-1">Proyección 2035</p>
+                              <p className="kpi-label uppercase tracking-wider mb-1">Proyección 2035</p>
                               <p className="text-xl font-bold text-white font-display">{Math.round(s.empleo_10y).toLocaleString('es-CO')}</p>
                             </div>
                             <div className="pt-2 border-t border-gold-500/20">
-                              <p className="text-xs text-slate-500 mb-1">Crecimiento</p>
+                              <p className="kpi-label uppercase tracking-wider mb-1">Crecimiento</p>
                               <p className="text-lg font-bold" style={{ color: COLORS[i % COLORS.length] }}>
                                 +{s.variacion_10y_pct}%
                               </p>
@@ -329,8 +339,17 @@ export default function Prediccion() {
                     {/* Evolución temporal top 6 */}
                     <div className="plate card p-5">
                       <div className="flex items-center justify-between mb-4 pb-2 border-b border-gold-500/20">
-                        <h2 className="text-xl font-bold text-white font-display">Evolución del empleo (histórico + proyección)</h2>
-                        <span className="text-sm text-slate-500">{anioInicioHistorico}-2035</span>
+                        <h2 className="text-2xl font-bold text-white font-display">Evolución del empleo (histórico + proyección)</h2>
+                        <div className="flex items-center gap-3">
+                          <AnalizarIAButton
+                            dashboard="prediccion"
+                            widgetTitle="Evolución del empleo histórico + proyección"
+                            widgetType="grafico"
+                            data={lineData}
+                            filters={{ anioBase, periodoHistorico }}
+                          />
+                          <span className="text-sm text-slate-500">{anioInicioHistorico}-2035</span>
+                        </div>
                       </div>
                       <p className="text-xs text-slate-500 mb-4">
                         Línea sólida: histórico GEIH ({periodoHistorico}). Línea punteada después de {anioBase}: proyección. Top 6 sectores por empleo.
@@ -404,8 +423,16 @@ export default function Prediccion() {
               {/* Gráfico de crecimiento de demanda */}
               <div className="plate card p-5">
                 <div className="flex items-center justify-between mb-4 pb-2 border-b border-gold-500/20">
-                  <h2 className="text-xl font-bold text-white font-display">Crecimiento de demanda a 10 años</h2>
-                  <span className="text-sm text-gold-400 uppercase tracking-wider">O*NET + ESCO + WEF</span>
+                  <h2 className="text-2xl font-bold text-white font-display">Crecimiento de demanda a 10 años</h2>
+                  <div className="flex items-center gap-3">
+                    <AnalizarIAButton
+                      dashboard="prediccion"
+                      widgetTitle="Crecimiento de demanda a 10 años"
+                      widgetType="grafico"
+                      data={data.profesiones.slice(0, 10)}
+                    />
+                    <span className="text-sm text-gold-400 uppercase tracking-wider">O*NET + ESCO + WEF</span>
+                  </div>
                 </div>
                 <p className="text-xs text-slate-500 mb-4">
                   Top 10 profesiones ordenadas por crecimiento esperado de demanda 2025-2035.
@@ -463,10 +490,18 @@ export default function Prediccion() {
               {/* Ranking completo */}
               <div className="plate card p-5">
                 <div className="flex items-center justify-between mb-4 pb-2 border-b border-gold-500/20">
-                  <h2 className="text-xl font-bold text-white font-display flex items-center gap-2">
+                  <h2 className="text-2xl font-bold text-white font-display flex items-center gap-2">
                      Ranking completo de profesiones
                   </h2>
-                  <span className="text-sm text-gold-400 uppercase tracking-wider font-semibold">{data.profesiones.length} profesiones</span>
+                  <div className="flex items-center gap-3">
+                    <AnalizarIAButton
+                      dashboard="prediccion"
+                      widgetTitle="Ranking completo de profesiones"
+                      widgetType="tabla"
+                      data={data.profesiones}
+                    />
+                    <span className="text-sm text-gold-400 uppercase tracking-wider font-semibold">{data.profesiones.length} profesiones</span>
+                  </div>
                 </div>
                 <p className="text-sm text-slate-500 mb-4">
                   Crecimiento de <strong className="text-slate-300">demanda laboral</strong> proyectado, no salarial.
@@ -538,10 +573,18 @@ export default function Prediccion() {
               {/* Gráfico de habilidades */}
               <div className="plate card p-5">
                 <div className="flex items-center justify-between mb-4 pb-2 border-b border-gold-500/20">
-                  <h2 className="text-xl font-bold text-white font-display flex items-center gap-2">
+                  <h2 className="text-2xl font-bold text-white font-display flex items-center gap-2">
                      Top 10 habilidades más demandadas
                   </h2>
-                  <span className="text-sm text-gold-400 uppercase tracking-wider font-semibold">WEF Future of Jobs</span>
+                  <div className="flex items-center gap-3">
+                    <AnalizarIAButton
+                      dashboard="prediccion"
+                      widgetTitle="Top 10 habilidades más demandadas"
+                      widgetType="grafico"
+                      data={data.habilidades.slice(0, 10)}
+                    />
+                    <span className="text-sm text-gold-400 uppercase tracking-wider font-semibold">WEF Future of Jobs</span>
+                  </div>
                 </div>
                 <p className="text-sm text-slate-500 mb-4">
                   Puntuación 0–100. Más alta = más importante para el futuro laboral.
@@ -605,10 +648,18 @@ export default function Prediccion() {
               {/* Tabla completa */}
               <div className="plate card p-5">
                 <div className="flex items-center justify-between mb-4 pb-2 border-b border-gold-500/20">
-                  <h2 className="text-xl font-bold text-white font-display flex items-center gap-2">
+                  <h2 className="text-2xl font-bold text-white font-display flex items-center gap-2">
                      Ranking completo de habilidades
                   </h2>
-                  <span className="text-sm text-gold-400 uppercase tracking-wider font-semibold">{data.habilidades.length} habilidades</span>
+                  <div className="flex items-center gap-3">
+                    <AnalizarIAButton
+                      dashboard="prediccion"
+                      widgetTitle="Ranking completo de habilidades"
+                      widgetType="tabla"
+                      data={data.habilidades}
+                    />
+                    <span className="text-sm text-gold-400 uppercase tracking-wider font-semibold">{data.habilidades.length} habilidades</span>
+                  </div>
                 </div>
                 <p className="text-sm text-slate-500 mb-4">
                   Todas las habilidades evaluadas según su importancia para el mercado laboral futuro.
@@ -674,10 +725,18 @@ export default function Prediccion() {
               {/* Gráfico de salarios */}
               <div className="plate card p-5">
                 <div className="flex items-center justify-between mb-4 pb-2 border-b border-gold-500/20">
-                  <h2 className="text-xl font-bold text-white font-display flex items-center gap-2">
+                  <h2 className="text-2xl font-bold text-white font-display flex items-center gap-2">
                      Proyección salarial por profesión
                   </h2>
-                  <span className="text-sm text-gold-400 uppercase tracking-wider font-semibold">GEIH + 3.5% anual</span>
+                  <div className="flex items-center gap-3">
+                    <AnalizarIAButton
+                      dashboard="prediccion"
+                      widgetTitle="Proyección salarial por profesión"
+                      widgetType="grafico"
+                      data={data.profesiones.slice(0, 10).sort((a, b) => b.salario_mensual_cop - a.salario_mensual_cop)}
+                    />
+                    <span className="text-sm text-gold-400 uppercase tracking-wider font-semibold">GEIH + 3.5% anual</span>
+                  </div>
                 </div>
                 <p className="text-xs text-slate-500 mb-4">
                   Top 10 profesiones ordenadas por salario mensual en 2025. Proyección a 2035 con crecimiento real del 3.5% anual.
@@ -707,7 +766,7 @@ export default function Prediccion() {
                   const crecSalarial10 = ((p.salario_10a_cop / p.salario_mensual_cop) - 1) * 100
                   return (
                     <div key={i} className="plate card p-4 text-center">
-                      <p className="text-xs text-slate-400 uppercase tracking-wider mb-3 font-semibold">{p.profesion}</p>
+                      <p className="text-lg font-bold text-white mb-2">{p.profesion}</p>
                       <div className="space-y-2">
                         <div>
                           <p className="text-xs text-slate-500 mb-1">Salario 2025</p>
@@ -732,10 +791,18 @@ export default function Prediccion() {
               {/* Tabla completa */}
               <div className="plate card p-5">
                 <div className="flex items-center justify-between mb-4 pb-2 border-b border-gold-500/20">
-                  <h2 className="text-xl font-bold text-white font-display flex items-center gap-2">
+                  <h2 className="text-2xl font-bold text-white font-display flex items-center gap-2">
                      Ranking completo de salarios
                   </h2>
-                  <span className="text-sm text-gold-400 uppercase tracking-wider font-semibold">Ordenado por salario 2025</span>
+                  <div className="flex items-center gap-3">
+                    <AnalizarIAButton
+                      dashboard="prediccion"
+                      widgetTitle="Ranking completo de salarios"
+                      widgetType="tabla"
+                      data={data.profesiones.slice().sort((a, b) => b.salario_mensual_cop - a.salario_mensual_cop)}
+                    />
+                    <span className="text-sm text-gold-400 uppercase tracking-wider font-semibold">Ordenado por salario 2025</span>
+                  </div>
                 </div>
                 <p className="text-sm text-slate-500 mb-4">
                   Todas las profesiones con proyección salarial a 5 y 10 años.
@@ -779,10 +846,18 @@ export default function Prediccion() {
               {salariosReales && salariosReales.length > 0 && (
                 <div className="plate card p-5">
                   <div className="flex items-center justify-between mb-4 pb-2 border-b border-gold-500/20">
-                    <h2 className="text-xl font-bold text-white font-display flex items-center gap-2">
-                      Salarios reales por ocupación — DANE GEIH
+<h2 className="text-2xl font-bold text-white font-display flex items-center gap-2">
+                       Salarios reales por ocupación — DANE GEIH
                     </h2>
-                    <span className="text-sm text-green-400 uppercase tracking-wider font-semibold">{salariosReales.length} ocupaciones</span>
+                    <div className="flex items-center gap-3">
+                      <AnalizarIAButton
+                        dashboard="prediccion"
+                        widgetTitle="Salarios reales por ocupación DANE GEIH"
+                        widgetType="tabla"
+                        data={salariosReales}
+                      />
+                      <span className="text-sm text-green-400 uppercase tracking-wider font-semibold">{salariosReales.length} ocupaciones</span>
+                    </div>
                   </div>
                   <p className="text-xs text-slate-500 mb-4">
                     Datos oficiales de la Gran Encuesta Integrada de Hogares (GEIH) del DANE — {salariosReales[0]?.periodo}.

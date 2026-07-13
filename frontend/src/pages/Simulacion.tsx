@@ -199,10 +199,10 @@ export default function Simulacion() {
   return (
     <div className="animate-fade-in space-y-5">
       <div>
-        <h1 className="text-3xl font-bold text-white font-display">
+        <h1 className="text-5xl font-bold text-white font-display">
           Simulación
         </h1>
-        <p className="text-slate-400 text-sm mt-1">
+        <p className="text-base text-white font-semibold mt-1">
           Explora escenarios laborales basados en datos reales del mercado colombiano.
         </p>
       </div>
@@ -210,7 +210,7 @@ export default function Simulacion() {
       <div className="flex gap-1 bg-white/[0.03] rounded-xl p-1 border border-white/[0.06] w-fit">
         <button
           onClick={() => setTab('que-pasa-si')}
-          className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
+          className={`px-4 py-2 rounded-lg text-lg font-bold text-white transition-all ${
             tab === 'que-pasa-si'
               ? 'bg-amber-500/15 text-gold-400 border border-amber-500/30'
               : 'text-slate-400 hover:text-slate-200'
@@ -220,7 +220,7 @@ export default function Simulacion() {
         </button>
         <button
           onClick={() => setTab('demanda-sectorial')}
-          className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
+          className={`px-4 py-2 rounded-lg text-lg font-bold text-white transition-all ${
             tab === 'demanda-sectorial'
               ? 'bg-amber-500/15 text-gold-400 border border-amber-500/30'
               : 'text-slate-400 hover:text-slate-200'

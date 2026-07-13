@@ -54,6 +54,21 @@ def call_llm_json(system_prompt: str, user_prompt: str, temperature: float = 0.3
     return _extract_json(text)
 
 
+def call_llm_text(system_prompt: str, user_prompt: str, temperature: float = 0.4, max_tokens: int = 2048) -> str:
+    """Llama al LLM y devuelve el contenido como texto plano."""
+    client = get_client()
+    response = client.chat.completions.create(
+        model=MODEL_NAME,
+        messages=[
+            {"role": "system", "content": system_prompt},
+            {"role": "user", "content": user_prompt},
+        ],
+        temperature=temperature,
+        max_tokens=max_tokens,
+    )
+    return response.choices[0].message.content or ""
+
+
 def match_cv_vacante(cv: str, vacante: str) -> dict[str, Any]:
     system = (
         "Eres un reclutador experto en Colombia. Analiza un CV/perfil y una vacante laboral. "

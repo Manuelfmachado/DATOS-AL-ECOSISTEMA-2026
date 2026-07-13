@@ -29,13 +29,15 @@ function TabButton({ active, onClick, label }: { active: boolean; onClick: () =>
   return (
     <button
       onClick={onClick}
-      className="btn"
+      className="btn text-lg font-bold text-white"
       style={active ? {
-        color: 'var(--gold)',
+        color: '#ffffff',
         background: 'linear-gradient(180deg, rgba(212, 175, 55, 0.18) 0%, rgba(212, 175, 55, 0.06) 100%)',
         borderColor: 'rgba(212, 175, 55, 0.95)',
         boxShadow: '0 0 0 1px rgba(212, 175, 55, 0.35), 0 0 22px -2px rgba(212, 175, 55, 0.55), inset 0 1px 0 rgba(255, 255, 255, 0.18)',
-      } : undefined}
+      } : {
+        color: '#ffffff',
+      }}
     >
       {label}
     </button>
@@ -168,8 +170,8 @@ export default function Coach() {
     <div className="animate-fade-in">
       <header className="topbar">
         <div>
-          <h1 className="hello" style={{ fontSize: '32px' }}>Coach IA</h1>
-          <p className="hello-sub">Prepárate para conseguir empleo: mejora tu CV o practica una entrevista en vivo por voz.</p>
+          <h1 className="text-5xl font-bold text-white font-display">Coach IA</h1>
+          <p className="hello-sub text-base text-white font-semibold">Prepárate para conseguir empleo: mejora tu CV o practica una entrevista en vivo por voz.</p>
         </div>
       </header>
 
@@ -184,7 +186,7 @@ export default function Coach() {
           <div className="plate card">
             <div className="panel-head">
               <div>
-                <h2 className="panel-title">Mejorar tu CV con IA</h2>
+                <h2 className="panel-title text-2xl font-bold text-white">Mejorar tu CV con IA</h2>
                 <p className="panel-sub">Pega tu CV o carga un archivo y la IA lo optimiza para filtros ATS</p>
               </div>
             </div>
@@ -259,7 +261,7 @@ export default function Coach() {
             <div className="space-y-6">
               <div className="plate card">
                 <div className="flex items-center justify-between mb-4" style={{ position: 'relative', zIndex: 1 }}>
-                  <h3 className="panel-title">
+                  <h3 className="panel-title text-2xl font-bold text-white">
                     CV mejorado
                   </h3>
                   <button
@@ -335,7 +337,7 @@ export default function Coach() {
           <div className="plate card">
             <div className="panel-head">
               <div>
-                  <h2 className="panel-title">
+                  <h2 className="panel-title text-2xl font-bold text-white">
                     Entrevista en vivo con Gemini Live
                 </h2>
                 <p className="panel-sub">Conecta por voz con ALBA. Al iniciar, te saludará y empezará la entrevista automáticamente.</p>
@@ -424,7 +426,7 @@ export default function Coach() {
           {transcripciones.length > 0 && (
             <div className="plate card">
               <div className="panel-head">
-                <h3 className="panel-title">Transcripción de la entrevista</h3>
+                <h3 className="panel-title text-2xl font-bold text-white">Transcripción de la entrevista</h3>
               </div>
               <div className="space-y-3 max-h-96 overflow-y-auto" style={{ position: 'relative', zIndex: 1 }}>
                 {transcripciones.map((m, i) => (

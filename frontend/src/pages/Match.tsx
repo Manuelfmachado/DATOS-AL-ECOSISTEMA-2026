@@ -56,10 +56,10 @@ function TabButton({ active, onClick, label }: TabButtonProps) {
   return (
     <button
       onClick={onClick}
-      className={`flex-1 py-2.5 text-sm font-semibold rounded-lg transition-all ${
+      className={`flex-1 py-3 text-xl font-bold rounded-lg transition-all ${
         active
-          ? 'bg-gradient-to-b from-amber-300/20 to-amber-700/10 text-gold-400 border border-amber-500/50'
-          : 'text-slate-400 hover:text-gold-400 hover:bg-white/[0.04] border border-transparent'
+          ? 'bg-gradient-to-b from-amber-300/20 to-amber-700/10 text-white border border-amber-500/50'
+          : 'text-white hover:text-gold-400 hover:bg-white/[0.04] border border-transparent'
       }`}
     >
       {label}
@@ -175,10 +175,10 @@ export default function Match() {
   return (
     <div className="animate-fade-in space-y-5">
       <div>
-        <h1 className="text-3xl font-bold text-white font-display flex items-center gap-3">
+        <h1 className="text-5xl font-bold text-white font-display">
           Match Inteligente
         </h1>
-        <p className="text-slate-400 text-sm mt-1">
+        <p className="text-base text-white font-semibold mt-1">
           Conecta perfiles y programas con la demanda laboral real usando IA.
         </p>
       </div>

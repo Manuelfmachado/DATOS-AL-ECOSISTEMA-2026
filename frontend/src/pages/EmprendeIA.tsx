@@ -43,8 +43,8 @@ function TabButton({ active, onClick, label }: { active: boolean; onClick: () =>
   return (
     <button
       onClick={onClick}
-      className={`px-4 py-3 text-sm font-medium rounded-lg transition-colors ${
-        active ? 'bg-alba-600 text-white shadow-sm' : 'text-gray-600 hover:bg-gray-100'
+      className={`px-5 py-3 text-lg font-bold text-white rounded-lg transition-colors ${
+        active ? 'bg-alba-600 text-white shadow-sm' : 'text-white hover:text-gold-400 hover:bg-gray-100'
       }`}
     >
       {label}
@@ -134,10 +134,10 @@ export default function EmprendeIA() {
 
   return (
     <div>
-      <h1 className="text-3xl font-bold text-gray-900 mb-2">
+      <h1 className="text-5xl font-bold text-white mb-2 font-display">
         Emprende IA
       </h1>
-      <p className="text-gray-600 mb-6">
+      <p className="text-base text-white font-semibold mb-6">
         Evalúa tu idea de negocio con IA y descubre oportunidades por departamento.
       </p>
 

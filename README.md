@@ -1,11 +1,8 @@
 # ALBA — Analítica Laboral Basada en IA
 
-**Plataforma Nacional de Inteligencia Laboral para Colombia**
+**Plataforma de Inteligencia Laboral para Colombia**
 
-> Concurso Datos al Ecosistema 2026 — Reto 5: Economía y Empleo
-> Nivel: Avanzado · [www.albacolombia.com](https://www.albacolombia.com)
-
-ALBA es una plataforma web que conecta la oferta educativa (SNIES, SENA, OLE/MEN) con la demanda real del mercado laboral (GEIH, PILA, RUES, SPE/APE) y el contexto territorial (DNP/MDM), generando recomendaciones accionables para ciudadanos, empresas, universidades y gobiernos mediante inteligencia artificial.
+ALBA es una plataforma web que conecta la oferta educativa con la demanda real del mercado laboral colombiano, generando recomendaciones accionables para ciudadanos, empresas, universidades y gobiernos mediante inteligencia artificial.
 
 **Todos los datos provienen de fuentes oficiales colombianas disponibles en [datos.gov.co](https://www.datos.gov.co).**
 
@@ -23,11 +20,11 @@ ALBA resuelve esto con una plataforma que **observa, anticipa, conecta, orienta 
 
 ---
 
-## La solución — 5 módulos
+## La solución — 6 módulos
 
 ```
-Observo el mercado  →  Anticipo cambios  →  Encuentro mi lugar  →  Decido emprender  →  Me preparo
-  (Observatorio)     (Predicción IA)         (Match)              (Emprende IA)        (Coach IA)
+Observo el mercado  →  Anticipo cambios  →  Encuentro mi lugar  →  Decido emprender  →  Me preparo  →  Simulo escenarios
+  (Observatorio)     (Predicción IA)         (Match)              (Emprende IA)        (Coach IA)       (Simulación)
 ```
 
 | # | Módulo | Pregunta | Actor principal |
@@ -37,15 +34,18 @@ Observo el mercado  →  Anticipo cambios  →  Encuentro mi lugar  →  Decido 
 | 3 | Match Inteligente | ¿Dónde encajo según mi perfil? | Persona / Universidad / Empresa |
 | 4 | Emprende IA | ¿Qué negocio tiene potencial en mi municipio? | Emprendedores |
 | 5 | Coach IA | ¿Cómo me preparo para conseguir el empleo? | Personas |
+| 6 | Simulación | ¿Qué pasaría si cambio mi carrera o sector? | Todos |
 
 ---
 
 ## Datos abiertos utilizados
 
-**11 fuentes oficiales · 44 tablas · ~744.000 filas en Supabase**
+**12 fuentes oficiales · 44 tablas · ~744.000 filas en Supabase**
 
-| Fuente | Dataset | Enlace | Tablas | Filas |
-|--------|---------|--------|--------|-------|
+Todos los datos se obtuvieron de **[datos.gov.co](https://www.datos.gov.co)** y portales oficiales colombianos, priorizando los datasets definidos en las **Hojas de Ruta Sectoriales y Nacional de Datos Abiertos Estratégicos**.
+
+| Fuente | Dataset | Enlace oficial | Tablas | Filas |
+|--------|---------|----------------|--------|-------|
 | DANE | GEIH — empleo, salarios, informalidad | [microdatos.dane.gov.co](https://microdatos.dane.gov.co/index.php/catalog/Mercado_Laboral) | 8 | ~120K |
 | DANE | EMICRON — micronegocios | [microdatos.dane.gov.co](https://microdatos.dane.gov.co/index.php/catalog/875) | 5 | ~109 |
 | DNP | MDM — desempeño municipal | [datos.gov.co](https://www.datos.gov.co/Estadisticas-Nacionales/Medici-n-del-Desempe-o-Municipal-MDM/nkjx-rsq7) | 3 | ~22K |
@@ -58,6 +58,12 @@ Observo el mercado  →  Anticipo cambios  →  Encuentro mi lugar  →  Decido 
 | ESCO (UE) | Ocupaciones y habilidades | [esco.ec.europa.eu](https://esco.ec.europa.eu) | 7 | ~155K |
 | O*NET (EE.UU.) | Ocupaciones estandarizadas | [onetcenter.org](https://www.onetcenter.org) | 7 | ~12K |
 | World Bank | Indicadores macro Colombia | [data.worldbank.org](https://data.worldbank.org/country/colombia) | 1 | 128 |
+
+**Proceso de obtención de datos:**
+1. Descarga de datasets originales desde [datos.gov.co](https://www.datos.gov.co) y microdatos.dane.gov.co
+2. Limpieza y transformación con pipeline ETL (`src/etl_pipeline.py`)
+3. Carga a Supabase PostgreSQL (`src/load_to_supabase.py`)
+4. Generación de embeddings con Gemma 300 para búsqueda semántica
 
 Detalle completo de variables en [`docs/data_dictionary.md`](docs/data_dictionary.md).
 
@@ -86,7 +92,8 @@ Detalle completo de variables en [`docs/data_dictionary.md`](docs/data_dictionar
 │                          /api (proxy)                            │
 ├─────────────────────────────────────────────────────────────────┤
 │                    BACKEND (FastAPI + Uvicorn)                  │
-│  5 routers: observatorio · prediccion · match · emprende · coach│
+│  6 routers: observatorio · prediccion · match · emprende ·      │
+│             coach · simulacion                                  │
 ├──────────────┬──────────────┬──────────────┬─────────────────────┤
 │   Supabase   │  Gemini 2.5  │  Chronos T5  │   Gemini Live       │
 │  PostgreSQL  │  Flash-Lite  │  (forecast)  │   (coach)           │
@@ -116,28 +123,6 @@ Detalle completo en [`docs/architecture.md`](docs/architecture.md).
 
 ---
 
-## Cómo ejecutarlo localmente
-
-### Backend
-
-```bash
-cd backend
-pip install -r requirements.txt
-uvicorn app.main:app --host 127.0.0.1 --port 8000
-```
-
-### Frontend
-
-```bash
-cd frontend
-npm install
-npm run dev
-```
-
-El frontend corre en `http://localhost:5173`.
-
----
-
 ## Estructura del repositorio
 
 ```
@@ -162,12 +147,12 @@ El frontend corre en `http://localhost:5173`.
 │       ├── main.py
 │       ├── db/
 │       ├── services/
-│       └── routers/       # 5 routers (observatorio, prediccion, match, emprende, coach)
+│       └── routers/       # 6 routers (observatorio, prediccion, match, emprende, coach, simulacion)
 │
 ├── frontend/              # App React + TypeScript
 │   └── src/
 │       ├── components/
-│       ├── pages/         # 6 páginas (Dashboard + 5 módulos)
+│       ├── pages/         # 7 páginas (Dashboard + 6 módulos)
 │       ├── services/
 │       └── utils/
 │

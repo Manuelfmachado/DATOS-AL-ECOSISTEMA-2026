@@ -177,7 +177,7 @@ export default function Dashboard() {
       {/* Top bar */}
       <header className="topbar">
         <div>
-          <h1 className="hello">Bienvenido a ALBA</h1>
+          <h1 className="text-5xl font-bold text-white font-display">Bienvenido a ALBA</h1>
           <p className="hello-sub">Tu plataforma de inteligencia laboral de Colombia.</p>
         </div>
 
@@ -206,21 +206,21 @@ export default function Dashboard() {
       <section className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-3">
         <div className="plate card py-3 px-4 flex items-center gap-3">
           <div>
-            <div className="kpi-label text-sm leading-none">Ocupados Colombia</div>
+            <div className="kpi-label leading-none">Ocupados Colombia</div>
             <div className="kpi-value text-2xl mt-0.5">{kpis ? Math.round(kpis.ocupados).toLocaleString('es-CO') : '—'}</div>
           </div>
         </div>
 
         <div className="plate card p-3 text-center flex flex-col justify-center min-h-[64px]">
-          <p className="text-base text-slate-400 uppercase tracking-wider mb-1 leading-none">Desempleo</p>
+          <p className="kpi-label">Desempleo</p>
           <p className="text-xl font-bold text-white font-display leading-tight">{rankingNacional ? rankingNacional.promDesempleo.toFixed(1) : '—'}%</p>
         </div>
         <div className="plate card p-3 text-center flex flex-col justify-center min-h-[64px]">
-          <p className="text-base text-slate-400 uppercase tracking-wider mb-1 leading-none">Salario</p>
+          <p className="kpi-label">Salario</p>
           <p className="text-base lg:text-lg font-bold text-white font-display leading-none whitespace-nowrap overflow-hidden text-ellipsis px-1">{rankingNacional ? formatCOP(rankingNacional.promIngreso) : '—'} COP</p>
         </div>
         <div className="plate card p-3 text-center flex flex-col justify-center min-h-[64px]">
-          <p className="text-base text-slate-400 uppercase tracking-wider mb-1 leading-none">Formalidad</p>
+          <p className="kpi-label">Formalidad</p>
           <p className="text-xl font-bold text-white font-display leading-tight">{rankingNacional ? rankingNacional.promFormalidad.toFixed(0) : '—'}%</p>
         </div>
       </section>

@@ -6,6 +6,7 @@ import {
 import api from '../services/api'
 import FuentesBadge from '../components/FuentesBadge'
 import { formatCOP } from '../utils/format'
+import AnalizarIAButton from '../components/AnalizarIAButton'
 
 function compactNum(n: number): string {
   return Math.round(n).toLocaleString('es-CO')
@@ -134,8 +135,8 @@ export default function Observatorio() {
     <div className="animate-fade-in space-y-5">
       {/* Header */}
       <div>
-        <h1 className="text-3xl font-bold text-white font-display">Panorama del empleo en Colombia</h1>
-        <p className="text-slate-400 text-sm mt-1">
+        <h1 className="text-5xl font-bold text-white font-display">Panorama del empleo en Colombia</h1>
+        <p className="text-base text-white font-semibold mt-1">
           Datos oficiales para orientar políticas de empleo y formación profesional.
         </p>
       </div>
@@ -145,25 +146,25 @@ export default function Observatorio() {
       {/* ================================================================ */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
         <div className="plate card p-4 text-center">
-          <p className="text-xs text-slate-400 uppercase tracking-wider">Ocupados</p>
+          <p className="kpi-label mb-1">Ocupados</p>
           <p className="text-2xl font-bold text-white font-display mt-1">
             {compactNum(kpi.ocupados_totales || kpi.empleo_nacional || 0)}
           </p>
         </div>
         <div className="plate card p-4 text-center">
-          <p className="text-xs text-slate-400 uppercase tracking-wider">Desempleo</p>
+          <p className="kpi-label mb-1">Desempleo</p>
           <p className="text-2xl font-bold text-rose-400 font-display mt-1">
             {kpi.tasa_desempleo_nacional?.toFixed(1)}%
           </p>
         </div>
         <div className="plate card p-4 text-center">
-          <p className="text-xs text-slate-400 uppercase tracking-wider">Salario</p>
+          <p className="kpi-label mb-1">Salario</p>
           <p className="text-2xl font-bold text-white font-display mt-1">
             {formatCOP(kpi.ingreso_promedio_nacional || kpi.salario_promedio_nacional || 0)}
           </p>
         </div>
         <div className="plate card p-4 text-center">
-          <p className="text-xs text-slate-400 uppercase tracking-wider">Informalidad</p>
+          <p className="kpi-label mb-1">Informalidad</p>
           <p className="text-2xl font-bold text-amber-400 font-display mt-1">
             {kpi.tasa_informalidad_nacional?.toFixed(0)}%
           </p>
@@ -179,7 +180,16 @@ export default function Observatorio() {
             <h2 className="text-xl font-bold text-white font-display flex items-center gap-2">
               Tendencias del empleo
             </h2>
-            <span className="text-sm text-gold-400 uppercase tracking-wider font-semibold">GEIH {tend.periodo}</span>
+            <div className="flex items-center gap-3">
+              <AnalizarIAButton
+                dashboard="observatorio"
+                widgetTitle="Tendencias del empleo"
+                widgetType="grafico"
+                data={tend.sectores}
+                filters={{ periodo: tend.periodo }}
+              />
+              <span className="text-sm text-gold-400 uppercase tracking-wider font-semibold">GEIH {tend.periodo}</span>
+            </div>
           </div>
           <ResponsiveContainer width="100%" height={320}>
             <LineChart margin={{ top: 10, right: 30, left: 10, bottom: 5 }}>
@@ -210,9 +220,17 @@ export default function Observatorio() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
         {/* Dónde hay más empleo */}
         <div className="plate card p-5">
-          <h2 className="text-lg font-bold text-white font-display mb-3 flex items-center gap-2">
-            Empleo por departamento
-          </h2>
+          <div className="flex items-center justify-between mb-3 pb-2 border-b border-gold-500/20">
+            <h2 className="text-lg font-bold text-white font-display flex items-center gap-2">
+              Empleo por departamento
+            </h2>
+            <AnalizarIAButton
+              dashboard="observatorio"
+              widgetTitle="Empleo por departamento"
+              widgetType="grafico"
+              data={deptosEmpleo}
+            />
+          </div>
           <ResponsiveContainer width="100%" height={260}>
             <BarChart
               data={deptosEmpleo.map((d: any, i: number) => ({
@@ -238,9 +256,17 @@ export default function Observatorio() {
 
         {/* Mejores salarios */}
         <div className="plate card p-5">
-          <h2 className="text-lg font-bold text-white font-display mb-3 flex items-center gap-2">
-            <span className="w-3 h-3 rounded-full bg-green-400" /> Salarios más altos
-          </h2>
+          <div className="flex items-center justify-between mb-3 pb-2 border-b border-gold-500/20">
+            <h2 className="text-lg font-bold text-white font-display flex items-center gap-2">
+              <span className="w-3 h-3 rounded-full bg-green-400" /> Salarios más altos
+            </h2>
+            <AnalizarIAButton
+              dashboard="observatorio"
+              widgetTitle="Salarios más altos"
+              widgetType="tabla"
+              data={topSalarios}
+            />
+          </div>
           <div className="space-y-1">
             {topSalarios.map((d: any, i: number) => (
               <div key={i} className="flex justify-between items-center py-1.5 border-b border-white/[0.04] text-sm">
@@ -253,9 +279,17 @@ export default function Observatorio() {
 
         {/* Menores salarios */}
         <div className="plate card p-5">
-          <h2 className="text-lg font-bold text-white font-display mb-3 flex items-center gap-2">
-            <span className="w-3 h-3 rounded-full bg-rose-400" /> Salarios más bajos
-          </h2>
+          <div className="flex items-center justify-between mb-3 pb-2 border-b border-gold-500/20">
+            <h2 className="text-lg font-bold text-white font-display flex items-center gap-2">
+              <span className="w-3 h-3 rounded-full bg-rose-400" /> Salarios más bajos
+            </h2>
+            <AnalizarIAButton
+              dashboard="observatorio"
+              widgetTitle="Salarios más bajos"
+              widgetType="tabla"
+              data={bottomSalarios}
+            />
+          </div>
           <div className="space-y-1">
             {bottomSalarios.map((d: any, i: number) => (
               <div key={i} className="flex justify-between items-center py-1.5 border-b border-white/[0.04] text-sm">
@@ -273,7 +307,18 @@ export default function Observatorio() {
       <div className="plate card p-5">
         <div className="flex items-center justify-between mb-4 pb-2 border-b border-gold-500/20">
           <h2 className="text-xl font-bold text-white font-display">Empleo por sector — DANE GEIH</h2>
-          <span className="text-sm text-gold-400 uppercase tracking-wider font-semibold">Datos reales del DANE</span>
+          <div className="flex items-center gap-3">
+            {sectoresDepto && (
+              <AnalizarIAButton
+                dashboard="observatorio"
+                widgetTitle="Empleo por sector departamental"
+                widgetType="grafico"
+                data={sectoresDepto}
+                filters={{ departamento: deptoSeleccionado || undefined }}
+              />
+            )}
+            <span className="text-sm text-gold-400 uppercase tracking-wider font-semibold">Datos reales del DANE</span>
+          </div>
         </div>
         <p className="text-xs text-slate-500 mb-4">
           Selecciona un departamento para ver el desglose de empleo por sector económico (rama CIIU). Datos oficiales del DANE GEIH.
@@ -338,7 +383,15 @@ export default function Observatorio() {
         <div className="plate card p-5">
           <div className="flex items-center justify-between mb-3 pb-2 border-b border-gold-500/20">
             <h2 className="text-lg font-bold text-white font-display">Sectores formales</h2>
-            <span className="text-sm text-gold-400 uppercase tracking-wider">PILA</span>
+            <div className="flex items-center gap-2">
+              <AnalizarIAButton
+                dashboard="observatorio"
+                widgetTitle="Sectores formales PILA"
+                widgetType="tabla"
+                data={formalList}
+              />
+              <span className="text-sm text-gold-400 uppercase tracking-wider">PILA</span>
+            </div>
           </div>
           <div className="space-y-0 max-h-64 overflow-y-auto">
             {formalList.map((s: any, i: number) => (
@@ -358,7 +411,15 @@ export default function Observatorio() {
           <div className="plate card p-5">
             <div className="flex items-center justify-between mb-3 pb-2 border-b border-gold-500/20">
               <h2 className="text-lg font-bold text-white font-display">Sectores emergentes</h2>
-              <span className="text-sm text-gold-400 uppercase tracking-wider">RUES</span>
+              <div className="flex items-center gap-2">
+                <AnalizarIAButton
+                  dashboard="observatorio"
+                  widgetTitle="Sectores emergentes RUES"
+                  widgetType="grafico"
+                  data={emer.sectores.slice(0, 8)}
+                />
+                <span className="text-sm text-gold-400 uppercase tracking-wider">RUES</span>
+              </div>
             </div>
             <ResponsiveContainer width="100%" height={260}>
               <BarChart data={emer.sectores.slice(0, 8)} layout="vertical" margin={{ left: 10, right: 40 }}>
@@ -380,7 +441,15 @@ export default function Observatorio() {
         <div className="plate card p-5">
           <div className="flex items-center justify-between mb-3 pb-2 border-b border-gold-500/20">
             <h2 className="text-lg font-bold text-white font-display">Ocupaciones en alza</h2>
-            <span className="text-sm text-gold-400 uppercase tracking-wider">SENA</span>
+            <div className="flex items-center gap-2">
+              <AnalizarIAButton
+                dashboard="observatorio"
+                widgetTitle="Ocupaciones en alza SENA"
+                widgetType="tabla"
+                data={spe.slice(0, 8)}
+              />
+              <span className="text-sm text-gold-400 uppercase tracking-wider">SENA</span>
+            </div>
           </div>
           <div className="space-y-0 max-h-64 overflow-y-auto">
             {spe.slice(0, 8).map((o: any, i: number) => (
@@ -401,7 +470,15 @@ export default function Observatorio() {
       {/* ================================================================ */}
       {brecha && (
         <div className="plate card p-5">
-          <h2 className="text-xl font-bold text-white font-display mb-4 pb-2 border-b border-gold-500/20">Brecha: oferta educativa vs demanda laboral</h2>
+          <div className="flex items-center justify-between mb-4 pb-2 border-b border-gold-500/20">
+            <h2 className="text-xl font-bold text-white font-display">Brecha: oferta educativa vs demanda laboral</h2>
+            <AnalizarIAButton
+              dashboard="observatorio"
+              widgetTitle="Brecha oferta vs demanda"
+              widgetType="grafico"
+              data={{ sobre: brecha.top_sobre_oferta, sub: brecha.top_sub_oferta }}
+            />
+          </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
             {/* Sobre-oferta */}
             <div>
@@ -479,8 +556,18 @@ export default function Observatorio() {
       {/* ================================================================ */}
       {prior?.departamentos && (
         <div className="plate card p-5">
-          <h2 className="text-xl font-bold text-white font-display mb-4 pb-2 border-b border-gold-500/20">Prioridad de intervención por departamento</h2>
-          <p className="text-xs text-slate-500 -mt-2 mb-4">Índice 0-100: formalidad, educación, ingresos y empleo. &gt;70 urgente.</p>
+          <div className="flex items-center justify-between mb-4 pb-2 border-b border-gold-500/20">
+            <div>
+              <h2 className="text-xl font-bold text-white font-display">Prioridad de intervención por departamento</h2>
+              <p className="text-xs text-slate-500 mt-1">Índice 0-100: formalidad, educación, ingresos y empleo. &gt;70 urgente.</p>
+            </div>
+            <AnalizarIAButton
+              dashboard="observatorio"
+              widgetTitle="Prioridad de intervención por departamento"
+              widgetType="tabla"
+              data={prior.departamentos}
+            />
+          </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
             {prior.departamentos.map((d: any) => {
               const isUrgente = d.indice_prioridad >= 70

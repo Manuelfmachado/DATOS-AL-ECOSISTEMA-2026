@@ -62,9 +62,9 @@ input, textarea, select, button {
 }
 
 .kpi-label {
-  font-size: 1.05rem !important;
-  font-weight: 600 !important;
-  color: #d8dee8 !important;
+  font-size: 1.25rem !important;
+  font-weight: 700 !important;
+  color: #ffffff !important;
   letter-spacing: 0.01em;
 }
 
@@ -553,7 +553,7 @@ body::before {
   flex-shrink: 0;
 }
 
-.kpi-label { font-size: 12px !important; color: var(--text-dim); letter-spacing: 0.01em; }
+.kpi-label { font-size: 16px !important; font-weight: 700 !important; color: #ffffff !important; letter-spacing: 0.01em; }
 .kpi-value {
   font-family: "Playfair Display", serif;
   font-size: 24px !important; font-weight: 600;
