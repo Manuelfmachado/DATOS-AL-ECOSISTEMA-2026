@@ -120,6 +120,9 @@ async def get_departamento_sectores(departamento: str, periodo: str = None):
             "SUCRE": 70, "TOLIMA": 73, "VALLE DEL CAUCA": 76, "VAUPES": 97,
             "VICHADA": 99, "AMAZONAS": 91,
         }
+
+        # Lista de departamentos disponibles para el selector
+        DEPTOS_LISTA = sorted([{"nombre": nombre.title(), "codigo": codigo} for nombre, codigo in DEPTO_DIVIPOLA.items()], key=lambda x: x["nombre"])
         
         depto_id = DEPTO_DIVIPOLA.get(depto_norm)
         if depto_id is None:
@@ -159,6 +162,7 @@ async def get_departamento_sectores(departamento: str, periodo: str = None):
             "total_sectores": len(sectores),
             "periodo": sectores[0]["periodo"] if sectores else None,
             "sectores": sectores,
+            "departamentos_disponibles": DEPTOS_LISTA,
         }
     except HTTPException:
         raise

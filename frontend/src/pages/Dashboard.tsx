@@ -176,9 +176,12 @@ export default function Dashboard() {
     <>
       {/* Top bar */}
       <header className="topbar">
-        <div>
-          <h1 className="text-5xl font-bold text-white font-display">Bienvenido a ALBA</h1>
-          <p className="hello-sub">Tu plataforma de inteligencia laboral de Colombia.</p>
+        <div className="flex items-center gap-4">
+          <img src="/logo-alba.png" alt="ALBA" className="h-14 w-auto" />
+          <div>
+            <h1 className="text-5xl font-bold text-white font-display">Bienvenido a ALBA</h1>
+            <p className="hello-sub">Tu plataforma de inteligencia laboral de Colombia.</p>
+          </div>
         </div>
 
       </header>

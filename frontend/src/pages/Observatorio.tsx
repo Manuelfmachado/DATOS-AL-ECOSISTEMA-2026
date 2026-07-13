@@ -7,6 +7,7 @@ import api from '../services/api'
 import FuentesBadge from '../components/FuentesBadge'
 import { formatCOP } from '../utils/format'
 import AnalizarIAButton from '../components/AnalizarIAButton'
+import { useDepartamentos } from '../hooks/useDepartamentos'
 
 function compactNum(n: number): string {
   return Math.round(n).toLocaleString('es-CO')
@@ -30,9 +31,18 @@ const MACRO_COLORS = ['#d4af37', '#3b82f6', '#22c55e', '#a855f7', '#f97316', '#e
 export default function Observatorio() {
   const [data, setData] = useState<any>(null)
   const [loading, setLoading] = useState(true)
-  const [deptoSeleccionado, setDeptoSeleccionado] = useState<string | null>(null)
+  const { deptos: departamentosLista, cargando: cargandoDeptos } = useDepartamentos()
+  const deptoDefault = departamentosLista.find((d) => d.nombre === 'Bogotá')?.nombre || (departamentosLista[0]?.nombre ?? null)
+
+  const [deptoSeleccionado, setDeptoSeleccionado] = useState<string | null>(deptoDefault)
   const [sectoresDepto, setSectoresDepto] = useState<any[] | null>(null)
   const [loadingSectores, setLoadingSectores] = useState(false)
+
+  useEffect(() => {
+    if (deptoDefault) {
+      cargarSectoresDepto(deptoDefault)
+    }
+  }, [deptoDefault])
 
   useEffect(() => {
     Promise.all([
@@ -306,7 +316,7 @@ export default function Observatorio() {
       {/* ================================================================ */}
       <div className="plate card p-5">
         <div className="flex items-center justify-between mb-4 pb-2 border-b border-gold-500/20">
-          <h2 className="text-xl font-bold text-white font-display">Empleo por sector — DANE GEIH</h2>
+          <h2 className="text-2xl font-bold text-white font-display">Empleo por sector</h2>
           <div className="flex items-center gap-3">
             {sectoresDepto && (
               <AnalizarIAButton
@@ -317,30 +327,27 @@ export default function Observatorio() {
                 filters={{ departamento: deptoSeleccionado || undefined }}
               />
             )}
-            <span className="text-sm text-gold-400 uppercase tracking-wider font-semibold">Datos reales del DANE</span>
           </div>
         </div>
-        <p className="text-xs text-slate-500 mb-4">
-          Selecciona un departamento para ver el desglose de empleo por sector económico (rama CIIU). Datos oficiales del DANE GEIH.
+        <p className="text-sm text-white font-semibold mb-4">
+          Selecciona un departamento para ver el desglose de empleo por sector económico (rama CIIU).
         </p>
-        <div className="flex flex-wrap gap-2 mb-4">
-          {deptosEmpleo.slice(0, 12).map((d: any) => {
-            const nombre = d.departamento
-            const activo = deptoSeleccionado === nombre
-            return (
-              <button
-                key={nombre}
-                onClick={() => cargarSectoresDepto(nombre)}
-                className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
-                  activo
-                    ? 'bg-gradient-to-b from-amber-300 to-amber-600 text-[#0a0f1f]'
-                    : 'bg-white/[0.04] text-slate-300 hover:bg-white/[0.08] border border-white/10'
-                }`}
-              >
-                {cleanDepto(nombre)}
-              </button>
-            )
-          })}
+        <div className="mb-4">
+          {cargandoDeptos ? (
+            <p className="text-slate-500 text-sm">Cargando departamentos...</p>
+          ) : (
+            <select
+              value={deptoSeleccionado || ''}
+              onChange={(e) => cargarSectoresDepto(e.target.value)}
+              className="w-full md:w-1/2 bg-[#0a0f1f] text-slate-200 text-sm border border-amber-500/20 rounded-lg px-3 py-2.5 focus:outline-none focus:border-amber-500/50"
+            >
+              {departamentosLista.map((d) => (
+                <option key={d.codigo} value={d.nombre}>
+                  {d.nombre}
+                </option>
+              ))}
+            </select>
+          )}
         </div>
 
         {loadingSectores && (
@@ -380,18 +387,17 @@ export default function Observatorio() {
       {/* ================================================================ */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
         {/* Sectores formales PILA */}
-        <div className="plate card p-5">
-          <div className="flex items-center justify-between mb-3 pb-2 border-b border-gold-500/20">
+        <div className="plate card p-5 relative">
+          <div className="absolute top-4 right-4 z-10">
+            <AnalizarIAButton
+              dashboard="observatorio"
+              widgetTitle="Sectores formales PILA"
+              widgetType="tabla"
+              data={formalList}
+            />
+          </div>
+          <div className="mb-3 pb-2 border-b border-gold-500/20 pr-28">
             <h2 className="text-lg font-bold text-white font-display">Sectores formales</h2>
-            <div className="flex items-center gap-2">
-              <AnalizarIAButton
-                dashboard="observatorio"
-                widgetTitle="Sectores formales PILA"
-                widgetType="tabla"
-                data={formalList}
-              />
-              <span className="text-sm text-gold-400 uppercase tracking-wider">PILA</span>
-            </div>
           </div>
           <div className="space-y-0 max-h-64 overflow-y-auto">
             {formalList.map((s: any, i: number) => (
@@ -408,18 +414,17 @@ export default function Observatorio() {
 
         {/* Sectores emergentes RUES */}
         {emer?.sectores && (
-          <div className="plate card p-5">
-            <div className="flex items-center justify-between mb-3 pb-2 border-b border-gold-500/20">
+          <div className="plate card p-5 relative">
+            <div className="absolute top-4 right-4 z-10">
+              <AnalizarIAButton
+                dashboard="observatorio"
+                widgetTitle="Sectores emergentes RUES"
+                widgetType="grafico"
+                data={emer.sectores.slice(0, 8)}
+              />
+            </div>
+            <div className="mb-3 pb-2 border-b border-gold-500/20 pr-28">
               <h2 className="text-lg font-bold text-white font-display">Sectores emergentes</h2>
-              <div className="flex items-center gap-2">
-                <AnalizarIAButton
-                  dashboard="observatorio"
-                  widgetTitle="Sectores emergentes RUES"
-                  widgetType="grafico"
-                  data={emer.sectores.slice(0, 8)}
-                />
-                <span className="text-sm text-gold-400 uppercase tracking-wider">RUES</span>
-              </div>
             </div>
             <ResponsiveContainer width="100%" height={260}>
               <BarChart data={emer.sectores.slice(0, 8)} layout="vertical" margin={{ left: 10, right: 40 }}>
@@ -438,18 +443,17 @@ export default function Observatorio() {
         )}
 
         {/* Ocupaciones en alza SENA */}
-        <div className="plate card p-5">
-          <div className="flex items-center justify-between mb-3 pb-2 border-b border-gold-500/20">
+        <div className="plate card p-5 relative">
+          <div className="absolute top-4 right-4 z-10">
+            <AnalizarIAButton
+              dashboard="observatorio"
+              widgetTitle="Ocupaciones en alza SENA"
+              widgetType="tabla"
+              data={spe.slice(0, 8)}
+            />
+          </div>
+          <div className="mb-3 pb-2 border-b border-gold-500/20 pr-28">
             <h2 className="text-lg font-bold text-white font-display">Ocupaciones en alza</h2>
-            <div className="flex items-center gap-2">
-              <AnalizarIAButton
-                dashboard="observatorio"
-                widgetTitle="Ocupaciones en alza SENA"
-                widgetType="tabla"
-                data={spe.slice(0, 8)}
-              />
-              <span className="text-sm text-gold-400 uppercase tracking-wider">SENA</span>
-            </div>
           </div>
           <div className="space-y-0 max-h-64 overflow-y-auto">
             {spe.slice(0, 8).map((o: any, i: number) => (
