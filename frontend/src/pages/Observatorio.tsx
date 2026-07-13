@@ -398,6 +398,7 @@ export default function Observatorio() {
           </div>
           <div className="mb-3 pb-2 border-b border-gold-500/20 pr-28">
             <h2 className="text-lg font-bold text-white font-display">Sectores formales</h2>
+            <p className="text-xs text-slate-400 mt-1">Trabajadores cotizantes PILA por actividad económica</p>
           </div>
           <div className="space-y-0 max-h-64 overflow-y-auto">
             {formalList.map((s: any, i: number) => (
@@ -425,6 +426,7 @@ export default function Observatorio() {
             </div>
             <div className="mb-3 pb-2 border-b border-gold-500/20 pr-28">
               <h2 className="text-lg font-bold text-white font-display">Sectores emergentes</h2>
+              <p className="text-xs text-slate-400 mt-1">Nuevas empresas registradas en RUES (último año)</p>
             </div>
             <ResponsiveContainer width="100%" height={260}>
               <BarChart data={emer.sectores.slice(0, 8)} layout="vertical" margin={{ left: 10, right: 40 }}>
@@ -454,6 +456,7 @@ export default function Observatorio() {
           </div>
           <div className="mb-3 pb-2 border-b border-gold-500/20 pr-28">
             <h2 className="text-lg font-bold text-white font-display">Ocupaciones en alza</h2>
+            <p className="text-xs text-slate-400 mt-1">Crecimiento de demanda laboral por ocupación (SENA SPE/APE)</p>
           </div>
           <div className="space-y-0 max-h-64 overflow-y-auto">
             {spe.slice(0, 8).map((o: any, i: number) => (
