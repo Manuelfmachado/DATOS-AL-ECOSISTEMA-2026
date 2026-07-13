@@ -11,7 +11,7 @@ Registro cronológico de versiones y cambios del proyecto ALBA.
 - Base de datos Supabase con 44 tablas y ~744K filas
 - Integración de 11 fuentes de datos abiertos (DANE, MinTrabajo, MEN, SENA, Confecámaras, DNP, ESCO, O*NET, World Bank)
 - Forecasting con Chronos T5 Small (predicciones a 5 y 10 años)
-- LLM Gemini 2.5 Flash-Lite con fallback Gemma 4 E4B (DeepInfra)
+- LLM Gemini 2.5 Flash-Lite + Gemini Live (Google Cloud)
 - RAG con Gemma Embeddings 300 (768 dimensiones) + Supabase pgvector
 - Matching híbrido: ESCO (habilidades reales) + OLE-MEN (salarios reales) + LLM (interpretación)
 - Salarios reales del DANE GEIH (406 ocupaciones)
@@ -48,8 +48,8 @@ Registro cronológico de versiones y cambios del proyecto ALBA.
 ### Añadido
 - Módulo Match Inteligente (CV vs vacante + pensum vs mercado)
 - Módulo Predicción IA con Chronos T5
-- Integración con Gemini 2.5 Flash-Lite y Gemma 4 E4B
-- Embeddings con Gemma 300 vía DeepInfra
+- Integración con Gemini 2.5 Flash-Lite y Gemini Live
+- Embeddings con Gemma 300 vía Google Cloud
 
 ## [0.1.0] — 2026-06-20
 

@@ -48,6 +48,7 @@ interface Habilidad {
 
 interface SalarioReal {
   oficio_codigo: number
+  oficio_nombre?: string
   salario_promedio: number
   salario_mediano: number
   empleo_total: number
@@ -784,14 +785,13 @@ export default function Prediccion() {
                     <span className="text-sm text-green-400 uppercase tracking-wider font-semibold">{salariosReales.length} ocupaciones</span>
                   </div>
                   <p className="text-xs text-slate-500 mb-4">
-                    Datos oficiales de la Gran Encuesta Integrada de Hogares (GEIH) del DANE. Salarios reales observados en {salariosReales[0]?.periodo}, ordenados por empleo total.
-                    A diferencia de las proyecciones de arriba, estos son datos <strong className="text-slate-300">reales observados</strong>, no estimaciones.
+                    Datos oficiales de la Gran Encuesta Integrada de Hogares (GEIH) del DANE — {salariosReales[0]?.periodo}.
                   </p>
                   <div className="overflow-x-auto">
                     <table className="w-full text-sm text-left">
                       <thead>
                         <tr className="text-xs text-slate-400 uppercase tracking-wider border-b border-white/[0.08]">
-                          <th className="px-3 py-3">Código oficio</th>
+                          <th className="px-3 py-3">Ocupación</th>
                           <th className="px-3 py-3 text-right">Salario promedio</th>
                           <th className="px-3 py-3 text-right">Salario mediano</th>
                           <th className="px-3 py-3 text-right">Empleo total</th>
@@ -801,7 +801,7 @@ export default function Prediccion() {
                       <tbody className="divide-y divide-white/[0.04]">
                         {salariosReales.map((s, i) => (
                           <tr key={i} className="hover:bg-white/[0.02] transition-colors">
-                            <td className="px-3 py-3 font-semibold text-slate-200">{s.oficio_codigo}</td>
+                            <td className="px-3 py-3 font-semibold text-slate-200">{s.oficio_nombre || s.oficio_codigo}</td>
                             <td className="px-3 py-3 text-right text-gold-400 font-semibold">${Math.round(s.salario_promedio).toLocaleString('es-CO')}</td>
                             <td className="px-3 py-3 text-right text-slate-300">${Math.round(s.salario_mediano).toLocaleString('es-CO')}</td>
                             <td className="px-3 py-3 text-right text-slate-300">{Math.round(s.empleo_total).toLocaleString('es-CO')}</td>

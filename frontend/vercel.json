@@ -1,7 +1,8 @@
 {
   "rewrites": [
-    { "source": "/(.*)", "destination": "/index.html" }
-  ],
-  "buildCommand": "npm run build",
-  "outputDirectory": "dist"
+    {
+      "source": "/api/:path*",
+      "destination": "https://albacolombia-backend.railway.app/api/:path*"
+    }
+  ]
 }

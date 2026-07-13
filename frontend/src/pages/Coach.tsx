@@ -1,5 +1,4 @@
-import { useState, useRef, useEffect, type ReactNode } from 'react'
-import Icon from '../components/Icon'
+import { useState, useRef, useEffect } from 'react'
 import api from '../services/api'
 import FuentesBadge from '../components/FuentesBadge'
 import { CoachLiveClient, CoachLiveEvent } from '../services/geminiLive'
@@ -26,7 +25,7 @@ HABILIDADES:
 
 const VACANTE_EJEMPLO = `Desarrollador Full Stack Senior. Requisitos: 4+ años de experiencia, Python, React, bases de datos SQL, Git, inglés intermedio, liderazgo técnico.`
 
-function TabButton({ active, onClick, icon, label }: { active: boolean; onClick: () => void; icon: ReactNode; label: string }) {
+function TabButton({ active, onClick, label }: { active: boolean; onClick: () => void; label: string }) {
   return (
     <button
       onClick={onClick}
@@ -38,7 +37,6 @@ function TabButton({ active, onClick, icon, label }: { active: boolean; onClick:
         boxShadow: '0 0 0 1px rgba(212, 175, 55, 0.35), 0 0 22px -2px rgba(212, 175, 55, 0.55), inset 0 1px 0 rgba(255, 255, 255, 0.18)',
       } : undefined}
     >
-      {icon}
       {label}
     </button>
   )
@@ -177,8 +175,8 @@ export default function Coach() {
 
       {/* Pestañas */}
       <div className="flex gap-2 mb-6">
-        <TabButton active={tab === 'cv'} onClick={() => setTab('cv')} icon={<Icon.Coach size={16} />} label="Mejorar CV" />
-        <TabButton active={tab === 'live'} onClick={() => setTab('live')} icon={<Icon.Coach size={16} />} label="Entrevista en vivo" />
+        <TabButton active={tab === 'cv'} onClick={() => setTab('cv')} label="Mejorar CV" />
+        <TabButton active={tab === 'live'} onClick={() => setTab('live')} label="Entrevista en vivo" />
       </div>
 
       {tab === 'cv' && (
@@ -215,7 +213,6 @@ export default function Coach() {
                       color: 'var(--text-dim)',
                     }}
                   >
-                    <Icon.Accion.Subir size={16} />
                     {archivo ? archivo.name : 'Cargar PDF o Word'}
                     <input
                       type="file"
@@ -251,9 +248,9 @@ export default function Coach() {
               style={{ width: '100%', justifyContent: 'center', padding: '14px' }}
             >
               {loading ? (
-                <><span className="animate-spin inline-block"><Icon.Coach size={18} /></span> Mejorando CV con IA...</>
+                <>Mejorando CV con IA...</>
               ) : (
-                <><Icon.Coach size={18} /> Mejorar CV</>
+                <>Mejorar CV</>
               )}
             </button>
           </div>
@@ -262,15 +259,13 @@ export default function Coach() {
             <div className="space-y-6">
               <div className="plate card">
                 <div className="flex items-center justify-between mb-4" style={{ position: 'relative', zIndex: 1 }}>
-                  <h3 className="panel-title flex items-center gap-2">
-                    <span style={{ color: 'var(--gold)' }}><Icon.CoachDocumento size={20} /></span>
+                  <h3 className="panel-title">
                     CV mejorado
                   </h3>
                   <button
                     onClick={copiarCv}
                     className="link flex items-center gap-1"
                   >
-                    {copiado ? <Icon.Accion.Check size={16} /> : <Icon.Accion.Copiar size={16} />}
                     {copiado ? 'Copiado' : 'Copiar'}
                   </button>
                 </div>
@@ -290,16 +285,14 @@ export default function Coach() {
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="plate card">
-                  <h4 className="font-semibold mb-2 flex items-center gap-2" style={{ color: 'var(--green)', position: 'relative', zIndex: 1 }}>
-                    <span style={{ color: 'var(--green)' }}><Icon.Accion.Check size={18} /></span>
+                  <h4 className="font-semibold mb-2" style={{ color: 'var(--green)', position: 'relative', zIndex: 1 }}>
                     ¿Por qué es un buen CV?
                   </h4>
                   <p className="text-sm" style={{ color: 'var(--text)', position: 'relative', zIndex: 1 }}>{resultadoCv.por_que_es_bueno}</p>
                 </div>
 
                 <div className="plate card">
-                  <h4 className="font-semibold mb-3 flex items-center gap-2" style={{ color: 'var(--text)', position: 'relative', zIndex: 1 }}>
-                    <span style={{ color: 'var(--gold)' }}><Icon.EmprendeIdea size={18} /></span>
+                  <h4 className="font-semibold mb-3" style={{ color: 'var(--text)', position: 'relative', zIndex: 1 }}>
                     Palabras clave para ATS
                   </h4>
                   <div className="flex flex-wrap gap-2" style={{ position: 'relative', zIndex: 1 }}>
@@ -325,7 +318,6 @@ export default function Coach() {
                 <ul className="space-y-2" style={{ position: 'relative', zIndex: 1 }}>
                   {resultadoCv.cambios_realizados.map((c, i) => (
                     <li key={i} className="flex items-start gap-2 text-sm" style={{ color: 'var(--text)' }}>
-                      <span className="flex-shrink-0 mt-0.5" style={{ color: 'var(--green)' }}><Icon.Accion.Check size={16} /></span>
                       {c}
                     </li>
                   ))}
@@ -343,9 +335,8 @@ export default function Coach() {
           <div className="plate card">
             <div className="panel-head">
               <div>
-                <h2 className="panel-title flex items-center gap-2">
-                  <span style={{ color: 'var(--gold)' }}><Icon.Coach size={20} /></span>
-                  Entrevista en vivo con Gemini Live
+                  <h2 className="panel-title">
+                    Entrevista en vivo con Gemini Live
                 </h2>
                 <p className="panel-sub">Conecta por voz con ALBA. Al iniciar, te saludará y empezará la entrevista automáticamente.</p>
               </div>
@@ -393,7 +384,6 @@ export default function Coach() {
                     disabled={liveStatus === 'connecting'}
                     className="btn btn-gold"
                   >
-                    <Icon.Accion.Telefono size={18} />
                     {liveStatus === 'connecting' ? 'Conectando...' : 'Iniciar entrevista'}
                   </button>
                 ) : (
@@ -407,7 +397,6 @@ export default function Coach() {
                       boxShadow: '0 4px 12px rgba(200, 40, 60, 0.3)',
                     }}
                   >
-                    <Icon.Accion.TelefonoOff size={18} />
                     Terminar entrevista
                   </button>
                 )}

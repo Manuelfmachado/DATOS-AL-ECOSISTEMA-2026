@@ -11,6 +11,7 @@ import pandas as pd
 from fastapi import APIRouter, HTTPException
 from app.db.supabase import supabase
 from app.services.llm_gemini import generar_insights_prediccion, is_gemini_available
+from app.data.ciuo_nombres import obtener_nombre_ciuo
 
 router = APIRouter(prefix="/api/prediccion", tags=["Predicción IA"])
 
@@ -110,6 +111,7 @@ async def salarios_reales_geih(limit: int = 50, ordenar_por: str = "empleo_total
         for row in r.data:
             ocupaciones.append({
                 "oficio_codigo": row.get("oficio_c8"),
+                "oficio_nombre": obtener_nombre_ciuo(row.get("oficio_c8")),
                 "salario_promedio": round(float(row.get("salario_promedio") or 0), 0),
                 "salario_mediano": round(float(row.get("salario_mediano") or 0), 0),
                 "empleo_total": round(float(row.get("empleo_total") or 0), 0),

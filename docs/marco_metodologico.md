@@ -69,7 +69,7 @@ Supabase PostgreSQL (44 tablas)
 
 #### 4.2 LLM para análisis cualitativo
 - **Modelo primario:** Gemini 2.5 Flash-Lite
-- **Modelo fallback:** Gemma 4 E4B (DeepInfra)
+- **Modelo conversacional:** Gemini Live (coach IA)
 - **Uso:** Match (CV vs vacante), Coach (CV + entrevista), Emprende (evaluar ideas)
 - **Prompt engineering:** Sistema con instrucciones específicas + datos de contexto
 - **Post-procesamiento:** Normalización de pesos de brechas (suman 100 - score)
@@ -82,7 +82,7 @@ Supabase PostgreSQL (44 tablas)
 - **Score:** 50% intersección de habilidades + 50% análisis del LLM
 
 #### 4.4 RAG (Retrieval-Augmented Generation)
-- **Embeddings:** Gemma 300 (768d) vía DeepInfra
+- **Embeddings:** Gemma 300 (768d) vía Google Cloud
 - **Vector store:** Supabase pgvector
 - **Búsqueda:** Similitud coseno vía función SQL `buscar_embeddings_vector`
 - **Uso:** Coach IA (guías de formalización, normativas laborales)
@@ -103,7 +103,7 @@ Supabase PostgreSQL (44 tablas)
 **Validación del LLM:**
 - Normalización de pesos de brechas (suma = 100 - score)
 - Recursos clasificados por tipo (SENA, online, certificación, libre)
-- Fallback automático de Gemini a Gemma 4
+- Fallback automático de Gemini a Gemini Live
 
 ### 6. Despliegue (Deployment)
 

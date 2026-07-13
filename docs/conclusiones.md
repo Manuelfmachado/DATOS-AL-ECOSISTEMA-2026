@@ -60,7 +60,6 @@ Se cargó el cruce de empleo por departamento × sector CIIU del DANE, permitien
 - Cargar predicciones a Supabase para servir desde producción
 
 ### Mediano plazo (3-6 meses)
-- Implementar **coach offline** con Gemma 4 4B GGUF para zonas de baja conectividad
 - Añadir **SECOP** (contratación pública) como fuente de demanda laboral
 - Integrar **datos de costo de vida** (DANE SIPSA) para recomendaciones más completas
 - Mejorar el matching con **NLP para extracción de habilidades** del CV

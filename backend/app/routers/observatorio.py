@@ -14,6 +14,7 @@ from pathlib import Path
 import pandas as pd
 from fastapi import APIRouter, HTTPException, Query
 from app.db.supabase import supabase
+from app.data.ciuo_nombres import obtener_nombre_ciuo
 
 router = APIRouter(prefix="/api/observatorio", tags=["observatorio"])
 
@@ -926,6 +927,7 @@ async def get_salario_ocupacion():
             "ocupaciones": [
                 {
                     "oficio_c8": row.get("oficio_c8"),
+                    "oficio_nombre": obtener_nombre_ciuo(row.get("oficio_c8")),
                     "salario_promedio": int(row.get("salario_promedio") or 0),
                     "salario_mediano": int(row.get("salario_mediano") or 0),
                     "empleo_total": int(row.get("empleo_total") or 0),

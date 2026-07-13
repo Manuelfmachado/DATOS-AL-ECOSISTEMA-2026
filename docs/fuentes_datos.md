@@ -1,61 +1,70 @@
 # Fuentes de datos
 
-ALBA utiliza exclusivamente datos abiertos de fuentes oficiales colombianas e internacionales.
+ALBA utiliza exclusivamente **datos abiertos de [datos.gov.co](https://datos.gov.co)** y portales oficiales colombianos.
 
-## Fuentes colombianas (datos.gov.co y portales oficiales)
+## Fuentes colombianas (datos.gov.co)
 
 ### DANE — Gran Encuesta Integrada de Hogares (GEIH)
-- **URL:** https://www.dane.gov.co/index.php/estadisticas-por-tema/mercado-laboral/empleo-informal-y-seguridad-social
+- **URL:** https://www.datos.gov.co/ (buscar "GEIH" o "Gran Encuesta Integrada de Hogares")
+- **Entidad:** DANE
 - **Qué da:** Empleo, desempleo, informalidad, salarios por ocupación y departamento
 - **Periodo:** 2022-2026 (mensual)
 - **Tablas en ALBA:** 9 tablas (~120K filas)
 - **Uso:** Observatorio, Predicción, Match (salarios reales)
 
 ### DANE — EMICRON (Encuesta de Micronegocios)
-- **URL:** https://www.dane.gov.co/index.php/estadisticas-por-tema/economia/microestablecimientos
+- **URL:** https://www.datos.gov.co/ (buscar "EMICRON" o "Micronegocios")
+- **Entidad:** DANE
 - **Qué da:** Micronegocios por sector, departamento, motivos de emprendimiento
 - **Periodo:** 2020-2023
 - **Tablas en ALBA:** 5 tablas (~109 filas)
 - **Uso:** Emprende IA
 
 ### DANE — DNP Medición del Desempeño Municipal (MDM)
-- **URL:** https://www.dnp.gov.co/programas-desarrollo/desarrollo-territorial/medicion-del-desempeno-municipal-mdm
+- **URL:** https://www.datos.gov.co/ (buscar "Desempeño Municipal")
+- **Entidad:** DNP
 - **Qué da:** Índice de desempeño municipal por dimensiones
 - **Tablas en ALBA:** 3 tablas (~22K filas)
 - **Uso:** Observatorio (contexto territorial)
 
 ### MinTrabajo — PILA (Plan Integrado de Liquidación de Aportes)
 - **URL:** https://www.datos.gov.co/Trabajo-y-Pensiones
+- **Entidad:** MinTrabajo
 - **Qué da:** Cotizantes formales por sector económico (CIIU)
 - **Tablas en ALBA:** 2 tablas (~652 filas)
 - **Uso:** Observatorio, Predicción
 
 ### Confecámaras — RUES (Registro Único de Empresas)
-- **URL:** https://www.rues.org.co/
+- **URL:** https://www.datos.gov.co/ (buscar "RUES" o "Registro Único Empresarial")
+- **Entidad:** Confecámaras
 - **Qué da:** Empresas nuevas por sector CIIU y cámara de comercio
 - **Tablas en ALBA:** 3 tablas (~26K filas)
 - **Uso:** Observatorio (sectores emergentes), Emprende IA
 
 ### MEN — SNIES (Sistema Nacional de Información de Educación Superior)
 - **URL:** https://www.datos.gov.co/Ciencia-Tecnologia-e-Innovacion/Sistema-Nacional-de-Informacion-de-la-Educacion-Su
+- **Entidad:** MEN
 - **Qué da:** Programas académicos matriculados por institución y departamento
 - **Tablas en ALBA:** 2 tablas (~85K filas)
 - **Uso:** Match (oferta educativa)
 
 ### MEN — OLE/ETDH (Observatorio Laboral para la Educación)
-- **URL:** https://ole.mineducacion.gov.co/portal
+- **URL:** https://www.datos.gov.co/ (buscar "OLE" o "Observatorio Laboral")
+- **Entidad:** MEN
 - **Qué da:** Ingresos reales de egresados por programa, área, nivel e institución
 - **Tablas en ALBA:** 7 tablas (~37K filas)
 - **Uso:** Match (salarios reales por carrera), Predicción
 
 ### SENA — Programas activos + SPE/APE
-- **URL:** https://www.sena.edu.co/es-co/transparencia/Paginas/datos-abiertos.aspx
+- **URL:** https://www.datos.gov.co/ (buscar "SENA" o "Servicio Público de Empleo")
+- **Entidad:** SENA
 - **Qué da:** Cursos SENA activos + inscritos en Servicio Público de Empleo
 - **Tablas en ALBA:** 4 tablas (~17K filas)
 - **Uso:** Match (cursos complementarios), Predicción
 
 ### MEN — Saber Pro
 - **URL:** https://www.datos.gov.co/Ciencia-Tecnologia-e-Innovacion
+- **Entidad:** MEN
 - **Qué da:** Resultados de pruebas Saber Pro por programa e institución
 - **Tablas en ALBA:** 1 tabla (~1.4K filas)
 - **Uso:** Match (calidad educativa)
@@ -87,5 +96,6 @@ Todos los datasets utilizados son:
 - ✅ De fuentes oficiales (gobiernos o entidades supranacionales)
 - ✅ En formatos abiertos (CSV, JSON, API REST)
 - ✅ Reutilizables sin restricciones
+- ✅ **Disponibles en [datos.gov.co](https://datos.gov.co)** (excepto ESCO, O*NET y World Bank)
 
 La mayoría están disponibles en **datos.gov.co** o en portales oficiales de las entidades colombianas (DANE, MEN, MinTrabajo, DNP, SENA, Confecámaras).

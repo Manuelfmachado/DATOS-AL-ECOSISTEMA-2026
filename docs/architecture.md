@@ -36,12 +36,12 @@ ALBA es una aplicación web full-stack con arquitectura en 3 capas:
 └──────┬───────────────┬───────────────┬───────────────┬───────────────┘
        │               │               │               │
 ┌──────┴───────┐ ┌─────┴──────┐ ┌──────┴───────┐ ┌─────┴──────┐
-│  Supabase    │ │  Gemini    │ │  Chronos T5  │ │ DeepInfra  │
-│  PostgreSQL  │ │  2.5 Flash │ │  Small       │ │ Gemma 4    │
-│  + pgvector  │ │  -Lite     │ │  (batch)     │ │ E4B        │
-│              │ │            │ │              │ │ (fallback) │
-│  44 tablas   │ │  Análisis  │ │  Forecasting │ │ Análisis   │
-│  ~744K filas │ │  de texto  │ │  series      │ │ de texto   │
+│  Supabase    │ │  Gemini    │ │  Chronos T5  │ │  Gemini    │
+│  PostgreSQL  │ │  2.5 Flash │ │  Small       │ │  Live      │
+│  + pgvector  │ │  -Lite     │ │  (batch)     │ │  (coach)   │
+│              │ │            │ │              │ │            │
+│  44 tablas   │ │  Análisis  │ │  Forecasting │ │  Voz +     │
+│  ~744K filas │ │  de texto  │ │  series      │ │  texto     │
 └──────────────┘ └────────────┘ └──────────────┘ └────────────┘
 ```
 
@@ -73,7 +73,11 @@ ALBA es una aplicación web full-stack con arquitectura en 3 capas:
 ### 1. Gemini 2.5 Flash-Lite (LLM primario)
 - **Uso:** Match (CV vs vacante), Coach (mejorar CV, entrevista), Emprende (evaluar ideas)
 - **Endpoint:** Google Cloud Agent Platform / Google AI Studio
-- **Fallback:** Gemma 4 E4B vía DeepInfra
+
+### 2. Gemini Live (LLM conversacional)
+- **Uso:** Coach IA — simulacros de entrevista por voz y texto
+- **Endpoint:** Google Cloud Agent Platform
+- **Características:** Streaming de audio bidireccional, contexto persistente
 
 ### 2. Chronos T5 Small (Forecasting)
 - **Uso:** Predicción de empleo, desempleo, informalidad y salarios a 5 y 10 años
@@ -96,10 +100,10 @@ ALBA es una aplicación web full-stack con arquitectura en 3 capas:
 
 | Componente | Plataforma | URL |
 |------------|-----------|-----|
-| Frontend | Vercel | [por definir].vercel.app |
-| Backend | Railway | [por definir].up.railway.app |
+| Frontend | Vercel | albacolombia.com |
+| Backend | Railway | albacolombia-backend.railway.app |
 | Base de datos | Supabase | supabase.co |
-| Dominio | Namecheap | [por definir] |
+| Dominio | Namecheap | www.albacolombia.com |
 
 ## Seguridad
 

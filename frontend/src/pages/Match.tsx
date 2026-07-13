@@ -1,5 +1,4 @@
-import { useState, type ReactNode } from 'react'
-import Icon from '../components/Icon'
+import { useState } from 'react'
 import api from '../services/api'
 import FuentesBadge from '../components/FuentesBadge'
 
@@ -50,21 +49,19 @@ interface PensumResultado {
 interface TabButtonProps {
   active: boolean
   onClick: () => void
-  icon: ReactNode
   label: string
 }
 
-function TabButton({ active, onClick, icon, label }: TabButtonProps) {
+function TabButton({ active, onClick, label }: TabButtonProps) {
   return (
     <button
       onClick={onClick}
-      className={`flex-1 flex items-center justify-center gap-2 py-2.5 text-sm font-semibold rounded-lg transition-all ${
+      className={`flex-1 py-2.5 text-sm font-semibold rounded-lg transition-all ${
         active
           ? 'bg-gradient-to-b from-amber-300/20 to-amber-700/10 text-gold-400 border border-amber-500/50'
           : 'text-slate-400 hover:text-gold-400 hover:bg-white/[0.04] border border-transparent'
       }`}
     >
-      {icon}
       {label}
     </button>
   )
@@ -179,7 +176,6 @@ export default function Match() {
     <div className="animate-fade-in space-y-5">
       <div>
         <h1 className="text-3xl font-bold text-white font-display flex items-center gap-3">
-          <span style={{ color: '#d4af37' }}><Icon.Match size={28} /></span>
           Match Inteligente
         </h1>
         <p className="text-slate-400 text-sm mt-1">
@@ -188,14 +184,13 @@ export default function Match() {
       </div>
 
       <div className="plate p-1.5 flex gap-1.5">
-        <TabButton active={activeTab === 'cv'} onClick={() => setActiveTab('cv')} icon={<Icon.CoachDocumento size={18} />} label="CV vs Vacante" />
-        <TabButton active={activeTab === 'pensum'} onClick={() => setActiveTab('pensum')} icon={<Icon.PrediccionUp size={18} />} label="Pensum vs Mercado" />
+        <TabButton active={activeTab === 'cv'} onClick={() => setActiveTab('cv')} label="CV vs Vacante" />
+        <TabButton active={activeTab === 'pensum'} onClick={() => setActiveTab('pensum')} label="Pensum vs Mercado" />
       </div>
 
       {/* Nota metodológica */}
       <div className="plate card p-4">
         <div className="flex items-start gap-3">
-          <span className="mt-0.5 text-gold-400"><Icon.Accion.Info size={18} /></span>
           <div>
             <p className="text-sm text-slate-200 font-semibold mb-1">¿Cómo funciona este análisis?</p>
             <p className="text-xs text-slate-400 leading-relaxed">
@@ -240,9 +235,9 @@ export default function Match() {
             className="w-full bg-gradient-to-b from-amber-300 to-amber-600 text-[#0a0f1f] py-3 rounded-lg font-bold hover:shadow-lg hover:shadow-amber-500/30 disabled:opacity-50 flex items-center justify-center gap-2"
           >
             {loading ? (
-              <><span className="animate-spin inline-block"><Icon.Accion.Buscar size={18} /></span> Analizando con IA...</>
+              <>Analizando con IA...</>
             ) : (
-              <><Icon.Match size={18} /> Calcular match</>
+              <>Calcular match</>
             )}
           </button>
 
@@ -262,8 +257,7 @@ export default function Match() {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   {cvResultado.esco_ocupacion && (
                     <div className="plate card p-5">
-                      <h3 className="font-bold text-white mb-3 flex items-center gap-2">
-                        <span className="text-blue-400 inline-flex"><Icon.Accion.Info size={18} /></span>
+                      <h3 className="font-bold text-white mb-3">
                         Ocupación ESCO detectada
                       </h3>
                       <p className="text-lg font-semibold text-blue-300 mb-2">{cvResultado.esco_ocupacion}</p>
@@ -293,8 +287,7 @@ export default function Match() {
 
                   {cvResultado.salario_real && (
                     <div className="plate card p-5">
-                      <h3 className="font-bold text-white mb-3 flex items-center gap-2">
-                        <span className="text-gold-400 inline-flex"><Icon.EmprendeDinero size={18} /></span>
+                      <h3 className="font-bold text-white mb-3">
                         Salario real de egresados
                       </h3>
                       <p className="text-lg font-semibold text-gold-400 mb-2">{cvResultado.salario_real.rango_modal}</p>
@@ -309,14 +302,12 @@ export default function Match() {
 
               {cvResultado.fortalezas.length > 0 && (
                 <div className="plate card p-6">
-                  <h3 className="font-bold text-white mb-4 flex items-center gap-2">
-                    <span className="text-green-400 inline-flex"><Icon.Accion.Check size={20} /></span>
+                  <h3 className="font-bold text-white mb-4">
                     Fortalezas
                   </h3>
                   <ul className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                     {cvResultado.fortalezas.map((f, i) => (
                       <li key={i} className="flex items-start gap-2 text-sm text-slate-200">
-                        <span className="text-green-500 mt-0.5 inline-flex"><Icon.Accion.Check size={16} /></span>
                         {f}
                       </li>
                     ))}
@@ -326,8 +317,7 @@ export default function Match() {
 
               {cvResultado.brechas.length > 0 && (
                 <div className="plate card p-6">
-                  <h3 className="font-bold text-white mb-4 flex items-center gap-2">
-                    <span className="text-amber-400 inline-flex"><Icon.Kpi.Desempleo size={20} /></span>
+                  <h3 className="font-bold text-white mb-4">
                     ¿Qué te falta? Marca lo que ya cumples o podrías cubrir
                   </h3>
                   <div className="space-y-3">
@@ -390,8 +380,7 @@ export default function Match() {
 
               {cvResultado.recomendacion_general && (
                 <div className="plate card p-5 bg-amber-500/5 border-amber-500/20">
-                  <h4 className="font-semibold text-amber-300 mb-2 flex items-center gap-2">
-                    <span className="text-amber-400 inline-flex"><Icon.EmprendeIdea size={18} /></span>
+                  <h4 className="font-semibold text-amber-300 mb-2">
                     Recomendación general
                   </h4>
                   <p className="text-sm text-amber-200/90">{cvResultado.recomendacion_general}</p>
@@ -422,9 +411,9 @@ export default function Match() {
             className="w-full bg-gradient-to-b from-amber-300 to-amber-600 text-[#0a0f1f] py-3 rounded-lg font-bold hover:shadow-lg hover:shadow-amber-500/30 disabled:opacity-50 flex items-center justify-center gap-2"
           >
             {loading ? (
-              <><span className="animate-spin inline-block"><Icon.Accion.Buscar size={18} /></span> Analizando con IA...</>
+              <>Analizando con IA...</>
             ) : (
-              <><Icon.PrediccionUp size={18} /> Analizar alineación con el mercado</>
+              <>Analizar alineación con el mercado</>
             )}
           </button>
 
@@ -441,14 +430,12 @@ export default function Match() {
 
               {pensumResultado.fortalezas.length > 0 && (
                 <div className="plate card p-6">
-                  <h3 className="font-bold text-white mb-4 flex items-center gap-2">
-                    <span className="text-green-400 inline-flex"><Icon.Accion.Check size={20} /></span>
+                  <h3 className="font-bold text-white mb-4">
                     Fortalezas del pensum
                   </h3>
                   <ul className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                     {pensumResultado.fortalezas.map((f, i) => (
                       <li key={i} className="flex items-start gap-2 text-sm text-slate-200">
-                        <span className="text-green-500 mt-0.5 inline-flex"><Icon.Accion.Check size={16} /></span>
                         {f}
                       </li>
                     ))}
@@ -458,8 +445,7 @@ export default function Match() {
 
               {pensumResultado.brechas_mercado.length > 0 && (
                 <div className="plate card p-6">
-                  <h3 className="font-bold text-white mb-4 flex items-center gap-2">
-                    <span className="text-amber-400 inline-flex"><Icon.Kpi.Desempleo size={20} /></span>
+                  <h3 className="font-bold text-white mb-4">
                     Brechas con el mercado laboral
                   </h3>
                   <div className="space-y-3">
@@ -488,8 +474,7 @@ export default function Match() {
 
               {pensumResultado.recomendacion_general && (
                 <div className="plate card p-5 bg-amber-500/5 border-amber-500/20">
-                  <h4 className="font-semibold text-amber-300 mb-2 flex items-center gap-2">
-                    <span className="text-amber-400 inline-flex"><Icon.EmprendeIdea size={18} /></span>
+                  <h4 className="font-semibold text-amber-300 mb-2">
                     Recomendación general
                   </h4>
                   <p className="text-sm text-amber-200/90">{pensumResultado.recomendacion_general}</p>

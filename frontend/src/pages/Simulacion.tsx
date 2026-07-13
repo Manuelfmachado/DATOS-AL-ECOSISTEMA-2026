@@ -4,7 +4,6 @@ import {
   Tooltip, ResponsiveContainer, CartesianGrid, Cell, LabelList,
   ReferenceLine, Legend, ComposedChart,
 } from 'recharts'
-import Icon from '../components/Icon'
 import api from '../services/api'
 import FuentesBadge from '../components/FuentesBadge'
 import { formatCOP, formatCOPFull, formatNumber } from '../utils/format'
@@ -17,7 +16,6 @@ interface SimulacionMeta {
   id: string
   nombre: string
   descripcion: string
-  icon: ReactNode
   fuentes: string[]
 }
 
@@ -127,35 +125,30 @@ const SIMULACIONES: SimulacionMeta[] = [
     id: 'trayectoria',
     nombre: 'Trayectoria Profesional',
     descripcion: 'Proyecta tu salario a 10 años según tu programa académico y departamento',
-    icon: <Icon.PrediccionUp size={28} />,
     fuentes: ['OLE/MEN', 'Saber Pro', 'GEIH', 'Chronos T5'],
   },
   {
     id: 'migracion',
     nombre: 'Migración Territorial',
     descripcion: 'Compara condiciones laborales entre departamentos antes de mudarte',
-    icon: <Icon.ObservatorioMapa size={28} />,
     fuentes: ['GEIH', 'DNP/MDM'],
   },
   {
     id: 'reskilling',
     nombre: 'Reskilling / Transición',
     descripcion: 'Calcula la brecha de habilidades entre ocupaciones y recomienda formación SENA',
-    icon: <Icon.PrediccionExito size={28} />,
     fuentes: ['ESCO', 'SENA', 'WEF Future of Jobs'],
   },
   {
     id: 'demanda-sectorial',
     nombre: 'Demanda Sectorial',
     descripcion: 'Simula el impacto de escenarios macroeconómicos en el empleo sectorial',
-    icon: <Icon.Observatorio size={28} />,
     fuentes: ['GEIH mensual', 'Chronos T5', 'RUES'],
   },
   {
     id: 'decision',
     nombre: 'Estudiar vs Trabajar vs Emprender',
     descripcion: 'Compara 3 trayectorias a 10 años según tu perfil',
-    icon: <Icon.Emprende size={28} />,
     fuentes: ['GEIH', 'RUES', 'Chronos T5', 'OLE/MEN'],
   },
 ]
@@ -206,8 +199,7 @@ export default function Simulacion() {
   return (
     <div className="animate-fade-in space-y-5">
       <div>
-        <h1 className="text-3xl font-bold text-white font-display flex items-center gap-3">
-          <span style={{ color: '#d4af37' }}><Icon.Simulacion size={28} /></span>
+        <h1 className="text-3xl font-bold text-white font-display">
           Simulación
         </h1>
         <p className="text-slate-400 text-sm mt-1">
@@ -634,8 +626,8 @@ function SimTrayectoria() {
               </div>
             )}
             {programa && (
-              <div className="mt-1 text-xs text-green-400 flex items-center gap-1">
-                <Icon.Accion.Check size={14} /> {programa}
+              <div className="mt-1 text-xs text-green-400">
+                {programa}
               </div>
             )}
           </div>
@@ -657,7 +649,7 @@ function SimTrayectoria() {
           disabled={loading || !programa}
           className="w-full md:w-auto px-6 py-2.5 bg-gradient-to-b from-amber-400 to-amber-600 text-[#0a0f1f] font-bold text-sm rounded-lg hover:from-amber-300 hover:to-amber-500 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
         >
-          {loading ? <><span className="animate-spin"><Icon.Accion.Buscar size={16} /></span> Simulando...</> : <><Icon.Prediccion size={18} /> Simular trayectoria</>}
+          {loading ? <>Simulando...</> : <>Simular trayectoria</>}
         </button>
       </div>
 
@@ -680,8 +672,8 @@ function SimTrayectoria() {
           {/* Gráfico */}
           <div className="plate card p-5">
             <div className="mb-4 pb-3 border-b border-gold-500/20">
-              <h3 className="text-lg font-bold text-white font-display flex items-center gap-2 mb-1">
-                <Icon.ObservatorioLinea size={20} /> Tu salario estimado año a año
+              <h3 className="text-lg font-bold text-white font-display mb-1">
+                Tu salario estimado año a año
               </h3>
               <p className="text-sm text-slate-400">
                 {result.programa} · {result.departamento}
@@ -787,13 +779,13 @@ function SimMigracion() {
       <div className="plate card p-5 space-y-4">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-end">
           <div>
-            <label className="block text-sm text-slate-400 mb-1.5 flex items-center gap-1.5"><Icon.Accion.Izquierda size={14} /> Departamento origen</label>
+            <label className="block text-sm text-slate-400 mb-1.5">Departamento origen</label>
             <select value={origen} onChange={(e) => setOrigen(e.target.value)} disabled={deptosCargando} className="w-full bg-[#0a0f1f] text-slate-200 text-sm border border-amber-500/20 rounded-lg px-3 py-2.5 focus:outline-none focus:border-amber-500/50 disabled:opacity-50">
               {deptos.map((d) => <option key={d} value={d}>{d}</option>)}
             </select>
           </div>
           <div>
-            <label className="block text-sm text-slate-400 mb-1.5 flex items-center gap-1.5"><Icon.Accion.Derecha size={14} /> Departamento destino</label>
+            <label className="block text-sm text-slate-400 mb-1.5">Departamento destino</label>
             <select value={destino} onChange={(e) => setDestino(e.target.value)} disabled={deptosCargando} className="w-full bg-[#0a0f1f] text-slate-200 text-sm border border-amber-500/20 rounded-lg px-3 py-2.5 focus:outline-none focus:border-amber-500/50 disabled:opacity-50">
               {deptos.map((d) => <option key={d} value={d}>{d}</option>)}
             </select>
@@ -804,7 +796,7 @@ function SimMigracion() {
           disabled={loading}
           className="w-full md:w-auto px-6 py-2.5 bg-gradient-to-b from-amber-400 to-amber-600 text-[#0a0f1f] font-bold text-sm rounded-lg hover:from-amber-300 hover:to-amber-500 transition-all disabled:opacity-50 flex items-center justify-center gap-2"
         >
-          {loading ? <><span className="animate-spin"><Icon.Accion.Buscar size={16} /></span> Comparando...</> : <><Icon.ObservatorioMapa size={18} /> Comparar departamentos</>}
+          {loading ? <>Comparando...</> : <>Comparar departamentos</>}
         </button>
       </div>
 
@@ -826,13 +818,13 @@ function SimMigracion() {
 
           {/* Comparación lado a lado */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <DeptoCard titulo="Origen" data={result.origen} color="slate" icon={<Icon.Accion.Izquierda size={16} />} />
-            <DeptoCard titulo="Destino" data={result.destino} color="gold" icon={<Icon.Accion.Derecha size={16} />} />
+            <DeptoCard titulo="Origen" data={result.origen} color="slate" />
+            <DeptoCard titulo="Destino" data={result.destino} color="gold" />
           </div>
 
           {/* Deltas */}
           <div className="plate card p-5">
-            <h3 className="text-lg font-bold text-white font-display mb-4 flex items-center gap-2"><Icon.PrediccionUp size={20} /> Diferencia (destino - origen)</h3>
+            <h3 className="text-lg font-bold text-white font-display mb-4">Diferencia (destino - origen)</h3>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
               <DeltaCard label="Salario promedio" value={`${result.delta.salario_pct > 0 ? '+' : ''}${result.delta.salario_pct}%`} cop={result.delta.salario_cop} positive={result.delta.salario_pct > 0} />
               <DeltaCard label="Formalidad" value={`${result.delta.formalidad_pct > 0 ? '+' : ''}${result.delta.formalidad_pct} pts`} positive={result.delta.formalidad_pct > 0} />
@@ -845,12 +837,11 @@ function SimMigracion() {
   )
 }
 
-function DeptoCard({ titulo, data, color, icon }: { titulo: string; data: Record<string, any>; color: string; icon: ReactNode }) {
+function DeptoCard({ titulo, data, color }: { titulo: string; data: Record<string, any>; color: string }) {
   const accent = color === 'gold' ? 'text-gold-400 border-amber-500/30' : 'text-slate-300 border-slate-600/30'
   return (
     <div className={`plate card p-5 border ${accent}`}>
       <div className="flex items-center gap-2 mb-4 pb-2 border-b border-white/[0.06]">
-        <span className={accent}>{icon}</span>
         <span className={`text-sm uppercase tracking-wider font-semibold ${color === 'gold' ? 'text-gold-400' : 'text-slate-400'}`}>{titulo}</span>
         <span className="ml-auto text-white font-display font-bold">{data.departamento}</span>
       </div>
@@ -940,7 +931,7 @@ function SimReskilling() {
           disabled={loading}
           className="w-full md:w-auto px-6 py-2.5 bg-gradient-to-b from-amber-400 to-amber-600 text-[#0a0f1f] font-bold text-sm rounded-lg hover:from-amber-300 hover:to-amber-500 transition-all disabled:opacity-50 flex items-center justify-center gap-2"
         >
-          {loading ? <><span className="animate-spin"><Icon.Accion.Buscar size={16} /></span> Analizando...</> : <><Icon.PrediccionExito size={18} /> Calcular brecha de habilidades</>}
+          {loading ? <>Analizando...</> : <>Calcular brecha de habilidades</>}
         </button>
       </div>
 
@@ -971,8 +962,8 @@ function SimReskilling() {
           {/* Habilidades que faltan */}
           {result.habilidades_faltan.length > 0 && (
             <div className="plate card p-5">
-              <h3 className="text-lg font-bold text-white font-display mb-4 flex items-center gap-2">
-                <Icon.Accion.Arriba size={20} className="text-rose-400" /> Habilidades que necesitas desarrollar ({result.habilidades_faltan.length})
+              <h3 className="text-lg font-bold text-white font-display mb-4">
+                Habilidades que necesitas desarrollar ({result.habilidades_faltan.length})
               </h3>
               <div className="flex flex-wrap gap-2">
                 {result.habilidades_faltan.map((h) => (
@@ -985,8 +976,8 @@ function SimReskilling() {
           {/* Habilidades críticas WEF */}
           {result.faltan_criticas_wef.length > 0 && (
             <div className="plate card p-5 border-amber-500/20">
-              <h3 className="text-lg font-bold text-gold-400 font-display mb-4 flex items-center gap-2">
-                <Icon.PrediccionExito size={20} /> Habilidades críticas para el futuro (WEF)
+              <h3 className="text-lg font-bold text-gold-400 font-display mb-4">
+                Habilidades críticas para el futuro (WEF)
               </h3>
               <ResponsiveContainer width="100%" height={Math.max(120, result.faltan_criticas_wef.length * 40)}>
                 <BarChart data={result.faltan_criticas_wef.map((h) => ({ habilidad: h.habilidad, demanda: h.demanda_wef }))} layout="vertical" margin={{ left: 10, right: 40 }}>
@@ -1005,8 +996,8 @@ function SimReskilling() {
           {/* Programas SENA */}
           {result.programas_sena_recomendados.length > 0 && (
             <div className="plate card p-5">
-              <h3 className="text-lg font-bold text-white font-display mb-4 flex items-center gap-2">
-                <Icon.Match size={20} /> Programas SENA recomendados
+              <h3 className="text-lg font-bold text-white font-display mb-4">
+                Programas SENA recomendados
               </h3>
               <div className="space-y-2">
                 {result.programas_sena_recomendados.map((p, i) => (
@@ -1056,7 +1047,7 @@ function OcupacionInput({ label, query, setQuery, seleccionado, opciones, onSele
           ))}
         </div>
       )}
-      {seleccionado && <div className="mt-1 text-xs text-green-400 flex items-center gap-1"><Icon.Accion.Check size={14} /> {seleccionado}</div>}
+      {seleccionado && <div className="mt-1 text-xs text-green-400">{seleccionado}</div>}
     </div>
   )
 }
@@ -1122,7 +1113,7 @@ function SimDemanda() {
           disabled={loading}
           className="w-full md:w-auto px-6 py-2.5 bg-gradient-to-b from-amber-400 to-amber-600 text-[#0a0f1f] font-bold text-sm rounded-lg hover:from-amber-300 hover:to-amber-500 transition-all disabled:opacity-50 flex items-center justify-center gap-2"
         >
-          {loading ? <><span className="animate-spin"><Icon.Accion.Buscar size={16} /></span> Simulando...</> : <><Icon.Observatorio size={18} /> Simular escenario</>}
+          {loading ? <>Simulando...</> : <>Simular escenario</>}
         </button>
       </div>
 
@@ -1139,8 +1130,8 @@ function SimDemanda() {
 
           <div className="plate card p-5">
             <div className="flex items-center justify-between mb-4 pb-2 border-b border-gold-500/20">
-              <h3 className="text-lg font-bold text-white font-display flex items-center gap-2">
-                <Icon.ObservatorioLinea size={20} /> Empleo proyectado a 12 meses
+              <h3 className="text-lg font-bold text-white font-display">
+                Empleo proyectado a 12 meses
               </h3>
               <span className="text-sm text-gold-400 uppercase tracking-wider font-semibold">{result.sector_nombre}</span>
             </div>
@@ -1161,10 +1152,7 @@ function SimDemanda() {
           </div>
 
           <div className="plate card p-5 border-amber-500/20">
-            <div className="flex items-start gap-3">
-              <div className="text-gold-400 flex-shrink-0 mt-0.5"><Icon.Accion.Info size={20} /></div>
-              <p className="text-sm text-slate-300">{result.veredicto}</p>
-            </div>
+            <p className="text-sm text-slate-300">{result.veredicto}</p>
           </div>
         </>
       )}
@@ -1239,9 +1227,9 @@ function SimDecision() {
   }, [result])
 
   const opcionesOrden = [
-    { key: 'estudiar', label: 'Estudiar', color: '#2563eb', icon: <Icon.MatchUniversidad size={18} /> },
-    { key: 'trabajar', label: 'Trabajar', color: '#4ade80', icon: <Icon.Match size={18} /> },
-    { key: 'emprender', label: 'Emprender', color: '#d4af37', icon: <Icon.EmprendeLanzar size={18} /> },
+    { key: 'estudiar', label: 'Estudiar', color: '#2563eb' },
+    { key: 'trabajar', label: 'Trabajar', color: '#4ade80' },
+    { key: 'emprender', label: 'Emprender', color: '#d4af37' },
   ]
 
   return (
@@ -1283,7 +1271,7 @@ function SimDecision() {
           disabled={loading}
           className="w-full md:w-auto px-6 py-2.5 bg-gradient-to-b from-amber-400 to-amber-600 text-[#0a0f1f] font-bold text-sm rounded-lg hover:from-amber-300 hover:to-amber-500 transition-all disabled:opacity-50 flex items-center justify-center gap-2"
         >
-          {loading ? <><span className="animate-spin"><Icon.Accion.Buscar size={16} /></span> Simulando...</> : <><Icon.Emprende size={18} /> Comparar trayectorias</>}
+          {loading ? <>Simulando...</> : <>Comparar trayectorias</>}
         </button>
       </div>
 
@@ -1295,7 +1283,6 @@ function SimDecision() {
           <div className="plate card p-5 text-center border-amber-500/30">
             <p className="text-xs text-slate-400 uppercase tracking-wider mb-2">Mejor opción según ingreso acumulado a 10 años</p>
             <div className="flex items-center justify-center gap-3">
-              {opcionesOrden.find((o) => o.key === result.mejor_opcion)?.icon}
               <p className="text-3xl font-bold font-display" style={{ color: opcionesOrden.find((o) => o.key === result.mejor_opcion)?.color }}>
                 {opcionesOrden.find((o) => o.key === result.mejor_opcion)?.label}
               </p>
@@ -1310,7 +1297,6 @@ function SimDecision() {
               const isMejor = result.mejor_opcion === o.key
               return (
                 <div key={o.key} className={`plate card p-4 text-center ${isMejor ? 'border-2' : ''}`} style={isMejor ? { borderColor: o.color + '60' } : {}}>
-                  <div className="flex items-center justify-center gap-2 mb-2" style={{ color: o.color }}>{o.icon}</div>
                   <p className="text-xs text-slate-400 uppercase tracking-wider">{o.label}</p>
                   <p className="text-xl font-bold font-display mt-1" style={{ color: o.color }}>{formatCOP(val)}</p>
                   <p className="text-[10px] text-slate-500 mt-1">Ingreso acumulado 10 años</p>
@@ -1322,8 +1308,8 @@ function SimDecision() {
           {/* Gráfico comparativo */}
           <div className="plate card p-5">
             <div className="flex items-center justify-between mb-4 pb-2 border-b border-gold-500/20">
-              <h3 className="text-lg font-bold text-white font-display flex items-center gap-2">
-                <Icon.ObservatorioLinea size={20} /> Ingreso mensual proyectado a 10 años
+              <h3 className="text-lg font-bold text-white font-display">
+                Ingreso mensual proyectado a 10 años
               </h3>
               <span className="text-sm text-gold-400 uppercase tracking-wider font-semibold">Monte Carlo · 500 sim.</span>
             </div>
@@ -1360,7 +1346,6 @@ function SimDecision() {
               return (
                 <div key={o.key} className="plate card p-4">
                   <div className="flex items-center gap-2 mb-2" style={{ color: o.color }}>
-                    {o.icon}
                     <span className="font-bold text-sm" style={{ color: o.color }}>{o.label}</span>
                   </div>
                   <p className="text-xs text-slate-400">{data.descripcion}</p>

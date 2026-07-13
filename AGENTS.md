@@ -12,9 +12,9 @@
 - **Frontend:** React 18 + TypeScript + Vite + Tailwind CSS 3 + Playfair Display + Inter
 - **Backend:** FastAPI (Python) + Uvicorn
 - **Base de datos / vector store:** Supabase (PostgreSQL + pgvector)
-- **LLM:** Gemini 2.5 Flash-Lite vía Google Cloud Agent Platform (primario); Gemma 4 E4B vía DeepInfra como fallback
+- **LLM:** Gemini 2.5 Flash-Lite vía Google Cloud Agent Platform (primario); Gemini Live (coach conversacional)
 - **ML / series temporales:** Chronos T5 Small (forecasting zero-shot, cron job batch); XGBoost + Prophet + scikit-learn
-- **Embeddings:** Gemma Embeddings 300 (`google/embeddinggemma-300m`) vía DeepInfra API, 768 dimensiones (calidad máxima sin truncar)
+- **Embeddings:** Gemma Embeddings 300 (`google/embeddinggemma-300m`) vía Google Cloud, 768 dimensiones (calidad máxima sin truncar)
 - **RAG ( conocimiento base):** PDFs -> PyMuPDF -> chunks -> Gemma 300 embeddings -> Supabase pgvector; búsqueda por similitud coseno con función SQL `buscar_embeddings_vector`
 - **Mapas:** react-simple-maps + GeoJSON real de Colombia (33 departamentos)
 - **Voz Coach:** faster-whisper (STT) + Edge-TTS (TTS) + fallback texto
@@ -30,7 +30,7 @@ C:\Users\crist\Documents\PROYECTOS\DATOS AL ECOSISTEMA 2026
 │   │   ├── db/
 │   │   │   └── supabase.py       # Cliente Supabase
 │   │   ├── services/
-│   │   │   └── embeddings.py     # Cliente DeepInfra Gemma 300 embeddings
+│   │   │   └── embeddings.py     # Cliente Google Cloud Gemma 300 embeddings
 │   │   ├── routers/
 │   │   │   ├── observatorio.py   # /api/observatorio
 │   │   │   ├── prediccion.py     # /api/prediccion
@@ -118,7 +118,7 @@ El frontend corre en `http://localhost:5173` y redirige las llamadas `/api` al b
 ## Decisiones de diseño importantes
 
 1. **Arquitectura de 5 módulos:** Se redujo de 6 a 5 módulos. Alerta Curricular y Reskilling quedan integrados dentro de **Match Inteligente** como pestañas/flujos internos.
-2. **ALBA = Analítica Laboral Basada en IA:** El acrónimo se ajustó para destacar el uso de IA (Gemma, Chronos, embeddings, RAG), alineado con el enfoque del concurso.
+2. **ALBA = Analítica Laboral Basada en IA:** El acrónimo se ajustó para destacar el uso de IA (Gemini, Chronos, embeddings, RAG), alineado con el enfoque del concurso.
 3. **Emprende IA con Índice de Oportunidad:** En lugar de prometer "probabilidad de éxito" (difícil de justificar), se calcula un **Índice de Potencial** 0-100 basado en datos (crecimiento del sector, competencia, demanda laboral, incentivos).
 4. **Predicción IA con Chronos T5 sobre datos mundiales:** El módulo renombrado de Simulador a Predicción genera proyecciones a 5 y 10 años para sectores, profesiones, habilidades y salarios. Las series temporales provienen del Banco Mundial (World Bank Open Data) para Colombia (2010-2025), con las que Chronos T5 Small predice zero-shot la participación sectorial del empleo, desempleo, formalidad y PIB por empleado. Profesiones y habilidades se proyectan con heurísticos basados en el crecimiento sectorial, O*NET/ESCO y el WEF Future of Jobs Report. Los resultados se guardan en `data/processed/predicciones_mundiales.json` y se sirven vía `/api/prediccion/*`.
 5. **Coach IA simplificado y poderoso:** Dos funciones centrales:
@@ -128,8 +128,8 @@ El frontend corre en `http://localhost:5173` y redirige las llamadas `/api` al b
 7. **Datos locales, no API en vivo:** Se descargan datasets oficiales una sola vez y se procesan localmente. No se consulta la API Socrata en cada request. SPE se aproxima con inscritos de la Agencia Pública de Empleo (APE) del SENA; OLE se aproxima con programas de Educación para el Trabajo y el Desarrollo Humano (ETDH) del MEN; DNP se aproxima con la Medición del Desempeño Municipal (MDM).
 8. **Sin scraping masivo:** Se curan manualmente 30–50 ofertas laborales y 5–10 currículos/pensums para el coach.
 9. **RUES como detector de sectores emergentes:** El registro de nuevas empresas se usa como proxy de sectores en crecimiento.
-10. **Coach online + offline:** El coach online usa DeepInfra. La fase 2 incluirá un coach offline para PC con Gemma 4 4B GGUF, dirigido a zonas de baja conectividad.
-11. **Embeddings con Gemma 300 a 768 dimensiones:** Se usa `google/embeddinggemma-300m` vía DeepInfra en lugar de modelos locales, aprovechando calidad multilingüe y alineación con Gemma 4. No se truncan las dimensiones (sin MRL).
+10. **Coach online:** El coach usa Gemini 2.5 Flash-Lite para análisis de CV y Gemini Live para simulacros de entrevista por voz y texto.
+11. **Embeddings con Gemma 300 a 768 dimensiones:** Se usa `google/embeddinggemma-300m` vía Google Cloud en lugar de modelos locales, aprovechando calidad multilingüe. No se truncan las dimensiones (sin MRL).
 12. **RAG con PyMuPDF:** La base de conocimiento se ingesta con PyMuPDF, se divide en chunks con overlap y se indexa en Supabase pgvector. La búsqueda usa similitud coseno mediante la función PostgreSQL `buscar_embeddings_vector`.
 13. **No se incluye SECOP en el MVP:** El dataset es de ~9 GB y no aporta directamente a las 5 funciones principales.
 
@@ -143,9 +143,6 @@ SUPABASE_KEY=<service_role_key>
 
 # Google Cloud / Google AI Studio (primario)
 GOOGLE_API_KEY=<tu_api_key_de_google>
-
-# DeepInfra API Key para Gemma 4 (fallback)
-DEEPINFRA_API_KEY=keLkyno8SpPdoNhd6VCAXXivKEgbdkjs
 ```
 
 ## Próximos pasos abiertos

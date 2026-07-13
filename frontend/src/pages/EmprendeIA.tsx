@@ -1,5 +1,4 @@
-import { useEffect, useState, type ReactNode } from 'react'
-import Icon from '../components/Icon'
+import { useEffect, useState } from 'react'
 import api from '../services/api'
 import FuentesBadge from '../components/FuentesBadge'
 
@@ -40,15 +39,14 @@ const inversiones = [
 
 const IDEA_EJEMPLO = `Quiero montar una microempresa de delivery de comida saludable y orgánica en Medellín, dirigida a profesionales de 25-40 años que trabajan desde casa. Inicio con cocina fantasma y apps de domicilios, luego quiero abrir punto físico.`
 
-function TabButton({ active, onClick, icon, label }: { active: boolean; onClick: () => void; icon: ReactNode; label: string }) {
+function TabButton({ active, onClick, label }: { active: boolean; onClick: () => void; label: string }) {
   return (
     <button
       onClick={onClick}
-      className={`flex items-center gap-2 px-4 py-3 text-sm font-medium rounded-lg transition-colors ${
+      className={`px-4 py-3 text-sm font-medium rounded-lg transition-colors ${
         active ? 'bg-alba-600 text-white shadow-sm' : 'text-gray-600 hover:bg-gray-100'
       }`}
     >
-      {icon}
       {label}
     </button>
   )
@@ -136,8 +134,7 @@ export default function EmprendeIA() {
 
   return (
     <div>
-      <h1 className="text-3xl font-bold text-gray-900 mb-2 flex items-center gap-3">
-        <span style={{ color: '#d4af37' }}><Icon.EmprendeLanzar size={28} /></span>
+      <h1 className="text-3xl font-bold text-gray-900 mb-2">
         Emprende IA
       </h1>
       <p className="text-gray-600 mb-6">
@@ -145,8 +142,8 @@ export default function EmprendeIA() {
       </p>
 
       <div className="flex flex-wrap gap-2 mb-6">
-        <TabButton active={activeTab === 'idea'} onClick={() => setActiveTab('idea')} icon={<Icon.EmprendeIdea size={18} />} label="Tengo una idea" />
-        <TabButton active={activeTab === 'oportunidades'} onClick={() => setActiveTab('oportunidades')} icon={<Icon.PrediccionUp size={18} />} label="Descubrir oportunidades" />
+        <TabButton active={activeTab === 'idea'} onClick={() => setActiveTab('idea')} label="Tengo una idea" />
+        <TabButton active={activeTab === 'oportunidades'} onClick={() => setActiveTab('oportunidades')} label="Descubrir oportunidades" />
       </div>
 
       {/* Tengo una idea */}
@@ -197,15 +194,9 @@ export default function EmprendeIA() {
               className="mt-5 w-full bg-alba-600 text-white py-3 rounded-lg font-medium hover:bg-alba-700 disabled:opacity-50 flex items-center justify-center gap-2"
             >
               {loading ? (
-                <>
-                  <span className="animate-spin inline-block"><Icon.EmprendeLanzar size={18} /></span>
-                  Evaluando con IA...
-                </>
+                <>Evaluando con IA...</>
               ) : (
-                <>
-                  <Icon.Accion.Buscar size={18} />
-                  Evaluar potencial
-                </>
+                <>Evaluar potencial</>
               )}
             </button>
           </div>
@@ -228,14 +219,12 @@ export default function EmprendeIA() {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 {/* Razones a favor */}
                 <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-                  <h3 className="font-bold text-gray-900 mb-4 flex items-center gap-2">
-                    <span className="text-green-600 inline-flex"><Icon.Accion.Check size={20} /></span>
+                  <h3 className="font-bold text-gray-900 mb-4">
                     Razones a favor
                   </h3>
                   <ul className="space-y-3">
                     {resultadoIdea.razones_a_favor.map((r, i) => (
                       <li key={i} className="flex items-start gap-2 text-sm text-gray-700">
-                        <span className="text-green-500 mt-0.5 flex-shrink-0 inline-flex"><Icon.Accion.Derecha size={16} /></span>
                         {r}
                       </li>
                     ))}
@@ -244,14 +233,12 @@ export default function EmprendeIA() {
 
                 {/* Riesgos */}
                 <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-                  <h3 className="font-bold text-gray-900 mb-4 flex items-center gap-2">
-                    <span className="text-amber-500 inline-flex"><Icon.Kpi.Desempleo size={20} /></span>
+                  <h3 className="font-bold text-gray-900 mb-4">
                     Riesgos principales
                   </h3>
                   <ul className="space-y-3">
                     {resultadoIdea.riesgos.map((r, i) => (
                       <li key={i} className="flex items-start gap-2 text-sm text-gray-700">
-                        <span className="text-amber-500 mt-0.5 flex-shrink-0 inline-flex"><Icon.Accion.Derecha size={16} /></span>
                         {r}
                       </li>
                     ))}
@@ -261,8 +248,7 @@ export default function EmprendeIA() {
 
               {/* Pasos */}
               <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-                <h3 className="font-bold text-gray-900 mb-4 flex items-center gap-2">
-                  <span className="text-alba-600 inline-flex"><Icon.CoachChat size={20} /></span>
+                <h3 className="font-bold text-gray-900 mb-4">
                   Pasos concretos para empezar
                 </h3>
                 <ol className="space-y-3">
@@ -280,14 +266,12 @@ export default function EmprendeIA() {
               {/* Fuentes de recursos */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-                  <h3 className="font-bold text-gray-900 mb-4 flex items-center gap-2">
-                    <span className="text-emerald-600 inline-flex"><Icon.EmprendeDinero size={20} /></span>
+                  <h3 className="font-bold text-gray-900 mb-4">
                     Fuentes y recursos
                   </h3>
                   <ul className="space-y-2">
                     {resultadoIdea.fuentes_recursos.map((f, i) => (
                       <li key={i} className="flex items-start gap-2 text-sm text-gray-700">
-                        <span className="text-emerald-500 mt-0.5 flex-shrink-0 inline-flex"><Icon.Accion.Derecha size={16} /></span>
                         {f}
                       </li>
                     ))}
@@ -295,8 +279,7 @@ export default function EmprendeIA() {
                 </div>
 
                 <div className="bg-amber-50 border border-amber-100 rounded-xl p-6">
-                  <h3 className="font-semibold text-amber-900 mb-2 flex items-center gap-2">
-                    <span className="text-amber-700 inline-flex"><Icon.EmprendeIdea size={18} /></span>
+                  <h3 className="font-semibold text-amber-900 mb-2">
                     Oportunidad de nicho
                   </h3>
                   <p className="text-sm text-amber-800">{resultadoIdea.oportunidad_nicho}</p>
@@ -327,7 +310,6 @@ export default function EmprendeIA() {
                 disabled={loadingTop}
                 className="bg-alba-600 text-white px-6 py-2 rounded-lg font-medium hover:bg-alba-700 disabled:opacity-50 flex items-center justify-center gap-2"
               >
-                {loadingTop ? <span className="animate-spin inline-block"><Icon.PrediccionUp size={18} /></span> : <Icon.Accion.Buscar size={18} />}
                 {loadingTop ? 'Analizando...' : 'Ver oportunidades'}
               </button>
             </div>
@@ -335,8 +317,7 @@ export default function EmprendeIA() {
 
           {topSectores.length > 0 && (
             <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-              <h3 className="font-bold text-gray-900 mb-4 flex items-center gap-2">
-                <span className="text-alba-600 inline-flex"><Icon.ObservatorioMapa size={20} /></span>
+              <h3 className="font-bold text-gray-900 mb-4">
                 Sectores con mayor potencial en {deptoOportunidades}
               </h3>
               <div className="space-y-3">

@@ -1,6 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
-import Icon from '../components/Icon'
 import api from '../services/api'
 import MapaColombia, { type DeptoData } from '../components/MapaColombia'
 import { formatCOP, formatCOPFull } from '../utils/format'
@@ -178,7 +177,7 @@ export default function Dashboard() {
       {/* Top bar */}
       <header className="topbar">
         <div>
-          <h1 className="hello">Bienvenido a ALBA<span className="wave">👋</span></h1>
+          <h1 className="hello">Bienvenido a ALBA</h1>
           <p className="hello-sub">Tu plataforma de inteligencia laboral de Colombia.</p>
         </div>
 
@@ -198,7 +197,7 @@ export default function Dashboard() {
               <div className="flujo-label">{paso.label}</div>
               <div className="flujo-desc">{paso.desc}</div>
             </Link>
-            {i < arr.length - 1 && <Icon.Accion.Derecha size={18} color="#d4af37" className="flujo-arrow" />}
+            {i < arr.length - 1 && <span className="flujo-arrow text-gold-400 text-lg font-bold">→</span>}
           </div>
         ))}
       </section>
@@ -206,9 +205,6 @@ export default function Dashboard() {
       {/* KPIs nacionales: todos en una misma línea */}
       <section className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-3">
         <div className="plate card py-3 px-4 flex items-center gap-3">
-          <div className="kpi-icon" style={{ width: 34, height: 34 }}>
-            <Icon.Kpi.Trabajo size={18} />
-          </div>
           <div>
             <div className="kpi-label text-sm leading-none">Ocupados Colombia</div>
             <div className="kpi-value text-2xl mt-0.5">{kpis ? Math.round(kpis.ocupados).toLocaleString('es-CO') : '—'}</div>
@@ -234,11 +230,10 @@ export default function Dashboard() {
           <div className="p-4 sm:p-5 border-b border-white/[0.06]">
             <div className="flex items-center justify-between gap-2">
               <h2 className="text-xl sm:text-2xl font-bold text-white font-display flex items-center gap-2">
-                <Icon.ObservatorioMapa size={22} /> Mapa laboral de Colombia
+                Mapa laboral de Colombia
               </h2>
               <Link to="/observatorio" className="link text-sm">
-                Ver observatorio completo
-                <Icon.Accion.Derecha size={16} />
+                Ver observatorio completo →
               </Link>
             </div>
           </div>

@@ -2,26 +2,16 @@
 
 **Plataforma Nacional de Inteligencia Laboral para Colombia**
 
-> Concurso **Datos al Ecosistema 2026 — Reto 5: Economía y Empleo**
-> Nivel: Avanzado
+> **Concurso Datos al Ecosistema 2026 — Reto 5: Economía y Empleo**
+> Nivel: Avanzado | **www.albacolombia.com**
 
-ALBA conecta la oferta educativa (SNIES, SENA, OLE/MEN) con la demanda real del mercado laboral (GEIH, PILA, RUES, SPE/APE) y el contexto territorial (DNP/MDM), generando recomendaciones accionables para ciudadanos, empresas, universidades y gobiernos mediante inteligencia artificial.
+ALBA es una plataforma web que conecta la oferta educativa (SNIES, SENA, OLE/MEN) con la demanda real del mercado laboral (GEIH, PILA, RUES, SPE/APE) y el contexto territorial (DNP/MDM), generando recomendaciones accionables para ciudadanos, empresas, universidades y gobiernos mediante inteligencia artificial.
 
-## Tabla de contenidos
+**Todos los datos provienen de fuentes oficiales colombianas disponibles en [datos.gov.co](https://datos.gov.co).**
 
-- [El problema](#el-problema)
-- [La solución](#la-solución)
-- [Arquitectura](#arquitectura)
-- [Stack tecnológico](#stack-tecnológico)
-- [Los 5 módulos](#los-5-módulos)
-- [Inteligencia artificial](#inteligencia-artificial)
-- [Datos abiertos utilizados](#datos-abiertos-utilizados)
-- [Cómo ejecutarlo](#cómo-ejecutarlo)
-- [Estructura del repositorio](#estructura-del-repositorio)
-- [Equipo](#equipo)
-- [Licencia](#licencia)
+---
 
-## El problema
+## ¿Qué problema resuelve ALBA?
 
 Colombia enfrenta una desconexión estructural entre lo que se enseña, lo que se aprende y lo que el mercado laboral necesita:
 
@@ -31,7 +21,9 @@ Colombia enfrenta una desconexión estructural entre lo que se enseña, lo que s
 
 ALBA resuelve esto con una plataforma que **observa, anticipa, conecta, orienta y prepara** al ecosistema laboral colombiano usando datos abiertos del DANE, SENA, MEN, DNP y fuentes internacionales (O*NET, ESCO, World Bank).
 
-## La solución
+---
+
+## ¿Cómo lo resuelve?
 
 ALBA es una plataforma web con 5 módulos que siguen un flujo narrativo:
 
@@ -40,39 +32,75 @@ Observo el mercado  →  Anticipo cambios  →  Encuentro mi lugar  →  Decido 
   (Observatorio)     (Predicción IA)         (Match)              (Emprende IA)        (Coach IA)
 ```
 
-Cada módulo responde a una pregunta concreta:
-
 | # | Módulo | Pregunta | Actor principal |
 |---|--------|----------|-----------------|
 | 1 | Observatorio Inteligente | ¿Qué está pasando en el mercado laboral? | Todos |
 | 2 | Predicción IA | ¿Qué podría pasar en el futuro? | Gobierno / Universidades |
 | 3 | Match Inteligente | ¿Dónde encajo según mi perfil? | Persona / Universidad / Empresa |
-| 4 | Emprende IA | ¿Qué negocio tiene mayor potencial en mi municipio? | Emprendedores |
+| 4 | Emprende IA | ¿Qué negocio tiene potencial en mi municipio? | Emprendedores |
 | 5 | Coach IA | ¿Cómo me preparo para conseguir el empleo? | Personas |
+
+---
+
+## Datos abiertos utilizados
+
+**Todos los datos provienen de [datos.gov.co](https://datos.gov.co) y portales oficiales colombianos.**
+
+| Fuente | Dataset | Tablas | Filas |
+|--------|---------|--------|-------|
+| [datos.gov.co](https://datos.gov.co) (DANE) | GEIH — empleo, salarios, informalidad | 8 | ~120K |
+| [datos.gov.co](https://datos.gov.co) (DANE) | EMICRON — micronegocios | 5 | ~109 |
+| [datos.gov.co](https://datos.gov.co) (DNP) | MDM — desempeño municipal | 3 | ~22K |
+| [datos.gov.co](https://datos.gov.co) (MinTrabajo) | PILA — empleo formal por CIIU | 2 | ~652 |
+| [datos.gov.co](https://datos.gov.co) (Confecámaras) | RUES — empresas nuevas | 3 | ~26K |
+| [datos.gov.co](https://datos.gov.co) (MEN) | SNIES — matriculados | 2 | ~85K |
+| [datos.gov.co](https://datos.gov.co) (MEN) | OLE/ETDH — educación para el trabajo | 2 | ~20K |
+| [datos.gov.co](https://datos.gov.co) (SENA) | Programas activos + SPE/APE | 4 | ~17K |
+| [datos.gov.co](https://datos.gov.co) (MEN) | Saber Pro — calidad educativa | 1 | ~1.4K |
+| [ESCO](https://esco.ec.europa.eu) (EU) | Ocupaciones y habilidades | 7 | ~155K |
+| [O*NET](https://www.onetcenter.org) (EE.UU.) | Ocupaciones estandarizadas | 7 | ~12K |
+| [World Bank](https://data.worldbank.org/country/colombia) | Indicadores macro Colombia | 1 | 128 |
+| IA | Predicciones Chronos T5 | 2 | ~436 |
+
+**Total: 44 tablas · ~744K filas en Supabase**
+
+---
+
+## Inteligencia artificial
+
+| Componente | Modelo | Uso |
+|------------|--------|-----|
+| LLM primario | **Gemini 2.5 Flash-Lite** | Match (CV vs vacante), Coach (mejorar CV, entrevista), Emprende (evaluar ideas) |
+| LLM conversacional | **Gemini Live** | Coach IA — simulacros de entrevista por voz y texto |
+| Forecasting | **Chronos T5 Small** | Predicción zero-shot de empleo, desempleo, informalidad y salarios a 5 y 10 años |
+| Embeddings | **Gemma Embeddings 300** | RAG — base de conocimiento para Coach IA (768 dimensiones) |
+| Matching | **ESCO + OLE + LLM** | Score híbrido: 50% habilidades reales + 50% análisis del LLM |
+
+---
 
 ## Arquitectura
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
-│                        FRONTEND (React + Vite)                   │
-│  Tailwind CSS · Playfair Display + Inter · react-simple-maps     │
-│  Puerto: 5173                                                    │
+│                    FRONTEND (Vercel)                             │
+│  React 18 + TypeScript + Vite + Tailwind CSS 3                  │
+│  albacolombia.com                                               │
 ├─────────────────────────────────────────────────────────────────┤
-│                          /api (proxy)                            │
+│                    /api/* → Railway (rewrites)                   │
 ├─────────────────────────────────────────────────────────────────┤
-│                     BACKEND (FastAPI + Uvicorn)                  │
-│  5 routers: observatorio · prediccion · match · emprende · coach │
-│  Puerto: 8000                                                    │
+│                    BACKEND (Railway)                             │
+│  FastAPI + Uvicorn · 5 routers · 40+ endpoints                  │
+│  albacolombia-backend.railway.app                               │
 ├──────────────┬──────────────┬──────────────┬─────────────────────┤
-│   Supabase   │  LLM Gemini  │  Chronos T5  │   DeepInfra Gemma   │
-│  PostgreSQL  │  2.5 Flash   │  (forecast)  │   4 E4B (fallback)  │
-│  + pgvector  │  -Lite       │              │                     │
-│  (44 tablas  │              │              │                     │
-│   744K filas)│              │              │                     │
+│   Supabase   │  Gemini 2.5  │  Chronos T5  │   Gemini Live       │
+│  PostgreSQL  │  Flash-Lite  │  (forecast)  │   (coach)           │
+│  + pgvector  │              │              │                     │
+│  44 tablas   │              │              │                     │
+│  ~744K filas │              │              │                     │
 └──────────────┴──────────────┴──────────────┴─────────────────────┘
 ```
 
-Detalle completo en [`docs/architecture.md`](docs/architecture.md).
+---
 
 ## Stack tecnológico
 
@@ -82,7 +110,7 @@ Detalle completo en [`docs/architecture.md`](docs/architecture.md).
 | Backend | FastAPI (Python) + Uvicorn |
 | Base de datos | Supabase (PostgreSQL + pgvector) |
 | LLM primario | Gemini 2.5 Flash-Lite (Google Cloud) |
-| LLM fallback | Gemma 4 E4B (DeepInfra) |
+| LLM conversacional | Gemini Live (Google Cloud) |
 | Forecasting | Chronos T5 Small (zero-shot, cron batch) |
 | ML tradicional | XGBoost + Prophet + scikit-learn |
 | Embeddings | Gemma Embeddings 300 (768 dimensiones) |
@@ -91,59 +119,9 @@ Detalle completo en [`docs/architecture.md`](docs/architecture.md).
 | Voz Coach | faster-whisper (STT) + Edge-TTS (TTS) |
 | Infraestructura | Vercel (frontend) + Railway (backend) + Supabase + Namecheap |
 
-## Inteligencia artificial
+---
 
-ALBA integra múltiples componentes de IA:
-
-### Modelos de lenguaje (LLM)
-- **Gemini 2.5 Flash-Lite** (primario): análisis de CV vs vacante, evaluación de ideas de negocio, coaching de entrevistas, mejora de CV
-- **Gemma 4 E4B** (fallback vía DeepInfra): respaldo cuando Gemini no está disponible
-
-### Forecasting con redes neuronales Transformer
-- **Chronos T5 Small**: predicción zero-shot de series temporales (empleo, desempleo, informalidad, salarios) con datos del Banco Mundial y GEIH
-
-### RAG (Retrieval-Augmented Generation)
-- Ingesta de PDFs con PyMuPDF → chunks con overlap → embeddings Gemma 300 (768d) → Supabase pgvector
-- Búsqueda semántica con similitud coseno vía función SQL `buscar_embeddings_vector`
-
-### Embeddings
-- `google/embeddinggemma-300m` vía DeepInfra, 768 dimensiones (calidad máxima sin truncar)
-
-### Matching con datos reales
-- ESCO (habilidades por ocupación) + OLE-MEN (ingresos reales de egresados) + LLM para interpretación
-- Score híbrido: 50% intersección de habilidades reales + 50% análisis del LLM
-
-## Datos abiertos utilizados
-
-| Fuente | Dataset | Tablas | Filas |
-|--------|---------|--------|-------|
-| DANE | GEIH (empleo, salarios, informalidad) | 8 | ~120K |
-| DANE | EMICRON (micronegocios) | 5 | ~109 |
-| DANE | DNP-MDM (desempeño municipal) | 3 | ~22K |
-| MinTrabajo | PILA (empleo formal por CIIU) | 2 | ~652 |
-| Confecámaras | RUES (empresas nuevas) | 3 | ~26K |
-| MEN | SNIES (matriculados) | 2 | ~85K |
-| MEN | OLE/ETDH (educación para el trabajo) | 2 | ~20K |
-| SENA | Programas activos + SPE/APE | 4 | ~17K |
-| EU (ESCO) | Ocupaciones y habilidades | 7 | ~155K |
-| EE.UU. (O*NET) | Ocupaciones estandarizadas | 7 | ~12K |
-| MEN | Saber Pro (calidad educativa) | 1 | ~1.4K |
-| World Bank | Indicadores macro Colombia | 1 | 128 |
-| IA | Predicciones Chronos T5 | 2 | ~436 |
-
-**Total: 44 tablas · ~744K filas en Supabase**
-
-Detalle de variables en [`docs/data_dictionary.md`](docs/data_dictionary.md).
-Enlaces oficiales en [`docs/fuentes_datos.md`](docs/fuentes_datos.md).
-
-## Cómo ejecutarlo
-
-### Requisitos
-
-- Python 3.11+
-- Node.js 18+
-- Cuenta de Supabase (PostgreSQL + pgvector)
-- API keys: Google (Gemini), DeepInfra (Gemma)
+## Cómo ejecutarlo localmente
 
 ### Backend
 
@@ -171,79 +149,60 @@ Crear `backend/.env`:
 SUPABASE_URL=https://[tu-proyecto].supabase.co
 SUPABASE_KEY=[service_role_key]
 GOOGLE_API_KEY=[tu_api_key]
-DEEPINFRA_API_KEY=[tu_api_key]
 ```
+
+---
+
+## Despliegue en producción
+
+### 1. Dominio
+
+- **Namecheap:** `www.albacolombia.com`
+
+### 2. Frontend → Vercel
+
+- Conectar repo de GitHub
+- Vercel detecta Vite automáticamente
+- URL: `albacolombia.vercel.app`
+
+### 3. Backend → Railway
+
+- Conectar carpeta `backend/`
+- Apuntar a `main.py` con Uvicorn
+- URL: `albacolombia-backend.railway.app`
+
+### 4. DNS en Namecheap
+
+| Registro | Nombre | Valor |
+|----------|--------|-------|
+| CNAME | www | cname.vercel-dns.com |
+| A | @ | 76.76.21.21 |
+
+### 5. Variables de entorno
+
+Configurar en Vercel y Railway:
+- `SUPABASE_URL`
+- `SUPABASE_KEY`
+- `GOOGLE_API_KEY`
+
+### 6. Vercel rewrites
+
+Agregar `vercel.json` en la raíz del frontend para redirigir `/api/*` a Railway.
+
+---
 
 ## Estructura del repositorio
 
 ```
 DATOS AL ECOSISTEMA 2026/
-├── README.md                          # Este archivo
-├── LICENSE                            # Licencia MIT
-├── AGENTS.md                          # Documentación técnica del proyecto
-├── Changelog.md                       # Registro de versiones
-├── requirements.txt                   # Dependencias Python (raíz)
+├── README.md
+├── LICENSE
+├── Changelog.md
+├── AGENTS.md
+├── requirements.txt
+├── vercel.json
 │
-├── docs/                              # Documentación técnica
-│   ├── architecture.md                # Diagrama de arquitectura
-│   ├── data_dictionary.md             # Diccionario de datos
-│   ├── planteamiento_problema.md      # Definición del problema
-│   ├── marco_metodologico.md          # Metodología CRISP-ML
-│   ├── fuentes_datos.md               # Enlaces a fuentes oficiales
-│   └── conclusiones.md                # Hallazgos y próximos pasos
-│
-├── RECURSOS/                          # Material visual para sustentación
-│   └── (presentación y portada)
-│
-├── backend/                           # API FastAPI
-│   ├── app/
-│   │   ├── main.py                    # Entrypoint
-│   │   ├── db/supabase.py             # Cliente Supabase
-│   │   ├── services/
-│   │   │   ├── llm_gemini.py          # Gemini 2.5 Flash-Lite
-│   │   │   ├── llm.py                 # Gemma 4 (DeepInfra fallback)
-│   │   │   └── embeddings.py          # Gemma 300 embeddings
-│   │   └── routers/
-│   │       ├── observatorio.py        # /api/observatorio
-│   │       ├── prediccion.py          # /api/prediccion
-│   │       ├── match.py               # /api/match
-│   │       ├── emprende.py            # /api/emprende
-│   │       └── coach.py               # /api/coach
-│   └── requirements.txt
-│
-├── frontend/                          # App React + TypeScript
-│   ├── src/
-│   │   ├── components/                # Layout, MapaColombia, Icon
-│   │   ├── pages/                     # 6 páginas (Dashboard + 5 módulos)
-│   │   ├── services/api.ts            # Cliente Axios
-│   │   └── utils/format.ts            # Formato COP, números, porcentajes
-│   ├── package.json
-│   ├── tailwind.config.js
-│   └── vite.config.ts
-│
-├── data/
-│   ├── raw/                           # Datasets originales descargados
-│   └── processed/                     # CSVs limpios listos para cargar
-│
-├── src/                               # Scripts ETL, carga y utilidades
-│   ├── etl_pipeline.py                # Pipeline principal de limpieza
-│   ├── download_worldbank.py          # Descarga indicadores Banco Mundial
-│   ├── prediccion_chronos.py          # Entrena Chronos T5 + genera JSON
-│   ├── pdf_to_rag.py                  # Ingesta PDFs a RAG
-│   ├── load_to_supabase.py            # Carga CSVs a Supabase
-│   └── ...                            # Otros scripts de ETL y carga
-│
-├── sql/                               # Eschemas de base de datos
-│   ├── schema_supabase.sql            # DDL inicial
-│   ├── schema_fix.sql                 # Correcciones
-│   ├── schema_nuevas_tablas.sql       # Tablas nuevas
-│   └── ...                            # Otros schemas
-│
-├── tests/                             # Pruebas y archivos temporales
-│   └── test_chronos.py
-│
-├── notebooks/                         # Notebooks (si aplican)
-├── docs/                              # Documentación técnica
+├── docs/
 │   ├── architecture.md
 │   ├── data_dictionary.md
 │   ├── planteamiento_problema.md
@@ -251,9 +210,56 @@ DATOS AL ECOSISTEMA 2026/
 │   ├── fuentes_datos.md
 │   └── conclusiones.md
 │
-└── RECURSOS/                          # Material visual para sustentación
-    └── README.md
+├── RECURSOS/
+│   └── (presentación y portada)
+│
+├── backend/
+│   ├── app/
+│   │   ├── main.py
+│   │   ├── db/supabase.py
+│   │   ├── services/
+│   │   │   ├── llm_gemini.py
+│   │   │   └── embeddings.py
+│   │   └── routers/
+│   │       ├── observatorio.py
+│   │       ├── prediccion.py
+│   │       ├── match.py
+│   │       ├── emprende.py
+│   │       └── coach.py
+│   └── requirements.txt
+│
+├── frontend/
+│   ├── src/
+│   │   ├── components/
+│   │   ├── pages/
+│   │   ├── services/api.ts
+│   │   └── utils/format.ts
+│   ├── package.json
+│   ├── tailwind.config.js
+│   └── vite.config.ts
+│
+├── data/
+│   ├── raw/
+│   └── processed/
+│
+├── src/
+│   ├── etl_pipeline.py
+│   ├── download_worldbank.py
+│   ├── prediccion_chronos.py
+│   ├── pdf_to_rag.py
+│   ├── load_to_supabase.py
+│   └── ...
+│
+├── sql/
+│   ├── schema_supabase.sql
+│   ├── schema_fix.sql
+│   └── ...
+│
+└── tests/
+    └── test_chronos.py
 ```
+
+---
 
 ## Estado del proyecto
 
@@ -269,9 +275,13 @@ DATOS AL ECOSISTEMA 2026/
 🔄 Despliegue en producción (Vercel + Railway + Supabase)
 🔄 Presentación para concurso (13 julio deadline)
 
+---
+
 ## Equipo
 
 - **Líder / Desarrollador:** Manuel Francisco Machado
+
+---
 
 ## Licencia
 
