@@ -26,8 +26,8 @@ EMICRON_DANE/
 Marzo 2026/
 ESCO dataset - v1.2.1 - classification - es - csv/
 frontend/dist/
-frontend/public/
-!frontend/public/dashboard.json
+!frontend/public/
+!frontend/public/**
 
 # Keep essential processed data files
 !data/processed/predicciones_mundiales.json
