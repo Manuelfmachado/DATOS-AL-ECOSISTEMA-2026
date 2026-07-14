@@ -8,6 +8,17 @@ ALBA es una plataforma web que conecta la oferta educativa con la demanda real d
 
 ---
 
+## Demo en vivo y recursos de sustentación
+
+- 🌐 **Aplicación web:** [https://albacolombia.com](https://albacolombia.com) *(por desplegar)*
+- 📊 **Presentación web:** [`recursos/alba_slides.html`](recursos/alba_slides.html) — ábrela en el navegador y presiona `Ctrl+P` → Guardar como PDF
+- 📊 **Presentación PowerPoint:** [`recursos/presentacion.pptx`](recursos/presentacion.pptx)
+- 📄 **Presentación PDF:** [`recursos/presentacion.pdf`](recursos/presentacion.pdf)
+- 🖼️ **Portada:** [`recursos/portada.png`](recursos/portada.png)
+- 📖 **Documentación técnica:** ver carpeta [`docs/`](docs/)
+
+---
+
 ## El problema
 
 Colombia enfrenta una desconexión estructural entre lo que se enseña, lo que se aprende y lo que el mercado laboral necesita:
@@ -138,9 +149,14 @@ Detalle completo en [`docs/architecture.md`](docs/architecture.md).
 │   ├── planteamiento_problema.md
 │   ├── marco_metodologico.md
 │   ├── fuentes_datos.md
+│   ├── validation_guide.md
 │   └── conclusiones.md
 │
 ├── RECURSOS/              # Material visual para sustentación
+│   ├── alba_slides.html
+│   ├── presentacion.pptx
+│   ├── presentacion.pdf
+│   └── portada.png
 │
 ├── backend/               # API FastAPI
 │   └── app/

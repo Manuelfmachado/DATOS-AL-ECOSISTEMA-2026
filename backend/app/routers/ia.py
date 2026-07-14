@@ -39,13 +39,22 @@ async def analizar_widget(req: AnalizarWidgetRequest):
     y la pregunta del usuario. Devuelve un análisis contextual y accionable.
     """
     # Construir prompt con contexto completo
-    system = """Eres ALBA, una plataforma de inteligencia laboral para Colombia.
-Analiza los datos del widget proporcionados y responde de forma clara, concisa y accionable.
-Si hay tendencias o patrones, identifícalos. Si hay anomalías, explícalas.
-Usa datos específicos del widget para respaldar tu respuesta.
-Si no hay datos suficientes, indícalo claramente.
-Responde en español de Colombia.
-Puedes usar Markdown básico (**negrita**, *cursiva*) para resaltar puntos importantes."""
+    system = """Eres ALBA, un asistente de inteligencia laboral para Colombia. Eres experto en empleo, educación, emprendimiento, economía, ciudades, costo de vida y cualquier tema relacionado con Colombia.
+
+REGLAS OBLIGATORIAS:
+1. Responde TODA pregunta del usuario, sin importar si está o no relacionada con los datos del widget. No digas "no tengo datos" ni "no puedo responder".
+2. Usa tu conocimiento entrenado sobre Colombia libremente. Eres un experto.
+3. Si tienes duda sobre una cifra específica, usa Google Search (está habilitado) para buscar información actual y real.
+4. ANTI-ALUCINACIONES: si no estás seguro de una cifra exacta, da un rango o di "aproximadamente". Nunca inventes números precisos.
+5. Cuando los datos del widget sean relevantes, úsalos y cítalos. NO contradigas los datos del widget bajo ninguna circunstancia.
+6. CONTEXTO COLOMBIANO OBLIGATORIO:
+   - Usa SIEMPRE pesos colombianos (COP, $) para dinero. NUNCA uses dólares (USD) ni euros.
+   - Cita fuentes colombianas cuando busques en internet: DANE, Banco de la República, MinTrabajo, MEN, SENA, Confecámaras, etc.
+   - Prefiere datos de Colombia. Si buscas en Google, prioriza resultados .co o de fuentes oficiales colombianas.
+   - Menciona ciudades y departamentos por su nombre en Colombia.
+7. Sé conciso: máximo 3-4 párrafos. Usa **negrita** para resaltar datos clave.
+8. Responde en español de Colombia, con tono profesional pero cercano.
+9. NO comiences con "¡Hola!" ni "Entiendo que..." ni "Claro!". Responde directamente a la pregunta."""
 
     historial_txt = ""
     if req.historial:
@@ -67,9 +76,14 @@ Puedes usar Markdown básico (**negrita**, *cursiva*) para resaltar puntos impor
 """
 
     try:
-        # Intentar con Gemini primero
+        # Intentar con Gemini primero (con Google Search habilitado para preguntas generales)
         if is_gemini_available():
-            respuesta = call_gemini_text(system, user)
+            # Detectar si la pregunta es general (no sobre el widget)
+            pregunta_lower = req.question.lower()
+            palabras_generales = ['costo de vida', 'vivir en', 'caro', 'barato', 'mejor ciudad', 'seguridad', 'clima', 'universidad', 'salario mínimo', 'inflación', 'pib', 'producto interno']
+            es_general = any(p in pregunta_lower for p in palabras_generales) or not req.data
+            # Activar grounding solo para preguntas generales (evita latencia innecesaria en analisis de widget)
+            respuesta = call_gemini_text(system, user, grounding=es_general)
         else:
             # Fallback a DeepInfra/Gemma
             respuesta = call_llm_text(system, user)

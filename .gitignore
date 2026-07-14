@@ -28,3 +28,18 @@ frontend/public/
 # Keep essential processed data files
 !data/processed/predicciones_mundiales.json
 !data/processed/predicciones_geih.json
+
+# Large ZIP packages - not for GitHub
+ALBA-Offline-v1.zip
+alba-offline/models/
+alba-offline/data/alba_offline.db
+alba-offline/data/processed/
+
+# Temp/preview files
+RECURSOS/slide_check/
+RECURSOS/slide_previews/
+RECURSOS/slide_previews_html/
+RECURSOS/colombia_deptos_full.json
+RECURSOS/colombia_inline.txt
+RECURSOS/china.json
+*.tmp
