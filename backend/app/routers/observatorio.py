@@ -1181,7 +1181,7 @@ async def get_dashboard():
         spe = _calcular_spe_demanda(15)
 
         # 8. Mapa metricas (Supabase + CSV fallback)
-        mapa = _calcular_mapa_metricas()
+        mapa = _calcular_mapa_metricas_sync()
 
         result = {
             "resumen_nacional": resumen_nacional,
@@ -1243,6 +1243,9 @@ def _calcular_sectores_emergentes():
     try:
         df = pd.read_csv(DATA_PROCESSED / "rues_empresas_nuevas.csv")
         df = df[df["anio_matricula"] <= 2026]
+        df = df[df["anio_matricula"] >= 2018]
+        if df.empty:
+            return {"sectores": [], "periodo": ""}
         df["anio"] = df["anio_matricula"].astype(int)
         df["ciiu"] = df["ciiu2"].astype(str)
         nombres = {
@@ -1262,13 +1265,15 @@ def _calcular_sectores_emergentes():
             "96": "Servicios personales",
         }
         anual = df.groupby(["anio", "ciiu"])["empresas_nuevas"].sum().reset_index()
-        ultimo_anio = anual["anio"].max()
+        ultimo_anio = int(anual["anio"].max()) if not anual.empty else 0
+        if ultimo_anio < 2018 or anual.empty:
+            return {"sectores": [], "periodo": ""}
         top = anual[anual["anio"] == ultimo_anio].nlargest(10, "empresas_nuevas")
         tendencias = []
         for _, row_top in top.iterrows():
-            sec = row_top["ciiu"]
+            sec = str(row_top["ciiu"])
             hist = anual[anual["ciiu"] == sec].sort_values("anio")
-            puntos = [{"ano": int(r["ano"]), "empresas": int(r["empresas_nuevas"])} for _, r in hist.iterrows()]
+            puntos = [{"ano": int(row["anio"]), "empresas": int(row["empresas_nuevas"])} for row in hist.to_dict("records")]
             delta = ((puntos[-1]["empresas"] - puntos[0]["empresas"]) / puntos[0]["empresas"]) * 100 if len(puntos) >= 2 else 0
             tendencias.append({
                 "sector": nombres.get(sec, f"Sector {sec}"),
@@ -1277,9 +1282,10 @@ def _calcular_sectores_emergentes():
                 "variacion_pct": round(delta, 1),
                 "datos": puntos,
             })
-        return {"sectores": sorted(tendencias, key=lambda s: -s["empresas_nuevas_ultimo_ano"]), "periodo": f"{df['anio'].min()}-{ultimo_anio}"}
+        return {"sectores": sorted(tendencias, key=lambda s: -s["empresas_nuevas_ultimo_ano"]), "periodo": f"{int(df['anio'].min())}-{ultimo_anio}"}
     except Exception as e:
         print(f"[Dashboard] sectores-emergentes error: {e}")
+        import traceback; traceback.print_exc()
         return {"sectores": [], "periodo": ""}
 
 
@@ -1396,10 +1402,91 @@ def _calcular_spe_demanda(limit: int):
         return {"ocupaciones_demanda_creciente": []}
 
 
-def _calcular_mapa_metricas():
+def _calcular_mapa_metricas_sync():
     try:
-        # Llamar a la funcion async de forma sincrona con asyncio.run
-        return __import__("asyncio").run(get_mapa_metricas_fast())
+        r_ocu = supabase.table("geih_resumen_departamento").select("*").execute()
+        r_des = supabase.table("geih_desempleo_departamento").select("*").execute()
+        r_snies = supabase.table("snies_matriculados_departamento").select("*").execute()
+        r_dnp = supabase.table("dnp_desempeno_departamento").select("*").execute()
+
+        agg = defaultdict(lambda: {
+            "departamento": "",
+            "ocupados": 0,
+            "sum_ingreso_prom": 0.0,
+            "sum_ingreso_med": 0.0,
+            "sum_formalidad": 0.0,
+            "sum_mujeres_ocu": 0.0,
+            "n": 0,
+            "no_ocupados": 0,
+        })
+        for row in r_ocu.data or []:
+            d = row["departamento"]
+            agg[d]["departamento"] = d
+            agg[d]["ocupados"] += row.get("ocupados") or 0
+            agg[d]["sum_ingreso_prom"] += (row.get("ingreso_promedio") or 0) * (row.get("ocupados") or 0)
+            agg[d]["sum_ingreso_med"] += (row.get("ingreso_mediano") or 0) * (row.get("ocupados") or 0)
+            agg[d]["sum_formalidad"] += (row.get("tasa_formalidad") or 0) * (row.get("ocupados") or 0)
+            agg[d]["sum_mujeres_ocu"] += (row.get("mujeres_pct") or 0) * (row.get("ocupados") or 0)
+            agg[d]["n"] += 1
+        for row in r_des.data or []:
+            d = row["departamento"]
+            if d in agg:
+                agg[d]["no_ocupados"] += row.get("no_ocupados") or 0
+            else:
+                agg[d]["departamento"] = d
+                agg[d]["no_ocupados"] = row.get("no_ocupados") or 0
+
+        departamentos = []
+        for d, a in agg.items():
+            ocu = a["ocupados"] or 1
+            departamentos.append({
+                "departamento": d,
+                "departamento_norm": _norm_depto(d),
+                "ocupados": a["ocupados"],
+                "no_ocupados": a["no_ocupados"],
+                "tasa_desempleo": round(a["no_ocupados"] / (a["no_ocupados"] + a["ocupados"]) * 100, 2) if (a["no_ocupados"] + a["ocupados"]) > 0 else None,
+                "ingreso_promedio": round(a["sum_ingreso_prom"] / ocu, 0) if a["ocupados"] else None,
+                "ingreso_mediano": round(a["sum_ingreso_med"] / ocu, 0) if a["ocupados"] else None,
+                "tasa_formalidad": round(a["sum_formalidad"] / ocu * 100, 2) if a["ocupados"] else None,
+                "mujeres_pct": round(a["sum_mujeres_ocu"] / ocu * 100, 2) if a["ocupados"] and a["sum_mujeres_ocu"] > 0 else None,
+                "tasa_ocupacion": round(a["ocupados"] / (a["ocupados"] + a["no_ocupados"]) * 100, 2) if (a["ocupados"] + a["no_ocupados"]) > 0 else None,
+            })
+
+        snies_map = {}
+        for row in r_snies.data or []:
+            key = _norm_depto(row["departamento"])
+            snies_map[key] = (snies_map.get(key, 0) or 0) + (row.get("matriculados") or 0)
+        for d in departamentos:
+            d["matriculados_snies"] = round(snies_map.get(d["departamento_norm"], 0), 0)
+
+        dnp_map = {}
+        for row in r_dnp.data or []:
+            key = _norm_depto(row["departamento"])
+            dnp_map[key] = row.get("promedio_desempeno")
+        for d in departamentos:
+            d["dnp_desempeno"] = round(dnp_map[d["departamento_norm"]], 2) if dnp_map.get(d["departamento_norm"]) is not None else None
+
+        for d in departamentos:
+            d.pop("departamento_norm", None)
+            if d.get("tasa_formalidad") is not None:
+                d["tasa_informalidad"] = round(100 - d["tasa_formalidad"], 2)
+
+        sector_lider_nacional = None
+        try:
+            pred = _load_predicciones() or {}
+            sectores_pred = pred.get("sectores", {})
+            mejor_crec = -float("inf")
+            for sector, info in sectores_pred.items():
+                v2025 = info.get("historico", {}).get("valores", [0])[-1]
+                v2035 = info.get("prediccion", {}).get("mediana", [0])[-1]
+                crec = ((v2035 - v2025) / max(v2025, 0.01)) * 100 if v2025 else 0
+                if crec > mejor_crec:
+                    mejor_crec = crec
+                    sector_lider_nacional = {"sector": sector, "crecimiento_2035_pct": round(crec, 1)}
+        except Exception:
+            pass
+
+        return {"departamentos": departamentos, "total": len(departamentos), "sector_lider_nacional": sector_lider_nacional}
     except Exception as e:
         print(f"[Dashboard] mapa-metricas error: {e}")
         return {"departamentos": [], "total": 0, "sector_lider_nacional": None}
