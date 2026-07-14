@@ -12,8 +12,11 @@ Flujo:
 
 import asyncio
 import inspect
+import logging
 from google import genai
 from google.genai import types
+
+logger = logging.getLogger(__name__)
 from app.services.llm_gemini import (
     GOOGLE_CLOUD_PROJECT,
     GOOGLE_CLOUD_LOCATION,
@@ -186,9 +189,13 @@ class GeminiLiveCoach:
             send_text_task = asyncio.create_task(send_text_loop()) if text_input_queue else None
 
             async def send_audio():
+                audio_count = 0
                 try:
                     while True:
                         chunk = await audio_input_queue.get()
+                        audio_count += 1
+                        if audio_count % 20 == 0:
+                            logger.info("[CoachLive] Enviando audio chunk %d (%d bytes) a Gemini", audio_count, len(chunk))
                         await session.send_realtime_input(
                             audio=types.Blob(
                                 data=chunk,
@@ -197,6 +204,8 @@ class GeminiLiveCoach:
                         )
                 except asyncio.CancelledError:
                     pass
+                except Exception as e:
+                    logger.error("[CoachLive] Error enviando audio a Gemini: %s", e)
 
             event_queue: asyncio.Queue = asyncio.Queue()
 
@@ -207,6 +216,12 @@ class GeminiLiveCoach:
                             server_content = response.server_content
 
                             if server_content:
+                                if server_content.input_transcription and server_content.input_transcription.text:
+                                    logger.info("[CoachLive] Usuario dijo: %s", server_content.input_transcription.text)
+                                    await event_queue.put(
+                                        {"type": "user", "text": server_content.input_transcription.text}
+                                    )
+
                                 if server_content.model_turn:
                                     for part in server_content.model_turn.parts:
                                         if part.inline_data:
@@ -215,12 +230,8 @@ class GeminiLiveCoach:
                                             else:
                                                 audio_output_callback(part.inline_data.data)
 
-                                if server_content.input_transcription and server_content.input_transcription.text:
-                                    await event_queue.put(
-                                        {"type": "user", "text": server_content.input_transcription.text}
-                                    )
-
                                 if server_content.output_transcription and server_content.output_transcription.text:
+                                    logger.info("[CoachLive] Gemini dijo: %s", server_content.output_transcription.text)
                                     await event_queue.put(
                                         {"type": "gemini", "text": server_content.output_transcription.text}
                                     )
@@ -237,6 +248,7 @@ class GeminiLiveCoach:
                                     await event_queue.put({"type": "interrupted"})
 
                 except Exception as e:
+                    logger.error("[CoachLive] Error en receive_loop: %s", e)
                     await event_queue.put({"type": "error", "error": str(e)})
                 finally:
                     await event_queue.put(None)
