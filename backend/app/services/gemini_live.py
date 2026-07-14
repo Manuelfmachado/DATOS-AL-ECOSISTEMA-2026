@@ -197,7 +197,7 @@ class GeminiLiveCoach:
                         if audio_count % 20 == 0:
                             logger.info("[CoachLive] Enviando audio chunk %d (%d bytes) a Gemini", audio_count, len(chunk))
                         await session.send_realtime_input(
-                            audio=types.Blob(
+                            media=types.Blob(
                                 data=chunk,
                                 mime_type=f"audio/pcm;rate={self.input_sample_rate}",
                             )
