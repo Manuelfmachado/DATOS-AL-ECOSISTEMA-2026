@@ -99,30 +99,6 @@ export class CoachLiveClient {
       }
     })
   }
-      this.callbacks.onStatus('connected')
-    }
-
-    this.ws.onmessage = (event: MessageEvent) => {
-      if (typeof event.data === 'string') {
-        try {
-          const msg = JSON.parse(event.data) as CoachLiveEvent
-          this.callbacks.onEvent(msg)
-        } catch (e) {
-          console.error('[CoachLive] Parse error:', e)
-        }
-      } else {
-        this.playAudio(event.data)
-      }
-    }
-
-    this.ws.onclose = () => {
-      this.callbacks.onStatus('disconnected')
-    }
-
-    this.ws.onerror = () => {
-      this.callbacks.onStatus('error')
-    }
-  }
 
   async initializeAudio(): Promise<void> {
     if (!this.audioContext) {
