@@ -66,13 +66,13 @@ async def coach_live_ws(
                     if payload.get("tipo") == "cv":
                         cv_texto = payload.get("cv", "")
                         await text_input_queue.put(
-                            f"Este es el CV del candidato. Revisalo y basa las preguntas en él.\n\n{cv_texto}"
+                            ("context", f"Este es el CV del candidato. Revisalo y basa las preguntas en él.\n\n{cv_texto}")
                         )
                     elif payload.get("tipo") == "feedback":
                         await text_input_queue.put(
-                            "La entrevista ha terminado. Entrega un feedback final estructurado: "
-                            "puntaje general 0-100, fortalezas, riesgos, y recomendación de pasar a siguiente fase. "
-                            "No hagas más preguntas."
+                            ("turn", "La entrevista ha terminado. Entrega un feedback final estructurado: "
+                             "puntaje general 0-100, fortalezas, riesgos, y recomendación de pasar a siguiente fase. "
+                             "No hagas más preguntas.")
                         )
         except WebSocketDisconnect:
             logger.info("[CoachLive] Cliente desconectado")

@@ -381,12 +381,30 @@ export default function Coach() {
                 </div>
 
                 {modoLive === 'realista' && (
-                  <div className="mb-4">
-                    <label className="block text-sm font-semibold mb-2" style={{ color: 'var(--text-dim)' }}>CV del candidato</label>
+                  <>
+                    <div className="mb-4">
+                      <label className="block text-sm font-semibold mb-2" style={{ color: 'var(--text-dim)' }}>CV del candidato</label>
+                      <textarea
+                        value={cvLive}
+                        onChange={(e) => setCvLive(e.target.value)}
+                        rows={6}
+                        disabled={connected}
+                        className="w-full px-4 py-3 rounded-lg text-sm"
+                        style={{
+                          background: 'rgba(255,255,255,0.03)',
+                          border: '1px solid rgba(255,255,255,0.10)',
+                          color: 'var(--text)',
+                          opacity: connected ? 0.6 : 1,
+                        }}
+                        placeholder="Pega el CV para que ALBA haga preguntas basadas en tu perfil real..."
+                      />
+                    </div>
+
+                    <label className="block text-sm font-semibold mb-2" style={{ color: 'var(--text-dim)' }}>Vacante objetivo</label>
                     <textarea
-                      value={cvLive}
-                      onChange={(e) => setCvLive(e.target.value)}
-                      rows={6}
+                      value={vacanteLive}
+                      onChange={(e) => setVacanteLive(e.target.value)}
+                      rows={3}
                       disabled={connected}
                       className="w-full px-4 py-3 rounded-lg text-sm"
                       style={{
@@ -395,26 +413,10 @@ export default function Coach() {
                         color: 'var(--text)',
                         opacity: connected ? 0.6 : 1,
                       }}
-                      placeholder="Pega el CV para que ALBA haga preguntas basadas en tu perfil real..."
+                      placeholder="Pega la vacante para una entrevista adaptada..."
                     />
-                  </div>
+                  </>
                 )}
-
-                <label className="block text-sm font-semibold mb-2" style={{ color: 'var(--text-dim)' }}>Vacante objetivo {modoLive === 'libre' && '(opcional)'}</label>
-                <textarea
-                  value={vacanteLive}
-                  onChange={(e) => setVacanteLive(e.target.value)}
-                  rows={3}
-                  disabled={connected}
-                  className="w-full px-4 py-3 rounded-lg text-sm"
-                  style={{
-                    background: 'rgba(255,255,255,0.03)',
-                    border: '1px solid rgba(255,255,255,0.10)',
-                    color: 'var(--text)',
-                    opacity: connected ? 0.6 : 1,
-                  }}
-                  placeholder="Pega la vacante para una entrevista adaptada..."
-                />
 
                 <label className="block text-sm font-semibold mb-2 mt-4" style={{ color: 'var(--text-dim)' }}>Voz de ALBA</label>
               <select

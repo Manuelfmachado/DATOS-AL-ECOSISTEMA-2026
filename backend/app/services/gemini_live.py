@@ -60,12 +60,25 @@ COACH_SYSTEM_BASE = (
 COACH_SYSTEM_REALISTA = (
     COACH_SYSTEM_BASE +
     "\nModo realista: tienes el CV y la vacante del candidato. "
-    "Debes hacer una entrevista de verdad basada en esa información. "
-    "- Lee el CV y la vacante y formula preguntas directas sobre experiencia, habilidades, logros y brechas.\n"
-    "- Compara lo que dice el candidato con los requisitos de la vacante.\n"
-    "- Si menciona algo en el CV, pide que lo profundice con el método STAR (situación, tarea, acción, resultado).\n"
-    "- Detecta contradicciones o carencias respecto a la vacante y pregunta por ellas de forma respetuosa.\n"
-    "- Al final, entrega un feedback estructurado: puntaje 0-100, fortalezas, riesgos y recomendación de pasar/no pasar.\n"
+    "Debes conducir una entrevista estructurada de EXACTAMENTE 10 preguntas.\n\n"
+    "ESTRUCTURA OBLIGATORIA:\n"
+    "1. Saluda brevemente, presenta la vacante y haz la primera pregunta.\n"
+    "2. Genera las 10 preguntas mas comunes y relevantes para esa vacante especifica, "
+    "usando el CV del candidato para personalizarlas.\n"
+    "3. Haz UNA pregunta por turno. Espera la respuesta del candidato. "
+    "Si responde muy breve, pide que profundice con una sola pregunta de seguimiento, "
+    "pero no cambies de topico hasta tener una respuesta sustancial.\n"
+    "4. Cuando el candidato responda, pasa a la siguiente pregunta sin comentarios largos. "
+    "Solo un brevismo reconocimiento ('Gracias', 'Entendido') y la siguiente pregunta.\n"
+    "5. Tras la respuesta a la pregunta 10, entrega un FEEDBACK ORAL COMPLETO y realista:\n"
+    "   - Puntaje general 0-100\n"
+    "   - 3-4 fortalezas especificas del candidato\n"
+    "   - 2-3 areas de mejora concretas\n"
+    "   - Recomendacion final: pasaria o no pasaria a siguiente fase, y por que\n"
+    "   - Una sugerencia practica para mejorar antes de la siguiente entrevista\n"
+    "6. Mantén un conteo mental de las preguntas. Nunca hagas más de 10 preguntas.\n"
+    "7. NO reveals el numero de pregunta al candidato hasta despues de la pregunta 10.\n"
+    "8. Si el candidato pide feedback antes de las 10 preguntas, dile que faltan algunas preguntas mas.\n"
 )
 
 COACH_SYSTEM_LIBRE = (
@@ -170,18 +183,25 @@ class GeminiLiveCoach:
                 turn_complete=True,
             )
 
-            # Hilo opcional para enviar texto plano (CV) recibido por cola
+            # Hilo opcional para enviar texto plano (CV o feedback) recibido por cola
             async def send_text_loop():
                 if not text_input_queue:
                     return
                 while True:
                     try:
-                        text_msg = await text_input_queue.get()
-                        if text_msg is None:
+                        item = await text_input_queue.get()
+                        if item is None:
                             break
+                        # item es tupla: (tipo, texto) donde tipo es "context" o "turn"
+                        if isinstance(item, tuple):
+                            msg_type, text_msg = item
+                            complete = msg_type == "turn"
+                        else:
+                            text_msg = item
+                            complete = False
                         await session.send_client_content(
                             turns=types.Content(parts=[types.Part(text=text_msg)]),
-                            turn_complete=False,
+                            turn_complete=complete,
                         )
                     except asyncio.CancelledError:
                         break
