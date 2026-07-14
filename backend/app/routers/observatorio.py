@@ -1130,38 +1130,10 @@ async def get_salario_ocupacion():
 DATA_PROCESSED = Path(__file__).resolve().parents[3] / "data" / "processed"
 
 
-# Cache en memoria para endpoints pesados (TTL simple de 5 minutos)
-_cache = {}
-_cache_ttl_seconds = 300
-
-
-def _cache_key(name: str) -> str:
-    return name
-
-
-def _get_cached(name: str):
-    entry = _cache.get(name)
-    if not entry:
-        return None
-    ts, value = entry
-    if __import__("time").time() - ts > _cache_ttl_seconds:
-        _cache.pop(name, None)
-        return None
-    return value
-
-
-def _set_cached(name: str, value):
-    _cache[name] = (__import__("time").time(), value)
-
-
 @router.get("/dashboard")
 async def get_dashboard():
     """Endpoint consolidado que devuelve toda la data inicial del Observatorio y Dashboard en una sola llamada."""
     try:
-        cached = _get_cached("dashboard")
-        if cached is not None:
-            return cached
-
         # 1. Resumen nacional
         r = supabase.table("geih_resumen_nacional").select("*").order("ano", desc=True).order("mes", desc=True).limit(1).execute()
         ultima = r.data[0] if r.data else {}
@@ -1221,7 +1193,6 @@ async def get_dashboard():
             "spe": spe,
             "mapa": mapa,
         }
-        _set_cached("dashboard", result)
         return result
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
