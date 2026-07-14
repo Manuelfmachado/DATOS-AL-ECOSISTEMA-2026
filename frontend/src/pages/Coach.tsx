@@ -56,6 +56,8 @@ export default function Coach() {
   const [copiado, setCopiado] = useState(false)
 
   // Entrevista en vivo
+  const [modoLive, setModoLive] = useState<'realista' | 'libre'>('realista')
+  const [cvLive, setCvLive] = useState(CV_EJEMPLO)
   const [vacanteLive, setVacanteLive] = useState(VACANTE_EJEMPLO)
   const [vozLive, setVozLive] = useState('Puck')
   const [liveStatus, setLiveStatus] = useState<'idle' | 'connecting' | 'connected' | 'disconnected' | 'error'>('idle')
@@ -144,7 +146,12 @@ export default function Coach() {
     })
     clientRef.current = client
     try {
-      await client.connect(vacanteLive, vozLive)
+      await client.connect({
+        modo: modoLive,
+        cv: modoLive === 'realista' ? cvLive : '',
+        vacante: vacanteLive,
+        voice: vozLive,
+      })
       await client.startMic()
     } catch (e) {
       console.error('[CoachLive] No se pudo conectar:', e)
@@ -344,24 +351,72 @@ export default function Coach() {
               </div>
             </div>
 
-            <div style={{ position: 'relative', zIndex: 1 }}>
-              <label className="block text-sm font-semibold mb-2" style={{ color: 'var(--text-dim)' }}>Vacante objetivo (opcional)</label>
-              <textarea
-                value={vacanteLive}
-                onChange={(e) => setVacanteLive(e.target.value)}
-                rows={3}
-                disabled={connected}
-                className="w-full px-4 py-3 rounded-lg text-sm"
-                style={{
-                  background: 'rgba(255,255,255,0.03)',
-                  border: '1px solid rgba(255,255,255,0.10)',
-                  color: 'var(--text)',
-                  opacity: connected ? 0.6 : 1,
-                }}
-                placeholder="Pega la vacante para una entrevista adaptada..."
-              />
+              <div style={{ position: 'relative', zIndex: 1 }}>
+                <label className="block text-sm font-semibold mb-2" style={{ color: 'var(--text-dim)' }}>Modo de entrevista</label>
+                <div className="flex gap-2 mb-4">
+                  <button
+                    type="button"
+                    onClick={() => setModoLive('realista')}
+                    disabled={connected}
+                    className="btn text-sm font-bold text-white"
+                    style={modoLive === 'realista' ? {
+                      background: 'linear-gradient(180deg, rgba(212, 175, 55, 0.18) 0%, rgba(212, 175, 55, 0.06) 100%)',
+                      borderColor: 'rgba(212, 175, 55, 0.95)',
+                    } : {}}
+                  >
+                    Reclutador real (CV + vacante)
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setModoLive('libre')}
+                    disabled={connected}
+                    className="btn text-sm font-bold text-white"
+                    style={modoLive === 'libre' ? {
+                      background: 'linear-gradient(180deg, rgba(212, 175, 55, 0.18) 0%, rgba(212, 175, 55, 0.06) 100%)',
+                      borderColor: 'rgba(212, 175, 55, 0.95)',
+                    } : {}}
+                  >
+                    Entrevista libre
+                  </button>
+                </div>
 
-              <label className="block text-sm font-semibold mb-2 mt-4" style={{ color: 'var(--text-dim)' }}>Voz de ALBA</label>
+                {modoLive === 'realista' && (
+                  <div className="mb-4">
+                    <label className="block text-sm font-semibold mb-2" style={{ color: 'var(--text-dim)' }}>CV del candidato</label>
+                    <textarea
+                      value={cvLive}
+                      onChange={(e) => setCvLive(e.target.value)}
+                      rows={6}
+                      disabled={connected}
+                      className="w-full px-4 py-3 rounded-lg text-sm"
+                      style={{
+                        background: 'rgba(255,255,255,0.03)',
+                        border: '1px solid rgba(255,255,255,0.10)',
+                        color: 'var(--text)',
+                        opacity: connected ? 0.6 : 1,
+                      }}
+                      placeholder="Pega el CV para que ALBA haga preguntas basadas en tu perfil real..."
+                    />
+                  </div>
+                )}
+
+                <label className="block text-sm font-semibold mb-2" style={{ color: 'var(--text-dim)' }}>Vacante objetivo</label>
+                <textarea
+                  value={vacanteLive}
+                  onChange={(e) => setVacanteLive(e.target.value)}
+                  rows={3}
+                  disabled={connected}
+                  className="w-full px-4 py-3 rounded-lg text-sm"
+                  style={{
+                    background: 'rgba(255,255,255,0.03)',
+                    border: '1px solid rgba(255,255,255,0.10)',
+                    color: 'var(--text)',
+                    opacity: connected ? 0.6 : 1,
+                  }}
+                  placeholder="Pega la vacante para una entrevista adaptada..."
+                />
+
+                <label className="block text-sm font-semibold mb-2 mt-4" style={{ color: 'var(--text-dim)' }}>Voz de ALBA</label>
               <select
                 value={vozLive}
                 onChange={(e) => setVozLive(e.target.value)}
@@ -383,24 +438,32 @@ export default function Coach() {
                 {!connected ? (
                   <button
                     onClick={connectLive}
-                    disabled={liveStatus === 'connecting'}
+                    disabled={liveStatus === 'connecting' || (modoLive === 'realista' && !cvLive.trim()) || !vacanteLive.trim()}
                     className="btn btn-gold"
                   >
-                    {liveStatus === 'connecting' ? 'Conectando...' : 'Iniciar entrevista'}
+                    {liveStatus === 'connecting' ? 'Conectando...' : `Iniciar entrevista ${modoLive === 'realista' ? 'realista' : 'libre'}`}
                   </button>
                 ) : (
-                  <button
-                    onClick={disconnectLive}
-                    className="btn"
-                    style={{
-                      background: 'linear-gradient(180deg, #d63a5a 0%, #a02844 100%)',
-                      color: '#fff',
-                      borderColor: 'rgba(255, 100, 120, 0.5)',
-                      boxShadow: '0 4px 12px rgba(200, 40, 60, 0.3)',
-                    }}
-                  >
-                    Terminar entrevista
-                  </button>
+                  <>
+                    <button
+                      onClick={disconnectLive}
+                      className="btn"
+                      style={{
+                        background: 'linear-gradient(180deg, #d63a5a 0%, #a02844 100%)',
+                        color: '#fff',
+                        borderColor: 'rgba(255, 100, 120, 0.5)',
+                        boxShadow: '0 4px 12px rgba(200, 40, 60, 0.3)',
+                      }}
+                    >
+                      Terminar entrevista
+                    </button>
+                    <button
+                      onClick={() => clientRef.current?.requestFeedback()}
+                      className="btn btn-gold"
+                    >
+                      Generar feedback final
+                    </button>
+                  </>
                 )}
               </div>
 

@@ -29,12 +29,19 @@ router = APIRouter(prefix="/api/coach", tags=["coach-live"])
 
 
 @router.websocket("/live")
-async def coach_live_ws(websocket: WebSocket, vacante: str = "", voice: str = "Puck"):
+async def coach_live_ws(
+    websocket: WebSocket,
+    vacante: str = "",
+    voice: str = "Puck",
+    modo: str = "libre",
+):
     """WebSocket para entrevista laboral en vivo con Gemini Live API."""
     await websocket.accept()
-    logger.info("[CoachLive] WebSocket aceptado. vacante=%r voice=%r", vacante, voice)
+    logger.info("[CoachLive] WebSocket aceptado. modo=%r vacante=%r voice=%r", modo, vacante, voice)
 
     audio_input_queue: asyncio.Queue = asyncio.Queue()
+    text_input_queue: asyncio.Queue = asyncio.Queue()
+    cv_texto = ""
 
     async def audio_output_callback(data: bytes):
         await websocket.send_bytes(data)
@@ -42,15 +49,31 @@ async def coach_live_ws(websocket: WebSocket, vacante: str = "", voice: str = "P
     async def audio_interrupt_callback():
         pass
 
-    gemini = GeminiLiveCoach(vacante=vacante, voice_name=voice)
+    gemini = GeminiLiveCoach(modo=modo, vacante=vacante, voice_name=voice)
 
     async def receive_from_client():
+        nonlocal cv_texto
         try:
             while True:
                 message = await websocket.receive()
                 if message.get("bytes"):
                     await audio_input_queue.put(message["bytes"])
-                # Ignoramos mensajes de texto: este endpoint es solo audio.
+                elif message.get("text"):
+                    try:
+                        payload = json.loads(message["text"])
+                    except json.JSONDecodeError:
+                        continue
+                    if payload.get("tipo") == "cv":
+                        cv_texto = payload.get("cv", "")
+                        await text_input_queue.put(
+                            f"Este es el CV del candidato. Revisalo y basa las preguntas en él.\n\n{cv_texto}"
+                        )
+                    elif payload.get("tipo") == "feedback":
+                        await text_input_queue.put(
+                            "La entrevista ha terminado. Entrega un feedback final estructurado: "
+                            "puntaje general 0-100, fortalezas, riesgos, y recomendación de pasar a siguiente fase. "
+                            "No hagas más preguntas."
+                        )
         except WebSocketDisconnect:
             logger.info("[CoachLive] Cliente desconectado")
         except Exception as e:
@@ -63,6 +86,7 @@ async def coach_live_ws(websocket: WebSocket, vacante: str = "", voice: str = "P
             audio_input_queue=audio_input_queue,
             audio_output_callback=audio_output_callback,
             audio_interrupt_callback=audio_interrupt_callback,
+            text_input_queue=text_input_queue,
         ):
             if event:
                 await websocket.send_json(event)

@@ -16,9 +16,15 @@ export interface CoachLiveCallbacks {
   onStatus: (status: 'connecting' | 'connected' | 'disconnected' | 'error') => void
 }
 
+export interface CoachLiveConfig {
+  modo: 'realista' | 'libre'
+  cv?: string
+  vacante?: string
+  voice?: string
+}
+
 const INPUT_SAMPLE_RATE = 16000
 const OUTPUT_SAMPLE_RATE = 24000
-const LIVE_VOICE = 'Puck'
 
 export class CoachLiveClient {
   private ws: WebSocket | null = null
@@ -42,13 +48,14 @@ export class CoachLiveClient {
     return this.isRecording
   }
 
-  async connect(vacante: string = '', voice: string = 'Puck'): Promise<void> {
+  async connect(config: CoachLiveConfig): Promise<void> {
     this.callbacks.onStatus('connecting')
 
     const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:'
     const params = new URLSearchParams()
-    if (vacante) params.set('vacante', vacante)
-    if (voice) params.set('voice', voice)
+    if (config.vacante) params.set('vacante', config.vacante)
+    if (config.voice) params.set('voice', config.voice)
+    if (config.modo) params.set('modo', config.modo)
     const qs = params.toString()
     const wsUrl = `${protocol}//${window.location.host}/api/coach/live${qs ? '?' + qs : ''}`
 
@@ -58,6 +65,9 @@ export class CoachLiveClient {
     this.ws.binaryType = 'arraybuffer'
 
     this.ws.onopen = () => {
+      if (config.modo === 'realista' && config.cv && this.ws) {
+        this.ws.send(JSON.stringify({ tipo: 'cv', cv: config.cv }))
+      }
       this.callbacks.onStatus('connected')
     }
 
@@ -182,6 +192,12 @@ export class CoachLiveClient {
     this.scheduledSources = []
     if (this.audioContext) {
       this.nextStartTime = this.audioContext.currentTime
+    }
+  }
+
+  requestFeedback(): void {
+    if (this.ws && this.ws.readyState === WebSocket.OPEN) {
+      this.ws.send(JSON.stringify({ tipo: 'feedback' }))
     }
   }
 

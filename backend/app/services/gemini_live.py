@@ -39,18 +39,38 @@ def _get_live_client() -> genai.Client:
     )
 
 
-COACH_SYSTEM_INSTRUCTION = (
-    "Eres ALBA, una entrevistadora laboral experta. Estás simulando una entrevista de trabajo por voz en español.\n\n"
-    "Personalidad: eres cálida, natural y conversacional, como una entrevistadora humana con experiencia. "
-    "Hablas con confianza, haces sentir cómodo al candidato y la conversación fluye como una charla real, no como un interrogatorio rígido.\n\n"
-    "Estilo de comunicación:\n"
-    "- Expándete al hablar: no des respuestas de una sola frase. Converseza naturalmente, con un tono cercano.\n"
-    "- Cuando el candidato responda, reacciona genuinamente: comenta qué te pareció, da ejemplos concretos de lo que esperas o de cómo podría mejorar.\n"
-    "- Da sugerencias prácticas y útiles, como lo haría un buen mentor durante una entrevista.\n"
-    "- Usa expresiones naturales del español hablado (por ejemplo: 'me encanta eso', 'eso es clave', 'te cuento que...').\n"
-    "- Haz una pregunta por turno, pero rodéala de contexto y comentarios, no la lances en seco.\n"
-    "- Si el candidato duda, anímalo y dale una pista o reformula la pregunta para ayudarlo.\n"
-    "- No inventes datos del candidato ni respondas las preguntas por él."
+COACH_SYSTEM_BASE = (
+    "Eres ALBA, una entrevistadora laboral experta y exreclutadora de RRHH en Colombia. "
+    "Estás realizando entrevistas de trabajo por voz en español neutro y cálido. "
+    "Tu objetivo es evaluar al candidato con rigor, pero con un tono humano, profesional y respetuoso.\n\n"
+    "Reglas generales:\n"
+    "- Actúa como un reclutador real: saluda, presenta el rol, explica brevemente la dinámica y haz preguntas relevantes.\n"
+    "- NUNCA respondas preguntas por el candidato ni inventes datos suyos.\n"
+    "- Evalúa en tiempo real: claridad, experiencia alineada, habilidades blandas, motivación y ajuste cultural.\n"
+    "- Haz UNA sola pregunta por turno. Deja que el candidato termine antes de continuar.\n"
+    "- Si el candidato evade la pregunta o es vago, haz una pregunta de seguimiento concreta (por ejemplo: '¿Podrías contarme un ejemplo específico?').\n"
+    "- Si el candidato responde muy bien, profundiza con detalle, no saltes inmediatamente.\n"
+    "- Da feedback breve y útil al final de la entrevista: fortalezas, áreas de mejora y si recomendarías pasar a siguiente fase.\n"
+    "- Si el usuario dice 'terminar', 'finalizar' o similar, cierra la entrevista con un resumen y feedback.\n"
+)
+
+COACH_SYSTEM_REALISTA = (
+    COACH_SYSTEM_BASE +
+    "\nModo realista: tienes el CV y la vacante del candidato. "
+    "Debes hacer una entrevista de verdad basada en esa información. "
+    "- Lee el CV y la vacante y formula preguntas directas sobre experiencia, habilidades, logros y brechas.\n"
+    "- Compara lo que dice el candidato con los requisitos de la vacante.\n"
+    "- Si menciona algo en el CV, pide que lo profundice con el método STAR (situación, tarea, acción, resultado).\n"
+    "- Detecta contradicciones o carencias respecto a la vacante y pregunta por ellas de forma respetuosa.\n"
+    "- Al final, entrega un feedback estructurado: puntaje 0-100, fortalezas, riesgos y recomendación de pasar/no pasar.\n"
+)
+
+COACH_SYSTEM_LIBRE = (
+    COACH_SYSTEM_BASE +
+    "\nModo libre: el usuario quiere practicar cualquier tipo de entrevista. "
+    "Pregunta al inicio qué tipo de entrevista desea practicar y a qué cargo/sector se postula. "
+    "Luego conduce la entrevista como un reclutador real. "
+    "Al final, entrega feedback con puntaje 0-100, fortalezas y áreas de mejora.\n"
 )
 
 
@@ -61,11 +81,15 @@ class GeminiLiveCoach:
         self,
         model: str = LIVE_MODEL,
         input_sample_rate: int = 16000,
+        modo: str = "libre",
+        cv: str = "",
         vacante: str = "",
         voice_name: str = "Puck",
     ):
         self.model = model
         self.input_sample_rate = input_sample_rate
+        self.modo = modo
+        self.cv = cv
         self.vacante = vacante
         self.voice_name = voice_name
         self.client = _get_live_client()
@@ -75,6 +99,7 @@ class GeminiLiveCoach:
         audio_input_queue: asyncio.Queue,
         audio_output_callback,
         audio_interrupt_callback=None,
+        text_input_queue: asyncio.Queue | None = None,
     ):
         """Inicia la sesion Live y emite eventos via yield (async generator).
 
@@ -82,15 +107,21 @@ class GeminiLiveCoach:
             audio_input_queue: cola con chunks PCM (bytes) del microfono del usuario.
             audio_output_callback: async (bytes) -> None con audio PCM 24kHz de Gemini.
             audio_interrupt_callback: async () -> None opcional al interrumpirse.
+            text_input_queue: cola opcional para mensajes de texto (ej. CV en modo realista).
 
         Yields:
             dict: eventos {"type": "user"|"gemini"|"turn_complete"|"interrupted"|"error", ...}
         """
-        system_instruction = COACH_SYSTEM_INSTRUCTION
+        system_instruction = COACH_SYSTEM_REALISTA if self.modo == "realista" else COACH_SYSTEM_LIBRE
         if self.vacante:
             system_instruction += (
-                f"\n\nLa vacante objetivo de esta entrevista es:\n{self.vacante}\n"
-                "Adapta tus preguntas a esa vacante."
+                f"\n\nVACANTE OBJETIVO:\n{self.vacante}\n"
+                "Usa esta vacante para contextualizar las preguntas y el feedback."
+            )
+        if self.modo == "realista" and self.cv:
+            system_instruction += (
+                f"\n\nCV DEL CANDIDATO:\n{self.cv}\n"
+                "Usa el CV para hacer preguntas específicas. No repitas todo el CV, selecciona lo más relevante para la vacante."
             )
 
         config = types.LiveConnectConfig(
@@ -111,13 +142,48 @@ class GeminiLiveCoach:
 
         async with self.client.aio.live.connect(model=self.model, config=config) as session:
 
-            # Texto de arranque: ALBA se presenta con calidez y empieza la entrevista.
+            # Texto de arranque según modo
+            if self.modo == "realista" and self.cv:
+                prompt_inicio = (
+                    "Preséntate como ALBA, entrevistadora de RRHH. Agradece al candidato por asistir. "
+                    "Dile que revisaste su CV y la vacante, y que harás una entrevista basada en su perfil real. "
+                    "Haz la primera pregunta relacionada con su experiencia más relevante para la vacante."
+                )
+            elif self.vacante:
+                prompt_inicio = (
+                    "Preséntate como ALBA, entrevistadora de RRHH. Agradece al candidato por asistir. "
+                    "Coméntale brevemente de qué va la vacante y haz la primera pregunta contextual."
+                )
+            else:
+                prompt_inicio = (
+                    "Preséntate como ALBA, entrevistadora de RRHH. Pregunta al candidato qué tipo de entrevista "
+                    "quiere practicar y a qué cargo o sector se postula. Luego comienza la entrevista."
+                )
+
             await session.send_client_content(
                 turns=types.Content(
-                    parts=[types.Part(text="Preséntate como ALBA con calidez, agradece al candidato por venir, comentale brevemente de qué va la entrevista según la vacante, y haz la primera pregunta con contexto.")]
+                    parts=[types.Part(text=prompt_inicio)]
                 ),
                 turn_complete=True,
             )
+
+            # Hilo opcional para enviar texto plano (CV) recibido por cola
+            async def send_text_loop():
+                if not text_input_queue:
+                    return
+                while True:
+                    try:
+                        text_msg = await text_input_queue.get()
+                        if text_msg is None:
+                            break
+                        await session.send_client_content(
+                            turns=types.Content(parts=[types.Part(text=text_msg)]),
+                            turn_complete=False,
+                        )
+                    except asyncio.CancelledError:
+                        break
+
+            send_text_task = asyncio.create_task(send_text_loop()) if text_input_queue else None
 
             async def send_audio():
                 try:
@@ -190,3 +256,5 @@ class GeminiLiveCoach:
             finally:
                 send_audio_task.cancel()
                 receive_task.cancel()
+                if send_text_task:
+                    send_text_task.cancel()
