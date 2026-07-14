@@ -31,16 +31,17 @@ const inversiones = [
 const IDEA_EJEMPLO = `Quiero montar una microempresa de delivery de comida saludable y orgánica en Medellín, dirigida a profesionales de 25-40 años que trabajan desde casa. Inicio con cocina fantasma y apps de domicilios, luego quiero abrir punto físico.`
 
 function ScoreGauge({ score, label }: { score: number; label: string }) {
-  const color = score >= 75 ? 'text-green-600' : score >= 50 ? 'text-amber-600' : 'text-rose-600'
-  const bg = score >= 75 ? 'bg-green-100' : score >= 50 ? 'bg-amber-100' : 'bg-rose-100'
+  const color = score >= 75 ? 'text-green-500' : score >= 50 ? 'text-amber-500' : 'text-rose-500'
+  const bg = score >= 75 ? 'bg-green-500/10' : score >= 50 ? 'bg-amber-500/10' : 'bg-rose-500/10'
+  const border = score >= 75 ? 'border-green-500/30' : score >= 50 ? 'border-amber-500/30' : 'border-rose-500/30'
   return (
-    <div className="flex items-center gap-4">
-      <div className={`w-24 h-24 rounded-full ${bg} flex items-center justify-center border-4 border-white shadow-sm`}>
-        <span className={`text-3xl font-bold ${color}`}>{Math.round(score)}</span>
+    <div className="flex items-center gap-6">
+      <div className={`w-28 h-28 rounded-full ${bg} ${border} border-2 flex items-center justify-center`}>
+        <span className={`text-4xl font-bold ${color}`}>{Math.round(score)}</span>
       </div>
       <div>
-        <p className="text-sm text-gray-500">{label}</p>
-        <p className={`text-lg font-semibold ${color}`}>
+        <p className="text-base text-slate-400 font-semibold">{label}</p>
+        <p className={`text-2xl font-bold ${color}`}>
           {score >= 75 ? 'Alto potencial' : score >= 50 ? 'Potencial moderado' : 'Bajo potencial'}
         </p>
       </div>
@@ -98,40 +99,47 @@ export default function EmprendeIA() {
       </p>
 
       <div className="space-y-6">
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-          <label className="block text-sm font-semibold text-gray-700 mb-2">
+        <div className="plate card p-6">
+          <h2 className="text-2xl font-bold text-white mb-1 font-display">
+            Tu idea de negocio
+          </h2>
+          <p className="text-sm text-slate-400 mb-5">
+            Describe la idea, el departamento y la inversión inicial para evaluar el potencial en Colombia.
+          </p>
+
+          <label className="block text-base text-white font-bold mb-2">
             Describe tu idea de negocio
           </label>
           <textarea
             value={idea}
             onChange={(e) => setIdea(e.target.value)}
             rows={6}
-            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-alba-500 text-sm"
+            className="w-full px-4 py-3 rounded-lg text-base bg-white/[0.03] border border-white/10 text-slate-100 placeholder:text-slate-500 focus:ring-2 focus:ring-gold-500/50"
             placeholder="Ej: Quiero montar una cafetería especializada en café de origen en..."
           />
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
             <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-2">Departamento</label>
+              <label className="block text-base text-white font-bold mb-2">Departamento</label>
               <select
                 value={departamento}
                 onChange={(e) => setDepartamento(e.target.value)}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg text-sm"
+                className="w-full px-4 py-3 rounded-lg text-base bg-white/[0.03] border border-white/10 text-slate-100"
               >
                 {departamentos.map((d) => (
-                  <option key={d} value={d}>{d}</option>
+                  <option key={d} value={d} className="bg-[#0a0f1f] text-slate-100">{d}</option>
                 ))}
               </select>
             </div>
             <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-2">Inversión inicial aproximada</label>
+              <label className="block text-base text-white font-bold mb-2">Inversión inicial aproximada</label>
               <select
                 value={inversion}
                 onChange={(e) => setInversion(e.target.value)}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg text-sm"
+                className="w-full px-4 py-3 rounded-lg text-base bg-white/[0.03] border border-white/10 text-slate-100"
               >
                 {inversiones.map((i) => (
-                  <option key={i} value={i}>{i}</option>
+                  <option key={i} value={i} className="bg-[#0a0f1f] text-slate-100">{i}</option>
                 ))}
               </select>
             </div>
@@ -140,7 +148,8 @@ export default function EmprendeIA() {
           <button
             onClick={evaluarIdea}
             disabled={loading || !idea.trim()}
-            className="mt-5 w-full bg-alba-600 text-white py-3 rounded-lg font-medium hover:bg-alba-700 disabled:opacity-50 flex items-center justify-center gap-2"
+            className="btn btn-gold mt-5"
+            style={{ width: '100%', justifyContent: 'center', padding: '14px' }}
           >
             {loading ? (
               <>Evaluando con IA...</>
@@ -153,13 +162,13 @@ export default function EmprendeIA() {
         {resultadoIdea && (
           <div className="space-y-6">
             {/* Score + veredicto */}
-            <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+            <div className="plate card p-6">
               <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-6">
                 <ScoreGauge score={resultadoIdea.score_potencial} label="Potencial del negocio" />
                 <div className="flex-1">
-                  <h3 className="text-xl font-bold text-gray-900 mb-1">{resultadoIdea.veredicto}</h3>
-                  <p className="text-sm text-gray-500">
-                    Idea evaluada para <strong>{departamento}</strong> con inversión <strong>{inversion}</strong>.
+                  <h3 className="text-2xl font-bold text-white mb-1">{resultadoIdea.veredicto}</h3>
+                  <p className="text-base text-slate-400">
+                    Idea evaluada para <strong className="text-white">{departamento}</strong> con inversión <strong className="text-white">{inversion}</strong>.
                   </p>
                 </div>
               </div>
@@ -167,13 +176,13 @@ export default function EmprendeIA() {
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {/* Razones a favor */}
-              <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-                <h3 className="font-bold text-gray-900 mb-4">
+              <div className="plate card p-6">
+                <h3 className="text-xl font-bold text-white mb-4 font-display">
                   Razones a favor
                 </h3>
                 <ul className="space-y-3">
                   {resultadoIdea.razones_a_favor.map((r, i) => (
-                    <li key={i} className="flex items-start gap-2 text-sm text-gray-700">
+                    <li key={i} className="flex items-start gap-2 text-base text-slate-300">
                       {r}
                     </li>
                   ))}
@@ -181,13 +190,13 @@ export default function EmprendeIA() {
               </div>
 
               {/* Riesgos */}
-              <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-                <h3 className="font-bold text-gray-900 mb-4">
+              <div className="plate card p-6">
+                <h3 className="text-xl font-bold text-white mb-4 font-display">
                   Riesgos principales
                 </h3>
                 <ul className="space-y-3">
                   {resultadoIdea.riesgos.map((r, i) => (
-                    <li key={i} className="flex items-start gap-2 text-sm text-gray-700">
+                    <li key={i} className="flex items-start gap-2 text-base text-slate-300">
                       {r}
                     </li>
                   ))}
@@ -196,14 +205,14 @@ export default function EmprendeIA() {
             </div>
 
             {/* Pasos */}
-            <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-              <h3 className="font-bold text-gray-900 mb-4">
+            <div className="plate card p-6">
+              <h3 className="text-xl font-bold text-white mb-4 font-display">
                 Pasos concretos para empezar
               </h3>
               <ol className="space-y-3">
                 {resultadoIdea.pasos.map((p, i) => (
-                  <li key={i} className="flex items-start gap-3 text-sm text-gray-700">
-                    <span className="bg-alba-50 text-alba-700 font-bold rounded-full w-6 h-6 flex items-center justify-center flex-shrink-0 text-xs">
+                  <li key={i} className="flex items-start gap-3 text-base text-slate-300">
+                    <span className="w-7 h-7 rounded-full bg-gold-500/15 text-gold-400 border border-gold-500/30 font-bold flex items-center justify-center flex-shrink-0 text-sm">
                       {i + 1}
                     </span>
                     {p}
@@ -214,24 +223,24 @@ export default function EmprendeIA() {
 
             {/* Fuentes de recursos */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-                <h3 className="font-bold text-gray-900 mb-4">
+              <div className="plate card p-6">
+                <h3 className="text-xl font-bold text-white mb-4 font-display">
                   Fuentes y recursos
                 </h3>
                 <ul className="space-y-2">
                   {resultadoIdea.fuentes_recursos.map((f, i) => (
-                    <li key={i} className="flex items-start gap-2 text-sm text-gray-700">
+                    <li key={i} className="flex items-start gap-2 text-base text-slate-300">
                       {f}
                     </li>
                   ))}
                 </ul>
               </div>
 
-              <div className="bg-amber-50 border border-amber-100 rounded-xl p-6">
-                <h3 className="font-semibold text-amber-900 mb-2">
+              <div className="plate card p-6 border-amber-500/20 bg-amber-500/5">
+                <h3 className="text-xl font-bold text-amber-300 mb-2 font-display">
                   Oportunidad de nicho
                 </h3>
-                <p className="text-sm text-amber-800">{resultadoIdea.oportunidad_nicho}</p>
+                <p className="text-base text-amber-200/90">{resultadoIdea.oportunidad_nicho}</p>
               </div>
             </div>
           </div>
