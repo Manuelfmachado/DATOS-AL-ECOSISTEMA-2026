@@ -225,45 +225,47 @@ export default function Observatorio() {
       )}
 
       {/* ================================================================ */}
-      {/* 3. Territorio laboral: empleo + salarios por departamento */}
+      {/* 3. Territorio laboral: empleo por departamento (ancho completo) */}
+      {/* ================================================================ */}
+      <div className="plate card p-5">
+        <div className="flex items-center justify-between mb-3 pb-2 border-b border-gold-500/20">
+          <h2 className="text-lg font-bold text-white font-display flex items-center gap-2">
+            Empleo por departamento
+          </h2>
+          <AnalizarIAButton
+            dashboard="observatorio"
+            widgetTitle="Empleo por departamento"
+            widgetType="grafico"
+            data={deptosEmpleo}
+          />
+        </div>
+        <ResponsiveContainer width="100%" height={300}>
+          <BarChart
+            data={deptosEmpleo.map((d: any, i: number) => ({
+              name: cleanDepto(d.departamento),
+              ocupados: d.ocupados || 0,
+              fill: i < 3 ? '#d4af37' : '#64748b',
+            }))}
+            layout="vertical"
+            margin={{ left: 10, right: 20 }}
+          >
+            <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.04)" horizontal={false} />
+            <XAxis type="number" stroke="#475569" fontSize={11} tickLine={false} tickFormatter={(v) => compactNum(v)} />
+            <YAxis type="category" dataKey="name" stroke="#94a3b8" fontSize={11} width={90} />
+            <Tooltip {...chartTooltip} formatter={(v: number) => [v.toLocaleString(), 'Ocupados']} />
+            <Bar dataKey="ocupados" radius={[0, 4, 4, 0]}>
+              {deptosEmpleo.map((_: any, i: number) => (
+                <Cell key={i} fill={i < 3 ? '#d4af37' : '#64748b'} />
+              ))}
+            </Bar>
+          </BarChart>
+        </ResponsiveContainer>
+      </div>
+
+      {/* ================================================================ */}
+      {/* 3.1 Salarios por departamento (2 columnas) */}
       {/* ================================================================ */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
-        {/* Dónde hay más empleo */}
-        <div className="plate card p-5">
-          <div className="flex items-center justify-between mb-3 pb-2 border-b border-gold-500/20">
-            <h2 className="text-lg font-bold text-white font-display flex items-center gap-2">
-              Empleo por departamento
-            </h2>
-            <AnalizarIAButton
-              dashboard="observatorio"
-              widgetTitle="Empleo por departamento"
-              widgetType="grafico"
-              data={deptosEmpleo}
-            />
-          </div>
-          <ResponsiveContainer width="100%" height={260}>
-            <BarChart
-              data={deptosEmpleo.map((d: any, i: number) => ({
-                name: cleanDepto(d.departamento),
-                ocupados: d.ocupados || 0,
-                fill: i < 3 ? '#d4af37' : '#64748b',
-              }))}
-              layout="vertical"
-              margin={{ left: 10, right: 20 }}
-            >
-              <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.04)" horizontal={false} />
-              <XAxis type="number" stroke="#475569" fontSize={11} tickLine={false} tickFormatter={(v) => compactNum(v)} />
-              <YAxis type="category" dataKey="name" stroke="#94a3b8" fontSize={11} width={90} />
-              <Tooltip {...chartTooltip} formatter={(v: number) => [v.toLocaleString(), 'Ocupados']} />
-              <Bar dataKey="ocupados" radius={[0, 4, 4, 0]}>
-                {deptosEmpleo.map((_: any, i: number) => (
-                  <Cell key={i} fill={i < 3 ? '#d4af37' : '#64748b'} />
-                ))}
-              </Bar>
-            </BarChart>
-          </ResponsiveContainer>
-        </div>
-
         {/* Mejores salarios */}
         <div className="plate card p-5">
           <div className="flex items-center justify-between mb-3 pb-2 border-b border-gold-500/20">
@@ -383,7 +385,7 @@ export default function Observatorio() {
       </div>
 
       {/* ================================================================ */}
-      {/* 4. Sectores: formales PILA + emergentes RUES + ocupaciones SENA */}
+      {/* 4. Sectores: formales PILA + emergentes RUES */}
       {/* ================================================================ */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
         {/* Sectores formales PILA */}
@@ -443,32 +445,34 @@ export default function Observatorio() {
             </ResponsiveContainer>
           </div>
         )}
+      </div>
 
-        {/* Ocupaciones en alza SENA */}
-        <div className="plate card p-5 relative">
-          <div className="absolute top-4 right-4 z-10">
-            <AnalizarIAButton
-              dashboard="observatorio"
-              widgetTitle="Ocupaciones en alza SENA"
-              widgetType="tabla"
-              data={spe.slice(0, 8)}
-            />
-          </div>
-          <div className="mb-3 pb-2 border-b border-gold-500/20 pr-28">
-            <h2 className="text-lg font-bold text-white font-display">Ocupaciones en alza</h2>
-            <p className="text-xs text-slate-400 mt-1">Crecimiento de demanda laboral por ocupación (SENA SPE/APE)</p>
-          </div>
-          <div className="space-y-0 max-h-64 overflow-y-auto">
-            {spe.slice(0, 8).map((o: any, i: number) => (
-              <div key={i} className="flex justify-between items-center py-2 border-b border-white/[0.04] text-sm">
-                <div className="flex items-center gap-2 min-w-0 flex-1">
-                  <span className="w-5 h-5 rounded-full bg-dark-800 border border-cyan-500/20 flex items-center justify-center text-[10px] text-cyan-400 flex-shrink-0">{i + 1}</span>
-                  <span className="text-slate-300 truncate">{o.ocupacion}</span>
-                </div>
-                <span className="text-cyan-400 font-bold ml-2">+{Number(o.variacion_pct).toFixed(0)}%</span>
+      {/* ================================================================ */}
+      {/* 4.1 Ocupaciones en alza SENA (ancho completo) */}
+      {/* ================================================================ */}
+      <div className="plate card p-5 relative">
+        <div className="absolute top-4 right-4 z-10">
+          <AnalizarIAButton
+            dashboard="observatorio"
+            widgetTitle="Ocupaciones en alza SENA"
+            widgetType="tabla"
+            data={spe.slice(0, 8)}
+          />
+        </div>
+        <div className="mb-3 pb-2 border-b border-gold-500/20 pr-28">
+          <h2 className="text-lg font-bold text-white font-display">Ocupaciones en alza</h2>
+          <p className="text-xs text-slate-400 mt-1">Crecimiento de demanda laboral por ocupación (SENA SPE/APE)</p>
+        </div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+          {spe.slice(0, 8).map((o: any, i: number) => (
+            <div key={i} className="flex items-center gap-3 bg-white/[0.02] rounded-lg p-3 border border-cyan-500/20">
+              <span className="w-7 h-7 rounded-full bg-dark-800 border border-cyan-500/30 flex items-center justify-center text-xs text-cyan-400 flex-shrink-0">{i + 1}</span>
+              <div className="min-w-0 flex-1">
+                <p className="text-sm text-slate-200 font-medium truncate">{o.ocupacion}</p>
+                <p className="text-cyan-400 font-bold text-sm">+{Number(o.variacion_pct).toFixed(0)}%</p>
               </div>
-            ))}
-          </div>
+            </div>
+          ))}
         </div>
       </div>
 
