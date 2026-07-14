@@ -77,6 +77,7 @@ export default function Dashboard() {
   const [selectedDepto, setSelectedDepto] = useState<DeptoData | null>(null)
   const [insights, setInsights] = useState<DeptoInsights | null>(null)
   const [insightsLoading, setInsightsLoading] = useState(false)
+  const [resumenNacional, setResumenNacional] = useState<any>(null)
   const [loadingMapa, setLoadingMapa] = useState(true)
   const [loadingRankings, setLoadingRankings] = useState(true)
   const [loadingKpis, setLoadingKpis] = useState(true)
@@ -87,6 +88,7 @@ export default function Dashboard() {
       .then((res) => res.ok ? res.json() : Promise.reject('no static'))
       .catch(() => api.get('/observatorio/dashboard').then((res) => res.data))
       .then((d: any) => {
+        setResumenNacional(d.resumen_nacional || null)
         const data = d.mapa?.departamentos || []
         const mapa = new Map<string, DeptoData>()
         data.forEach((depto: any) => { mapa.set(depto.departamento, depto) })
@@ -213,9 +215,7 @@ export default function Dashboard() {
             <div className="kpi-value text-2xl mt-0.5">{loadingKpis ? (
               <span className="inline-block w-24 h-5 bg-slate-700/40 rounded animate-pulse" />
             ) : (
-              departamentos.length ? Math.round(
-                departamentos.reduce((s, d) => s + (d.ocupados || 0), 0)
-              ).toLocaleString('es-CO') : '—'
+              resumenNacional ? Math.round(resumenNacional.ocupados_totales || resumenNacional.empleo_nacional || 0).toLocaleString('es-CO') : '—'
             )}</div>
           </div>
         </div>
@@ -225,7 +225,7 @@ export default function Dashboard() {
           <p className="text-xl font-bold text-white font-display leading-tight">{loadingKpis ? (
             <span className="inline-block w-12 h-5 bg-slate-700/40 rounded animate-pulse" />
           ) : (
-            rankingNacional ? rankingNacional.promDesempleo.toFixed(1) : '—'
+            resumenNacional ? (resumenNacional.tasa_desempleo_nacional ?? 0).toFixed(1) : '—'
           )}%</p>
         </div>
         <div className="plate card p-3 text-center flex flex-col justify-center min-h-[64px]">
@@ -233,15 +233,15 @@ export default function Dashboard() {
           <p className="text-base lg:text-lg font-bold text-white font-display leading-none whitespace-nowrap overflow-hidden text-ellipsis px-1">{loadingKpis ? (
             <span className="inline-block w-20 h-5 bg-slate-700/40 rounded animate-pulse" />
           ) : (
-            rankingNacional ? formatCOP(rankingNacional.promIngreso) : '—'
+            resumenNacional ? formatCOP(resumenNacional.ingreso_promedio_nacional || resumenNacional.salario_promedio_nacional || 0) : '—'
           )} COP</p>
         </div>
         <div className="plate card p-3 text-center flex flex-col justify-center min-h-[64px]">
-          <p className="kpi-label">Formalidad</p>
+          <p className="kpi-label">Informalidad</p>
           <p className="text-xl font-bold text-white font-display leading-tight">{loadingKpis ? (
             <span className="inline-block w-12 h-5 bg-slate-700/40 rounded animate-pulse" />
           ) : (
-            rankingNacional ? rankingNacional.promFormalidad.toFixed(0) : '—'
+            resumenNacional ? (resumenNacional.tasa_informalidad_nacional ?? 0).toFixed(0) : '—'
           )}%</p>
         </div>
       </section>
