@@ -227,7 +227,7 @@ export default function Observatorio() {
       {/* ================================================================ */}
       {/* 3. Territorio laboral: empleo + salarios por departamento */}
       {/* ================================================================ */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
         {/* Dónde hay más empleo */}
         <div className="plate card p-5">
           <div className="flex items-center justify-between mb-3 pb-2 border-b border-gold-500/20">
@@ -385,7 +385,7 @@ export default function Observatorio() {
       {/* ================================================================ */}
       {/* 4. Sectores: formales PILA + emergentes RUES + ocupaciones SENA */}
       {/* ================================================================ */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
         {/* Sectores formales PILA */}
         <div className="plate card p-5 relative">
           <div className="absolute top-4 right-4 z-10">
@@ -477,8 +477,13 @@ export default function Observatorio() {
       {/* ================================================================ */}
       {brecha && (
         <div className="plate card p-5">
-          <div className="flex items-center justify-between mb-4 pb-2 border-b border-gold-500/20">
-            <h2 className="text-xl font-bold text-white font-display">Brecha: oferta educativa vs demanda laboral</h2>
+          <div className="flex items-center justify-between mb-3 pb-2 border-b border-gold-500/20">
+            <div>
+              <h2 className="text-xl font-bold text-white font-display">Brecha: oferta educativa vs demanda laboral</h2>
+              <p className="text-sm text-slate-300 mt-1">
+                Compara cuántos estudiantes se forman en cada área (oferta SNIES) contra cuántos empleos reales hay (demanda GEIH).
+              </p>
+            </div>
             <AnalizarIAButton
               dashboard="observatorio"
               widgetTitle="Brecha oferta vs demanda"
@@ -486,6 +491,22 @@ export default function Observatorio() {
               data={{ sobre: brecha.top_sobre_oferta, sub: brecha.top_sub_oferta }}
             />
           </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+            <div className="bg-red-500/10 border border-red-500/20 rounded-lg p-3">
+              <p className="text-sm text-slate-200">
+                <span className="text-red-400 font-bold">Sobre-formación (rojo):</span> hay más graduados que empleos disponibles. 
+                Más difícil conseguir trabajo en esa área.
+              </p>
+            </div>
+            <div className="bg-cyan-500/10 border border-cyan-500/20 rounded-lg p-3">
+              <p className="text-sm text-slate-200">
+                <span className="text-cyan-400 font-bold">Oportunidad (cyan):</span> hay más empleos que graduados. 
+                Buena opción para estudiar o buscar trabajo.
+              </p>
+            </div>
+          </div>
+
           <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
             {/* Sobre-oferta */}
             <div>
@@ -563,10 +584,12 @@ export default function Observatorio() {
       {/* ================================================================ */}
       {prior?.departamentos && (
         <div className="plate card p-5">
-          <div className="flex items-center justify-between mb-4 pb-2 border-b border-gold-500/20">
+          <div className="flex items-center justify-between mb-3 pb-2 border-b border-gold-500/20">
             <div>
               <h2 className="text-xl font-bold text-white font-display">Prioridad de intervención por departamento</h2>
-              <p className="text-xs text-slate-500 mt-1">Índice 0-100: formalidad, educación, ingresos y empleo. &gt;70 urgente.</p>
+              <p className="text-sm text-slate-300 mt-1">
+                Puntaje 0-100 que mide qué departamentos más necesitan ayuda. Considera formalidad, educación, ingresos y empleo.
+              </p>
             </div>
             <AnalizarIAButton
               dashboard="observatorio"
@@ -575,7 +598,23 @@ export default function Observatorio() {
               data={prior.departamentos}
             />
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mb-4">
+            <div className="bg-red-500/10 border border-red-500/20 rounded-lg p-3 text-center">
+              <p className="text-red-400 font-bold text-lg">≥70</p>
+              <p className="text-sm text-slate-300">Urgente: alta necesidad de políticas públicas y programas</p>
+            </div>
+            <div className="bg-amber-500/10 border border-amber-500/20 rounded-lg p-3 text-center">
+              <p className="text-amber-400 font-bold text-lg">50-69</p>
+              <p className="text-sm text-slate-300">Atención: necesita seguimiento e intervenciones focalizadas</p>
+            </div>
+            <div className="bg-green-500/10 border border-green-500/20 rounded-lg p-3 text-center">
+              <p className="text-green-400 font-bold text-lg">&lt;50</p>
+              <p className="text-sm text-slate-300">Estable: menor prioridad de intervención</p>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
             {prior.departamentos.map((d: any) => {
               const isUrgente = d.indice_prioridad >= 70
               const isAtencion = d.indice_prioridad >= 50
