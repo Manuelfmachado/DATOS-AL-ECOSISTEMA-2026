@@ -9,6 +9,7 @@ from pydantic import BaseModel
 from app.db.supabase import supabase
 from app.services.llm import evaluar_idea_negocio as deepinfra_evaluar_idea
 from app.services.llm_gemini import evaluar_idea_negocio as gemini_evaluar_idea, is_gemini_available
+from app.data.ciiu_nombres import CIIU_NOMBRES, obtener_nombre_ciiu
 import pandas as pd
 
 router = APIRouter(prefix="/api/emprende", tags=["emprende"])
@@ -384,6 +385,9 @@ async def top_sectores_oportunidad(departamento: str):
                         pila_group = df_pila[df_pila["actividadeconomicadesc"].str.upper().str.contains(ciiu2, na=False)]
                     cotizantes = int(pila_group["total_cotizantes"].sum()) if not pila_group.empty else 0
 
+                # Nombre legible: mapeo CIIU2 canonico
+                nombre_sector = CIIU_NOMBRES.get(ciiu2, desc[:60].strip() or f"Sector CIIU {ciiu2}")
+
                 # Normalizar scores usando percentiles logarítmicos para evitar saturación
                 import math
                 def _log_score(val: float, cap: float = 25) -> float:
@@ -397,7 +401,7 @@ async def top_sectores_oportunidad(departamento: str):
 
                 resultados.append({
                     "ciiu2": ciiu2,
-                    "sector": desc[:60],
+                    "sector": nombre_sector,
                     "indice_oportunidad": indice,
                     "empresas_activas": emp_activas,
                     "empresas_nuevas": emp_nuevas,
