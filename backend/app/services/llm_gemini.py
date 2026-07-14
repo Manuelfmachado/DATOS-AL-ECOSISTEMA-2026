@@ -16,8 +16,6 @@ load_dotenv()
 GOOGLE_API_KEY = os.getenv("GOOGLE_API_KEY", "")
 GOOGLE_CLOUD_PROJECT = os.getenv("GOOGLE_CLOUD_PROJECT", "datos-al-ecosistema-501905")
 GOOGLE_CLOUD_LOCATION = os.getenv("GOOGLE_CLOUD_LOCATION", "us-central1")
-# Variable recomendada por Google para forzar endpoint empresarial de Agent Platform
-os.environ.setdefault("GOOGLE_GENAI_USE_ENTERPRISE", "True")
 
 # Modelo por defecto para tareas de texto estructurado
 TEXT_MODEL = "gemini-2.5-flash-lite"
@@ -26,9 +24,13 @@ TEXT_MODEL = "gemini-2.5-flash-lite"
 REASONING_MODEL = "gemini-2.5-flash"
 
 # Modelo para conversacion de audio en vivo (Gemini Live API).
-# En Vertex AI el modelo de audio nativo usa este nombre; en AI Studio es "gemini-2.5-flash-live".
-# Sobreescribible con la variable de entorno GEMINI_LIVE_MODEL.
-LIVE_MODEL = os.getenv("GEMINI_LIVE_MODEL", "gemini-live-2.5-flash-native-audio")
+# En AI Studio (API key) el modelo se llama distinto que en Vertex AI.
+_LIVE_MODEL_VERTEX = "gemini-live-2.5-flash-native-audio"
+_LIVE_MODEL_AISTUDIO = "gemini-2.5-flash-preview-tts"
+LIVE_MODEL = os.getenv(
+    "GEMINI_LIVE_MODEL",
+    _LIVE_MODEL_AISTUDIO if GOOGLE_API_KEY else _LIVE_MODEL_VERTEX,
+)
 
 
 def _get_client() -> genai.Client:

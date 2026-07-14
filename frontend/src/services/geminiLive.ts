@@ -52,12 +52,15 @@ export class CoachLiveClient {
     this.callbacks.onStatus('connecting')
 
     const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:'
+    const wsHost = import.meta.env.VITE_API_URL
+      ? import.meta.env.VITE_API_URL.replace(/^https?:\/\//, '')
+      : window.location.host
     const params = new URLSearchParams()
     if (config.vacante) params.set('vacante', config.vacante)
     if (config.voice) params.set('voice', config.voice)
     if (config.modo) params.set('modo', config.modo)
     const qs = params.toString()
-    const wsUrl = `${protocol}//${window.location.host}/api/coach/live${qs ? '?' + qs : ''}`
+    const wsUrl = `${protocol}//${wsHost}/api/coach/live${qs ? '?' + qs : ''}`
 
     await this.initializeAudio()
 
