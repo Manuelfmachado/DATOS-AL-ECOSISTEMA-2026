@@ -32,9 +32,10 @@ LIVE_MODEL = os.getenv("GEMINI_LIVE_MODEL", "gemini-live-2.5-flash-native-audio"
 
 
 def _get_client() -> genai.Client:
-    # Para Agent Platform / Vertex AI se usa ADC (Application Default Credentials).
-    # En local: gcloud auth application-default login
-    # En produccin (Railway): variable GOOGLE_APPLICATION_CREDENTIALS apuntando a service account JSON.
+    # Priorizar API key de AI Studio (mas simple para Railway/sin ADC)
+    if GOOGLE_API_KEY:
+        return genai.Client(api_key=GOOGLE_API_KEY)
+    # Fallback a Vertex AI con ADC (local con gcloud auth application-default login)
     if GOOGLE_CLOUD_PROJECT:
         try:
             return genai.Client(
@@ -47,14 +48,11 @@ def _get_client() -> genai.Client:
             msg = (
                 "No se pudieron cargar credenciales de Google Cloud. "
                 "En local ejecuta: gcloud auth application-default login. "
-                "En produccin configura GOOGLE_APPLICATION_CREDENTIALS con el path a un service account JSON. "
+                "En produccin configura GOOGLE_API_KEY o GOOGLE_APPLICATION_CREDENTIALS. "
                 f"Error: {e}"
             )
             raise RuntimeError(msg)
-    if GOOGLE_API_KEY:
-        # Fallback a AI Studio si no hay proyecto de Cloud
-        return genai.Client(api_key=GOOGLE_API_KEY)
-    raise RuntimeError("GOOGLE_CLOUD_PROJECT o GOOGLE_API_KEY deben estar configurados")
+    raise RuntimeError("GOOGLE_API_KEY o GOOGLE_CLOUD_PROJECT deben estar configurados")
 
 
 def _build_config(

@@ -23,7 +23,9 @@ from app.services.llm_gemini import (
 
 
 def _get_live_client() -> genai.Client:
-    """Cliente para Live API. Usa Vertex (ADC) si hay proyecto, sino AI Studio."""
+    """Cliente para Live API. Usa AI Studio (API key) si hay, sino Vertex (ADC)."""
+    if GOOGLE_API_KEY:
+        return genai.Client(api_key=GOOGLE_API_KEY)
     if GOOGLE_CLOUD_PROJECT:
         return genai.Client(
             vertexai=True,
@@ -31,10 +33,8 @@ def _get_live_client() -> genai.Client:
             location=GOOGLE_CLOUD_LOCATION,
             http_options=types.HttpOptions(api_version="v1"),
         )
-    if GOOGLE_API_KEY:
-        return genai.Client(api_key=GOOGLE_API_KEY)
     raise RuntimeError(
-        "Gemini Live requiere GOOGLE_CLOUD_PROJECT o GOOGLE_API_KEY. "
+        "Gemini Live requiere GOOGLE_API_KEY o GOOGLE_CLOUD_PROJECT. "
         "En local: gcloud auth application-default login"
     )
 
