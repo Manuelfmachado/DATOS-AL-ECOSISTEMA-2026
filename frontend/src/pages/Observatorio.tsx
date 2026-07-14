@@ -4,7 +4,6 @@ import {
   Cell, LineChart, Line, Legend,
 } from 'recharts'
 import api from '../services/api'
-import FuentesBadge from '../components/FuentesBadge'
 import { formatCOP } from '../utils/format'
 import AnalizarIAButton from '../components/AnalizarIAButton'
 import { useDepartamentos } from '../hooks/useDepartamentos'
@@ -165,26 +164,26 @@ export default function Observatorio() {
       {/* ================================================================ */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
         <div className="plate card p-4 text-center">
-          <p className="kpi-label mb-1">Ocupados</p>
-          <p className="text-2xl font-bold text-white font-display mt-1">
+          <p className="text-xl font-bold text-white mb-1">Ocupados</p>
+          <p className="text-3xl font-bold text-white font-display mt-1">
             {compactNum(kpi.ocupados_totales || kpi.empleo_nacional || 0)}
           </p>
         </div>
         <div className="plate card p-4 text-center">
-          <p className="kpi-label mb-1">Desempleo</p>
-          <p className="text-2xl font-bold text-rose-400 font-display mt-1">
+          <p className="text-xl font-bold text-white mb-1">Desempleo</p>
+          <p className="text-3xl font-bold text-rose-400 font-display mt-1">
             {kpi.tasa_desempleo_nacional?.toFixed(1)}%
           </p>
         </div>
         <div className="plate card p-4 text-center">
-          <p className="kpi-label mb-1">Salario</p>
-          <p className="text-2xl font-bold text-white font-display mt-1">
+          <p className="text-xl font-bold text-white mb-1">Salario</p>
+          <p className="text-3xl font-bold text-white font-display mt-1">
             {formatCOP(kpi.ingreso_promedio_nacional || kpi.salario_promedio_nacional || 0)}
           </p>
         </div>
         <div className="plate card p-4 text-center">
-          <p className="kpi-label mb-1">Informalidad</p>
-          <p className="text-2xl font-bold text-amber-400 font-display mt-1">
+          <p className="text-xl font-bold text-white mb-1">Informalidad</p>
+          <p className="text-3xl font-bold text-amber-400 font-display mt-1">
             {kpi.tasa_informalidad_nacional?.toFixed(0)}%
           </p>
         </div>
@@ -196,7 +195,7 @@ export default function Observatorio() {
       {tend?.sectores && (
         <div className="plate card p-5">
           <div className="flex items-center justify-between mb-4 pb-2 border-b border-gold-500/20">
-            <h2 className="text-xl font-bold text-white font-display flex items-center gap-2">
+            <h2 className="text-2xl font-bold text-white font-display flex items-center gap-2">
               Tendencias del empleo
             </h2>
             <div className="flex items-center gap-3">
@@ -207,14 +206,13 @@ export default function Observatorio() {
                 data={tend.sectores}
                 filters={{ periodo: tend.periodo }}
               />
-              <span className="text-sm text-gold-400 uppercase tracking-wider font-semibold">GEIH {tend.periodo}</span>
             </div>
           </div>
           <ResponsiveContainer width="100%" height={320}>
-            <LineChart margin={{ top: 10, right: 30, left: 10, bottom: 5 }}>
+            <LineChart margin={{ top: 10, right: 30, left: 20, bottom: 5 }}>
               <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" />
-              <XAxis dataKey="ano" stroke="#64748b" fontSize={12} allowDuplicatedCategory={false} />
-              <YAxis stroke="#64748b" fontSize={12} tickFormatter={(v) => Math.round(v).toLocaleString("es-CO")} />
+              <XAxis dataKey="ano" stroke="#e9ecf5" tick={{ fill: '#e9ecf5', fontSize: 13, fontWeight: 600 }} allowDuplicatedCategory={false} />
+              <YAxis stroke="#e9ecf5" tick={{ fill: '#e9ecf5', fontSize: 13, fontWeight: 600 }} tickFormatter={(v) => Math.round(v).toLocaleString("es-CO")} />
               <Tooltip {...chartTooltip} formatter={(v: number) => [compactNum(v), 'Empleados']} />
               <Legend formatter={(v: string) => <span style={{ color: '#e9ecf5', fontSize: 12 }}>{v}</span>} />
               {tend.sectores.map((s: any, i: number) => (
@@ -238,7 +236,7 @@ export default function Observatorio() {
       {/* ================================================================ */}
       <div className="plate card p-5">
         <div className="flex items-center justify-between mb-3 pb-2 border-b border-gold-500/20">
-          <h2 className="text-lg font-bold text-white font-display flex items-center gap-2">
+          <h2 className="text-2xl font-bold text-white font-display flex items-center gap-2">
             Empleo por departamento
           </h2>
           <AnalizarIAButton
@@ -259,8 +257,8 @@ export default function Observatorio() {
             margin={{ left: 10, right: 20 }}
           >
             <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.04)" horizontal={false} />
-            <XAxis type="number" stroke="#475569" fontSize={11} tickLine={false} tickFormatter={(v) => compactNum(v)} />
-            <YAxis type="category" dataKey="name" stroke="#94a3b8" fontSize={11} width={90} />
+            <XAxis type="number" stroke="#e9ecf5" tick={{ fill: '#e9ecf5', fontSize: 12, fontWeight: 600 }} tickLine={false} tickFormatter={(v) => compactNum(v)} />
+            <YAxis type="category" dataKey="name" stroke="#e9ecf5" tick={{ fill: '#e9ecf5', fontSize: 12, fontWeight: 600 }} width={90} />
             <Tooltip {...chartTooltip} formatter={(v: number) => [v.toLocaleString(), 'Ocupados']} />
             <Bar dataKey="ocupados" radius={[0, 4, 4, 0]}>
               {deptosEmpleo.map((_: any, i: number) => (
@@ -278,7 +276,7 @@ export default function Observatorio() {
         {/* Mejores salarios */}
         <div className="plate card p-5">
           <div className="flex items-center justify-between mb-3 pb-2 border-b border-gold-500/20">
-            <h2 className="text-lg font-bold text-white font-display flex items-center gap-2">
+            <h2 className="text-xl font-bold text-white font-display flex items-center gap-2">
               <span className="w-3 h-3 rounded-full bg-green-400" /> Salarios más altos
             </h2>
             <AnalizarIAButton
@@ -301,7 +299,7 @@ export default function Observatorio() {
         {/* Menores salarios */}
         <div className="plate card p-5">
           <div className="flex items-center justify-between mb-3 pb-2 border-b border-gold-500/20">
-            <h2 className="text-lg font-bold text-white font-display flex items-center gap-2">
+            <h2 className="text-xl font-bold text-white font-display flex items-center gap-2">
               <span className="w-3 h-3 rounded-full bg-rose-400" /> Salarios más bajos
             </h2>
             <AnalizarIAButton
@@ -340,7 +338,7 @@ export default function Observatorio() {
             )}
           </div>
         </div>
-        <p className="text-sm text-white font-semibold mb-4">
+        <p className="text-base text-white font-semibold mb-4">
           Selecciona un departamento para ver el desglose de empleo por sector económico.
         </p>
         <div className="mb-4">
@@ -376,8 +374,8 @@ export default function Observatorio() {
               margin={{ left: 10, right: 40 }}
             >
               <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.04)" horizontal={false} />
-              <XAxis type="number" stroke="#64748b" fontSize={11} tickFormatter={(v) => compactNum(v)} />
-              <YAxis type="category" dataKey="name" stroke="#94a3b8" fontSize={11} width={100} />
+              <XAxis type="number" stroke="#e9ecf5" tick={{ fill: '#e9ecf5', fontSize: 12, fontWeight: 600 }} tickFormatter={(v) => compactNum(v)} />
+              <YAxis type="category" dataKey="name" stroke="#e9ecf5" tick={{ fill: '#e9ecf5', fontSize: 12, fontWeight: 600 }} width={100} />
               <Tooltip {...chartTooltip} formatter={(v: number) => [v.toLocaleString(), 'Empleo']} />
               <Bar dataKey="empleo" radius={[0, 4, 4, 0]}>
                 {sectoresDepto.slice(0, 15).map((_: any, i: number) => (
@@ -408,8 +406,8 @@ export default function Observatorio() {
             />
           </div>
           <div className="mb-3 pb-2 border-b border-gold-500/20 pr-28">
-            <h2 className="text-lg font-bold text-white font-display">Sectores formales</h2>
-            <p className="text-xs text-slate-400 mt-1">Trabajadores cotizantes PILA por actividad económica</p>
+            <h2 className="text-xl font-bold text-white font-display">Sectores formales</h2>
+            <p className="text-sm text-slate-300 mt-1">Trabajadores cotizantes por actividad económica</p>
           </div>
           <div className="space-y-0 max-h-64 overflow-y-auto">
             {formalList.map((s: any, i: number) => (
@@ -435,24 +433,24 @@ export default function Observatorio() {
                 data={emer.sectores.slice(0, 8)}
               />
             </div>
-            <div className="mb-3 pb-2 border-b border-gold-500/20 pr-28">
-              <h2 className="text-lg font-bold text-white font-display">Sectores emergentes</h2>
-              <p className="text-xs text-slate-400 mt-1">Nuevas empresas registradas en RUES (último año)</p>
-            </div>
-            <ResponsiveContainer width="100%" height={260}>
-              <BarChart data={emer.sectores.slice(0, 8)} layout="vertical" margin={{ left: 10, right: 40 }}>
-                <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.04)" horizontal={false} />
-                <XAxis type="number" stroke="#64748b" fontSize={10} tickFormatter={(v) => compactNum(v)} />
-                <YAxis type="category" dataKey="sector" stroke="#94a3b8" fontSize={10} width={120} />
-                <Tooltip {...chartTooltip} formatter={(v: number) => [v.toLocaleString(), 'Nuevas empresas']} />
-                <Bar dataKey="empresas_nuevas_ultimo_ano" radius={[0, 3, 3, 0]}>
-                  {emer.sectores.slice(0, 8).map((_: any, i: number) => (
-                    <Cell key={i} fill={i < 3 ? '#22c55e' : '#d4af37'} />
-                  ))}
-                </Bar>
-              </BarChart>
-            </ResponsiveContainer>
+          <div className="mb-3 pb-2 border-b border-gold-500/20 pr-28">
+            <h2 className="text-xl font-bold text-white font-display">Sectores emergentes</h2>
+            <p className="text-sm text-slate-300 mt-1">Nuevas empresas registradas (último año)</p>
           </div>
+          <ResponsiveContainer width="100%" height={260}>
+            <BarChart data={emer.sectores.slice(0, 8)} layout="vertical" margin={{ left: 10, right: 40 }}>
+              <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.04)" horizontal={false} />
+              <XAxis type="number" stroke="#e9ecf5" tick={{ fill: '#e9ecf5', fontSize: 12, fontWeight: 600 }} tickFormatter={(v) => compactNum(v)} />
+              <YAxis type="category" dataKey="sector" stroke="#e9ecf5" tick={{ fill: '#e9ecf5', fontSize: 12, fontWeight: 600 }} width={120} />
+              <Tooltip {...chartTooltip} formatter={(v: number) => [v.toLocaleString(), 'Nuevas empresas']} />
+              <Bar dataKey="empresas_nuevas_ultimo_ano" radius={[0, 3, 3, 0]}>
+                {emer.sectores.slice(0, 8).map((_: any, i: number) => (
+                  <Cell key={i} fill={i < 3 ? '#22c55e' : '#d4af37'} />
+                ))}
+              </Bar>
+            </BarChart>
+          </ResponsiveContainer>
+        </div>
         )}
       </div>
 
@@ -469,8 +467,8 @@ export default function Observatorio() {
           />
         </div>
         <div className="mb-3 pb-2 border-b border-gold-500/20 pr-28">
-          <h2 className="text-lg font-bold text-white font-display">Ocupaciones en alza</h2>
-          <p className="text-xs text-slate-400 mt-1">Crecimiento de demanda laboral por ocupación (SENA SPE/APE)</p>
+          <h2 className="text-xl font-bold text-white font-display">Ocupaciones en alza</h2>
+          <p className="text-sm text-slate-300 mt-1">Crecimiento de demanda laboral por ocupación</p>
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
           {spe.slice(0, 8).map((o: any, i: number) => (
@@ -492,9 +490,9 @@ export default function Observatorio() {
         <div className="plate card p-5">
           <div className="flex items-center justify-between mb-3 pb-2 border-b border-gold-500/20">
             <div>
-              <h2 className="text-xl font-bold text-white font-display">Brecha: oferta educativa vs demanda laboral</h2>
+              <h2 className="text-2xl font-bold text-white font-display">Brecha: oferta educativa vs demanda laboral</h2>
               <p className="text-sm text-slate-300 mt-1">
-                Compara cuántos estudiantes se forman en cada área (oferta SNIES) contra cuántos empleos reales hay (demanda GEIH).
+                Compara cuántos estudiantes se forman en cada área contra cuántos empleos reales hay.
               </p>
             </div>
             <AnalizarIAButton
@@ -599,9 +597,9 @@ export default function Observatorio() {
         <div className="plate card p-5">
           <div className="flex items-center justify-between mb-3 pb-2 border-b border-gold-500/20">
             <div>
-              <h2 className="text-xl font-bold text-white font-display">Prioridad de intervención por departamento</h2>
+              <h2 className="text-2xl font-bold text-white font-display">Prioridad de intervención por departamento</h2>
               <p className="text-sm text-slate-300 mt-1">
-                Puntaje 0-100 que mide qué departamentos más necesitan ayuda. Considera formalidad, educación, ingresos y empleo.
+                Puntaje 0-100 que mide qué departamentos más necesitan ayuda.
               </p>
             </div>
             <AnalizarIAButton
@@ -653,7 +651,6 @@ export default function Observatorio() {
         </div>
       )}
 
-      <FuentesBadge fuentes={['DANE GEIH', 'RUES', 'SENA SPE/APE', 'PILA', 'SNIES', 'Chronos T5']} />
     </div>
   )
 }
