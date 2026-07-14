@@ -64,13 +64,41 @@ export class CoachLiveClient {
 
     await this.initializeAudio()
 
-    this.ws = new WebSocket(wsUrl)
-    this.ws.binaryType = 'arraybuffer'
+    return new Promise<void>((resolve, reject) => {
+      this.ws = new WebSocket(wsUrl)
+      this.ws.binaryType = 'arraybuffer'
 
-    this.ws.onopen = () => {
-      if (config.modo === 'realista' && config.cv && this.ws) {
-        this.ws.send(JSON.stringify({ tipo: 'cv', cv: config.cv }))
+      this.ws.onopen = () => {
+        if (config.modo === 'realista' && config.cv && this.ws) {
+          this.ws.send(JSON.stringify({ tipo: 'cv', cv: config.cv }))
+        }
+        this.callbacks.onStatus('connected')
+        resolve()
       }
+
+      this.ws.onerror = (err) => {
+        this.callbacks.onStatus('error')
+        reject(new Error('Error de conexion WebSocket'))
+      }
+
+      this.ws.onmessage = (event: MessageEvent) => {
+        if (typeof event.data === 'string') {
+          try {
+            const msg = JSON.parse(event.data) as CoachLiveEvent
+            this.callbacks.onEvent(msg)
+          } catch (e) {
+            console.error('[CoachLive] Parse error:', e)
+          }
+        } else {
+          this.playAudio(event.data)
+        }
+      }
+
+      this.ws.onclose = () => {
+        this.callbacks.onStatus('disconnected')
+      }
+    })
+  }
       this.callbacks.onStatus('connected')
     }
 
