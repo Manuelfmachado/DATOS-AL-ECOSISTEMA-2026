@@ -1,0 +1,567 @@
+id_ocupacion,ocupacion,nivel,inscritos_2019,inscritos_2020,participacion_2019,participacion_2020,variacion_pct,contribucion_variacion
+1,Miembros del Poder Ejecutivo y Legislativo,Directivo,7.0,3,0.02,0.02,-5.71,-0.01
+2,Personal Directivo de la Administración Pública,Directivo,156.0,72,0.46,0.36,-5.38,-0.25
+3,"Directores y Gerentes Generales de Servicios Financieros, de Telecomunicaciones y Otros Servicios a las Empresas",Directivo,12.0,6,0.04,0.03,-5.0,-0.02
+4,"Directores y Gerentes Generales de Salud, Educación, Servicios Social, Comunitario y Organizaciones de Membresía",Directivo,31.0,20,0.09,0.1,-3.55,-0.03
+5,"Directores y Gerentes Generales de Comercio, Medios de Comunicación y Otros Servicios",Directivo,36.0,15,0.11,0.08,-5.83,-0.06
+6,"Directores y Gerentes Generales de Producción de Bienes, Servicios Públicos, Transporte y Construcción",Directivo,16.0,11,0.05,0.06,-3.13,-0.01
+7,Directores y gerentes generales de servicios y procesos de negocio.,Directivo,23.0,13,0.07,0.07,-4.35,-0.03
+8,Gerentes Financieros,Directivo,53.0,33,0.16,0.17,-3.77,-0.06
+9,Gerentes de Talento Humano,Directivo,42.0,28,0.12,0.14,-3.33,-0.04
+10,Gerentes de Compras y Adquisiciones,Directivo,63.0,35,0.19,0.18,-4.44,-0.08
+11,Gerentes de Otros Servicios Administrativos,Directivo,240.0,169,0.71,0.85,-2.96,-0.21
+12,"Gerentes de Seguros, Bienes Raíces y Corretaje Financiero",Directivo,19.0,5,0.06,0.03,-7.37,-0.04
+13,"Gerentes de Banca, Crédito e Inversiones",Directivo,28.0,17,0.08,0.09,-3.93,-0.03
+14,Gerentes de Otros Servicios a las Empresas,Directivo,22.0,16,0.06,0.08,-2.73,-0.02
+15,Gerentes de Empresas de Telecomunicaciones,Directivo,9.0,1,0.03,0.01,-8.89,-0.02
+16,Gerentes de Servicios de Correo y Mensajería,Directivo,6.0,0,0.02,,-10.0,-0.02
+17,Gerentes de Ingeniería,Directivo,81.0,41,0.24,0.21,-4.94,-0.12
+18,Gerentes de Investigación y Desarrollo en Ciencias Naturales y Aplicadas,Directivo,6.0,6,0.02,0.03,0.0,0.0
+19,Gerentes de Sistemas de Información y Procesamiento de Datos,Directivo,92.0,19,0.27,0.1,-7.93,-0.22
+20,Gerentes de Servicios a la Salud,Directivo,71.0,65,0.21,0.33,-0.85,-0.02
+21,Gerentes de Programas de Política Social y de Salud,Directivo,0.0,0,,,,
+22,Gerentes de Programas de Política de Desarrollo Económico,Directivo,16.0,12,0.05,0.06,-2.5,-0.01
+23,Gerentes de Programas de Política Educativa,Directivo,2.0,1,0.01,0.01,-5.0,0.0
+24,Otros Gerentes de Administración Pública,Directivo,6.0,1,0.02,0.01,-8.33,-0.01
+25,Administradores de Educación Superior y Formación para el Trabajo,Directivo,63.0,19,0.19,0.1,-6.98,-0.13
+26,Directores y Administradores de Educación Básica y Media,Directivo,50.0,29,0.15,0.15,-4.2,-0.06
+27,"Gerentes de Servicios Social, Comunitario y Correccional",Directivo,4.0,2,0.01,0.01,-5.0,-0.01
+28,"Gerentes de Biblioteca, Museo y Galería de Arte",Directivo,26.0,3,0.08,0.02,-8.85,-0.07
+29,Gerentes de Medios de Comunicación y Artes Escénicas,Directivo,81.0,83,0.24,0.42,0.25,0.01
+30,Directores de Programas de Esparcimiento y Administradores de Deportes,Directivo,318.0,49,0.94,0.25,-8.46,-0.79
+31,"Gerentes de Ventas, Mercadeo y Publicidad",Directivo,316.0,306,0.93,1.53,-0.32,-0.03
+32,Gerentes de Comercio Exterior,Directivo,16.0,21,0.05,0.11,3.13,0.01
+33,Gerentes de Comercio al Por Menor,Directivo,28.0,19,0.08,0.1,-3.21,-0.03
+34,Gerentes de Restaurantes y Servicios de Alimentos,Directivo,13.0,8,0.04,0.04,-3.85,-0.01
+35,Gerentes de Servicios Hoteleros,Directivo,119.0,76,0.35,0.38,-3.61,-0.13
+36,Oficiales de las Fuerzas Militares,Directivo,205.0,50,0.6,0.25,-7.56,-0.46
+37,Oficiales de Policía,Directivo,24.0,16,0.07,0.08,-3.33,-0.02
+38,Oficiales de Bomberos,Directivo,40.0,5,0.12,0.03,-8.75,-0.1
+39,Oficiales del Cuerpo de Custodia y Vigilancia,Directivo,10.0,5,0.03,0.03,-5.0,-0.01
+40,Gerentes de Otros Servicios,Directivo,181.0,91,0.53,0.46,-4.97,-0.27
+41,Gerentes de Producción Primaria (excepto agricultura),Directivo,4.0,19,0.01,0.1,37.5,0.04
+42,"Gerentes de Producción Agrícola, Pecuaria, Acuícola y Pesquero",Directivo,199.0,137,0.59,0.69,-3.12,-0.18
+43,Gerentes de Construcción,Directivo,47.0,56,0.14,0.28,1.91,0.03
+44,Gerentes de Transporte y Distribución,Directivo,14.0,15,0.04,0.08,0.71,0.0
+45,Gerentes de Logística,Directivo,379.0,214,1.12,1.07,-4.35,-0.49
+46,Gerentes Cadena de Suministro,Directivo,17.0,19,0.05,0.1,1.18,0.01
+47,Gerentes de Operación de Instalaciones Físicas,Directivo,62.0,48,0.18,0.24,-2.26,-0.04
+48,Gerentes de Mantenimiento,Directivo,40.0,25,0.12,0.13,-3.75,-0.04
+49,Gerentes de Producción Industrial,Directivo,44.0,46,0.13,0.23,0.45,0.01
+50,Gerentes de Empresas de Servicios Públicos,Directivo,53.0,47,0.16,0.24,-1.13,-0.02
+51,Contadores,Profesional,559.0,508,0.19,0.23,-0.91,-0.02
+52,"Analistas, Asesores y Agentes de Mercado Financiero",Profesional,755.0,186,0.26,0.08,-7.54,-0.19
+53,Auditores Financieros y Contables,Profesional,164.0,131,0.06,0.06,-2.01,-0.01
+54,Profesionales de Talento Humano,Profesional,1272.0,836,0.44,0.37,-3.43,-0.15
+55,Profesionales en Organización y Administración de las Empresas,Profesional,1448.0,1172,0.5,0.52,-1.91,-0.09
+56,Evaluadores de Competencias Laborales,Profesional,6.0,3,0.0,0.0,-5.0,0.0
+57,Archivistas,Profesional,127.0,100,0.04,0.04,-2.13,-0.01
+58,Físicos y Astrónomos,Profesional,26.0,16,0.01,0.01,-3.85,0.0
+59,Químicos,Profesional,69.0,50,0.02,0.02,-2.75,-0.01
+60,"Geólogos, Geoquímicos y Geofísicos",Profesional,68.0,65,0.02,0.03,-0.44,0.0
+61,Meteorólogos,Profesional,3.0,0,0.0,,-10.0,0.0
+62,"Biólogos, Botánicos, Zoólogos y Relacionados",Profesional,269.0,204,0.09,0.09,-2.42,-0.02
+63,Expertos Forestales,Profesional,32.0,31,0.01,0.01,-0.31,0.0
+64,Expertos Agrícolas y Pecuarios,Profesional,990.0,655,0.34,0.29,-3.38,-0.11
+65,Administradores Ambientales,Profesional,1764.0,956,0.6,0.43,-4.58,-0.28
+66,Ingenieros en Construcción y Obras Civiles,Profesional,771.0,590,0.26,0.26,-2.35,-0.06
+67,Ingenieros Mecánicos,Profesional,309.0,211,0.11,0.09,-3.17,-0.03
+68,Ingenieros Electricistas,Profesional,177.0,186,0.06,0.08,0.51,0.0
+69,Ingenieros  Electrónicos,Profesional,161.0,181,0.06,0.08,1.24,0.01
+70,Ingenieros Químicos,Profesional,114.0,108,0.04,0.05,-0.53,0.0
+71,Ingenieros de Automatización e Instrumentación,Profesional,156.0,194,0.05,0.09,2.44,0.01
+72,Ingenieros  de Telecomunicaciones,Profesional,93.0,75,0.03,0.03,-1.94,-0.01
+73,Ingenieros Navales,Profesional,8.0,1,0.0,0.0,-8.75,0.0
+74,Ingenieros Industriales y de Fabricación,Profesional,926.0,527,0.32,0.24,-4.31,-0.14
+75,Ingenieros de Materiales y Metalurgia,Profesional,23.0,19,0.01,0.01,-1.74,0.0
+76,Ingenieros de Minas,Profesional,36.0,20,0.01,0.01,-4.44,-0.01
+77,Ingenieros de Petróleos,Profesional,65.0,166,0.02,0.07,15.54,0.03
+78,Ingenieros de Tecnologías de la Información,Profesional,538.0,477,0.18,0.21,-1.13,-0.02
+79,Otros Ingenieros n.c.a.,Profesional,653.0,435,0.22,0.19,-3.34,-0.07
+80,Ingenieros y Productores de Audio y Sonido,Profesional,,43,,0.02,10.0,
+81,Arquitectos,Profesional,420.0,248,0.14,0.11,-4.1,-0.06
+82,Urbanistas y Planificadores del Uso del Suelo,Profesional,10.0,10,0.0,0.0,0.0,0.0
+83,Ingenieros Topográficos,Profesional,22.0,20,0.01,0.01,-0.91,0.0
+84,Diseñadores Industriales,Profesional,119.0,55,0.04,0.02,-5.38,-0.02
+85,"Matemáticos, Estadísticos y Actuarios",Profesional,146.0,62,0.05,0.03,-5.75,-0.03
+86,Analistas de Sistemas Informáticos,Profesional,2036.0,1652,0.7,0.74,-1.89,-0.13
+87,Administradores de Servicios de Tecnologías de la Información,Profesional,1471.0,1322,0.5,0.59,-1.01,-0.05
+88,Desarrolladores de Aplicaciones Informáticas y Digitales,Profesional,1432.0,892,0.49,0.4,-3.77,-0.18
+89,Médicos Especialistas,Profesional,96.0,120,0.03,0.05,2.5,0.01
+90,Médicos Generales,Profesional,516.0,631,0.18,0.28,2.23,0.04
+91,Odontólogos,Profesional,160.0,201,0.05,0.09,2.56,0.01
+92,Veterinarios,Profesional,150.0,78,0.05,0.03,-4.8,-0.02
+93,Optómetras,Profesional,12.0,5,0.0,0.0,-5.83,0.0
+94,Otras Ocupaciones Profesionales en Diagnóstico y Tratamiento de la Salud n.c.a.,Profesional,0.0,0,,,,
+95,Farmacéuticos y Químicos Farmacéuticos,Profesional,148.0,70,0.05,0.03,-5.27,-0.03
+96,Dietistas y Nutricionistas,Profesional,81.0,79,0.03,0.04,-0.25,0.0
+97,Audiólogos y Terapeutas del Lenguaje,Profesional,51.0,31,0.02,0.01,-3.92,-0.01
+98,Fisioterapeutas,Profesional,191.0,231,0.07,0.1,2.09,0.01
+99,Terapeutas Ocupacionales,Profesional,9.0,29,0.0,0.01,22.22,0.01
+100,Enfermeros,Profesional,662.0,613,0.23,0.27,-0.74,-0.02
+101,Psicólogos,Profesional,884.0,746,0.3,0.33,-1.56,-0.05
+102,Jueces,Profesional,1.0,1,0.0,0.0,0.0,0.0
+103,Abogados,Profesional,1098.0,811,0.38,0.36,-2.61,-0.1
+104,Profesores de Educación Superior,Profesional,723.0,424,0.25,0.19,-4.14,-0.1
+105,Especialistas en Procesos Pedagógicos,Profesional,246.0,89,0.08,0.04,-6.38,-0.05
+106,Profesores e Instructores de Formación para el Trabajo,Profesional,990.0,903,0.34,0.4,-0.88,-0.03
+107,Profesores de Educación Básica Secundaria y Media,Profesional,740.0,1098,0.25,0.49,4.84,0.12
+108,Profesores de Educación Básica Primaria,Profesional,688.0,536,0.24,0.24,-2.21,-0.05
+109,Profesores de Preescolar,Profesional,454.0,301,0.16,0.13,-3.37,-0.05
+110,Orientadores Educativos,Profesional,91.0,29,0.03,0.01,-6.81,-0.02
+111,Pedagogo Reeducador,Profesional,774.0,161,0.26,0.07,-7.92,-0.21
+112,Trabajadores Sociales y Consultores de Familia,Profesional,120.0,68,0.04,0.03,-4.33,-0.02
+113,Ministros del Culto,Profesional,2.0,5,0.0,0.0,15.0,0.0
+114,"Sociólogos, Antropólogos y Afines",Profesional,68.0,77,0.02,0.03,1.32,0.0
+115,"Filósofos, Filólogos y Afines",Profesional,50.0,48,0.02,0.02,-0.4,0.0
+116,"Consultores, Investigadores y Analistas de Política Económica",Profesional,244.0,185,0.08,0.08,-2.42,-0.02
+117,Consultores y Funcionarios de Desarrollo Económico y Comercial,Profesional,163.0,161,0.06,0.07,-0.12,0.0
+118,"Investigadores, Consultores y Funcionarios de Políticas Sociales de Salud y de Educación",Profesional,45.0,55,0.02,0.02,2.22,0.0
+119,Funcionarios de Programas Exclusivos de la Administración Pública,Profesional,119.0,69,0.04,0.03,-4.2,-0.02
+120,"Investigadores, Consultores y Funcionarios de Políticas de Ciencias Naturales y Aplicadas",Profesional,37.0,47,0.01,0.02,2.7,0.0
+121,Profesionales en Gestión de Riesgo de Desastres,Profesional,,12,,0.01,10.0,
+122,Profesionales en ciencias forenses,Profesional,4.0,1,0.0,0.0,-7.5,0.0
+123,Bibliotecólogos,Profesional,37.0,27,0.01,0.01,-2.7,0.0
+124,Restauradores,Profesional,7.0,6,0.0,0.0,-1.43,0.0
+125,Curadores,Profesional,1.0,0,0.0,,-10.0,0.0
+126,Escritores,Profesional,22.0,3,0.01,0.0,-8.64,-0.01
+127,Editores y Redactores,Profesional,47.0,38,0.02,0.02,-1.91,0.0
+128,Periodistas,Profesional,312.0,270,0.11,0.12,-1.35,-0.01
+129,Traductores e Intérpretes,Profesional,14.0,13,0.0,0.01,-0.71,0.0
+130,Ocupaciones Profesionales en Relaciones Públicas y Comunicaciones,Profesional,193.0,85,0.07,0.04,-5.6,-0.04
+131,Publicistas,Profesional,,42,,0.02,10.0,
+132,"Productores, Directores Artísticos, Coreógrafos y Ocupaciones Relacionadas",Profesional,42.0,23,0.01,0.01,-4.52,-0.01
+133,Intérpretes Musicales,Profesional,200.0,65,0.07,0.03,-6.75,-0.05
+134,Bailarines,Profesional,79.0,23,0.03,0.01,-7.09,-0.02
+135,Actores,Profesional,106.0,31,0.04,0.01,-7.08,-0.03
+136,"Pintores, Escultores y Otros Artistas Visuales",Profesional,42.0,51,0.01,0.02,2.14,0.0
+137,Directores e Investigadores Musicales,Profesional,,11,,0.0,10.0,
+138,Autores y Compositores Musicales,Profesional,,37,,0.02,10.0,
+139,Diseñadores Gráficos,Profesional,1152.0,1164,0.39,0.52,0.1,0.0
+140,Administradores de Explotación Acuícola y Jefes de Laboratorio de Cultivo o Producción Acuícola,Profesional,118.0,199,0.04,0.09,6.86,0.03
+141,Directores de Planta de Procesamiento de Alimentos y Bebidas,Profesional,9.0,4,0.0,0.0,-5.56,0.0
+142,Jefe de Laboratorio de Alimentos,Profesional,3.0,1,0.0,0.0,-6.67,0.0
+143,Supervisores de Empleados de Apoyo Administrativo,Técnicos Profesionales - Tecnólogos,259.0,140,0.05,0.04,-4.59,-0.02
+144,Jefes y supervisores de entidades financieras,Técnicos Profesionales - Tecnólogos,34.0,22,0.01,0.01,-3.53,0.0
+145,"Supervisores y coordinadores de procesos de negocio, Empleados de información y servicio al cliente",Técnicos Profesionales - Tecnólogos,94.0,140,0.02,0.04,4.89,0.01
+146,Supervisores de Empleados de Correo y Mensajería,Técnicos Profesionales - Tecnólogos,5.0,3,0.0,0.0,-4.0,0.0
+147,"Supervisores de Almacenamiento, Inventario y  Distribución",Técnicos Profesionales - Tecnólogos,410.0,280,0.09,0.07,-3.17,-0.03
+148,Asistentes Administrativos,Técnicos Profesionales - Tecnólogos,6982.0,5503,1.45,1.4,-2.12,-0.31
+149,Administradores de Propiedad Horizontal,Técnicos Profesionales - Tecnólogos,103.0,42,0.02,0.01,-5.92,-0.01
+150,Asistentes de Talento Humano,Técnicos Profesionales - Tecnólogos,773.0,853,0.16,0.22,1.03,0.02
+151,Asistentes de compras,Técnicos Profesionales - Tecnólogos,1421.0,77,0.3,0.02,-9.46,-0.28
+436,Enchapadores,Calificados,17.0,21,0.0,0.0,2.35,0.0
+152,"Asistentes de Juzgados, Tribunales y Afines",Técnicos Profesionales - Tecnólogos,29.0,12,0.01,0.0,-5.86,0.0
+153,"Funcionarios de Aduanas, Impuestos, Inmigración y Seguridad Social",Técnicos Profesionales - Tecnólogos,42.0,10,0.01,0.0,-7.62,-0.01
+154,Asistentes de Comercio Exterior,Técnicos Profesionales - Tecnólogos,225.0,274,0.05,0.07,2.18,0.01
+155,Técnicos en Archivística,Técnicos Profesionales - Tecnólogos,494.0,333,0.1,0.09,-3.26,-0.03
+156,Asistentes Contables,Técnicos Profesionales - Tecnólogos,1854.0,1541,0.39,0.39,-1.69,-0.07
+157,"Analistas, Asistentes y Asesores de Servicios Financieros",Técnicos Profesionales - Tecnólogos,204.0,561,0.04,0.14,17.5,0.07
+158,"Evaluadores, Ajustadores, Analistas y Liquidadores de Seguros",Técnicos Profesionales - Tecnólogos,106.0,43,0.02,0.01,-5.94,-0.01
+159,Agentes de Aduana,Técnicos Profesionales - Tecnólogos,181.0,408,0.04,0.1,12.54,0.05
+160,Asistentes Financieros,Técnicos Profesionales - Tecnólogos,83.0,121,0.02,0.03,4.58,0.01
+161,Asistentes Tesorería,Técnicos Profesionales - Tecnólogos,30.0,18,0.01,0.0,-4.0,0.0
+162,"Asistentes de Mercadeo, Publicidad y Comunicaciones",Técnicos Profesionales - Tecnólogos,,624,,0.16,10.0,
+163,Técnicos en Química Aplicada,Técnicos Profesionales - Tecnólogos,775.0,671,0.16,0.17,-1.34,-0.02
+164,Técnicos en Geología y Minería,Técnicos Profesionales - Tecnólogos,65.0,29,0.01,0.01,-5.54,-0.01
+165,Técnicos en Meteorología,Técnicos Profesionales - Tecnólogos,27.0,1,0.01,0.0,-9.63,-0.01
+166,Técnicos en Metrología,Técnicos Profesionales - Tecnólogos,51.0,49,0.01,0.01,-0.39,0.0
+167,Técnicos en Ciencias Biológicas,Técnicos Profesionales - Tecnólogos,76.0,58,0.02,0.01,-2.37,0.0
+168,Técnicos en Recursos Naturales,Técnicos Profesionales - Tecnólogos,1022.0,1271,0.21,0.32,2.44,0.05
+169,"Técnicos en Prevención, Gestión y Control Ambiental",Técnicos Profesionales - Tecnólogos,799.0,855,0.17,0.22,0.7,0.01
+170,Técnicos en Construcción y Arquitectura,Técnicos Profesionales - Tecnólogos,1027.0,732,0.21,0.19,-2.87,-0.06
+171,Técnicos en Mecánica y Construcción Mecánica,Técnicos Profesionales - Tecnólogos,560.0,354,0.12,0.09,-3.68,-0.04
+172,Técnicos en Fabricación Industrial,Técnicos Profesionales - Tecnólogos,1297.0,1624,0.27,0.41,2.52,0.07
+173,Técnicos en Electricidad,Técnicos Profesionales - Tecnólogos,403.0,190,0.08,0.05,-5.29,-0.04
+174,Técnicos en Electrónica,Técnicos Profesionales - Tecnólogos,411.0,245,0.09,0.06,-4.04,-0.03
+175,Técnicos en Automatización e Instrumentación,Técnicos Profesionales - Tecnólogos,105.0,140,0.02,0.04,3.33,0.01
+176,Técnicos en Instrumentos de Aeronavegación,Técnicos Profesionales - Tecnólogos,5.0,3,0.0,0.0,-4.0,0.0
+177,Técnicos en Telecomunicaciones,Técnicos Profesionales - Tecnólogos,163.0,73,0.03,0.02,-5.52,-0.02
+178,Dibujantes Técnicos,Técnicos Profesionales - Tecnólogos,897.0,539,0.19,0.14,-3.99,-0.07
+179,Topógrafos,Técnicos Profesionales - Tecnólogos,178.0,111,0.04,0.03,-3.76,-0.01
+180,Técnicos en Cartografía,Técnicos Profesionales - Tecnólogos,23.0,12,0.0,0.0,-4.78,0.0
+181,Inspectores de Pruebas No destructivas,Técnicos Profesionales - Tecnólogos,4.0,6,0.0,0.0,5.0,0.0
+182,"Inspectores de Sanidad, Seguridad y Salud Ocupacional",Técnicos Profesionales - Tecnólogos,1133.0,659,0.24,0.17,-4.18,-0.1
+183,Inspectores de Construcción,Técnicos Profesionales - Tecnólogos,94.0,42,0.02,0.01,-5.53,-0.01
+184,Inspectores de Equipos de Transporte e Instrumentos de Medición,Técnicos Profesionales - Tecnólogos,29.0,3,0.01,0.0,-8.97,-0.01
+185,"Inspectores de Productos Agrícola, Pecuarios y de Pesca",Técnicos Profesionales - Tecnólogos,28.0,85,0.01,0.02,20.36,0.01
+186,Inspectores de Riego Agrícola,Técnicos Profesionales - Tecnólogos,12.0,3,0.0,0.0,-7.5,0.0
+187,Coordinadores de Sistemas Integrados de Gestión,Técnicos Profesionales - Tecnólogos,,412,,0.11,10.0,
+188,"Pilotos, Ingenieros e Instructores de Vuelo",Técnicos Profesionales - Tecnólogos,80.0,12,0.02,0.0,-8.5,-0.01
+189,Controladores de Tráfico Aéreo,Técnicos Profesionales - Tecnólogos,3.0,3,0.0,0.0,0.0,0.0
+190,Capitanes y Oficiales de Cubierta,Técnicos Profesionales - Tecnólogos,7.0,46,0.0,0.01,55.71,0.01
+191,Oficiales de Máquinas,Técnicos Profesionales - Tecnólogos,5.0,5,0.0,0.0,0.0,0.0
+192,Controladores de Tráfico Ferroviario y Marítimo,Técnicos Profesionales - Tecnólogos,6.0,24,0.0,0.01,30.0,0.0
+193,Despachadores de Aeronaves,Técnicos Profesionales - Tecnólogos,2.0,4,0.0,0.0,10.0,0.0
+194,Técnicos en Tecnologías de la Información,Técnicos Profesionales - Tecnólogos,4047.0,3974,0.84,1.01,-0.18,-0.02
+195,Técnicos de Laboratorio Médico y Patología,Técnicos Profesionales - Tecnólogos,47.0,39,0.01,0.01,-1.7,0.0
+196,Técnicos en Terapia Respiratoria y Cardiovascular,Técnicos Profesionales - Tecnólogos,18.0,22,0.0,0.01,2.22,0.0
+197,Técnicos en Imágenes Diagnósticas,Técnicos Profesionales - Tecnólogos,32.0,60,0.01,0.02,8.75,0.01
+198,Técnicos en Radioterapia,Técnicos Profesionales - Tecnólogos,4.0,6,0.0,0.0,5.0,0.0
+199,Instrumentadores Quirúrgicos,Técnicos Profesionales - Tecnólogos,39.0,39,0.01,0.01,0.0,0.0
+200,Técnicos en Medicina Nuclear,Técnicos Profesionales - Tecnólogos,1.0,0,0.0,,-10.0,0.0
+201,Regentes de farmacia,Técnicos Profesionales - Tecnólogos,,67,,0.02,10.0,
+202,Higienistas Dentales,Técnicos Profesionales - Tecnólogos,75.0,27,0.02,0.01,-6.4,-0.01
+203,Técnicos Ópticos,Técnicos Profesionales - Tecnólogos,17.0,3,0.0,0.0,-8.24,0.0
+204,Practicantes de Medicina Alternativa,Técnicos Profesionales - Tecnólogos,197.0,9,0.04,0.0,-9.54,-0.04
+205,Asistentes de Ambulancia y Otras Ocupaciones Paramédicas,Técnicos Profesionales - Tecnólogos,74.0,53,0.02,0.01,-2.84,0.0
+206,Otras Ocupaciones Técnicas en Terapia y Valoración n.c.a.,Técnicos Profesionales - Tecnólogos,1.0,2,0.0,0.0,10.0,0.0
+207,Asistentes en Servicios Social y Comunitario,Técnicos Profesionales - Tecnólogos,657.0,294,0.14,0.08,-5.53,-0.08
+208,Consejeros de Servicios de Empleo,Técnicos Profesionales - Tecnólogos,10.0,133,0.0,0.03,123.0,0.03
+209,Instructores y Profesores de Personas en Condición de Discapacidad,Técnicos Profesionales - Tecnólogos,20.0,3,0.0,0.0,-8.5,0.0
+210,Otros Instructores,Técnicos Profesionales - Tecnólogos,256.0,177,0.05,0.05,-3.09,-0.02
+211,Ocupaciones Religiosas,Técnicos Profesionales - Tecnólogos,7.0,5,0.0,0.0,-2.86,0.0
+212,Investigadores criminalísticos y judiciales,Técnicos Profesionales - Tecnólogos,168.0,74,0.03,0.02,-5.6,-0.02
+213,Asistentes Legales y Afines,Técnicos Profesionales - Tecnólogos,274.0,153,0.06,0.04,-4.42,-0.03
+214,Ocupaciones Técnicas Relacionadas con Museos y Galerías,Técnicos Profesionales - Tecnólogos,10.0,4,0.0,0.0,-6.0,0.0
+215,Técnicos en Biblioteca,Técnicos Profesionales - Tecnólogos,70.0,29,0.01,0.01,-5.86,-0.01
+216,Técnicos en Promoción y Animación a la Lectura y la Escritura,Técnicos Profesionales - Tecnólogos,439.0,45,0.09,0.01,-8.97,-0.08
+217,Fotógrafos,Técnicos Profesionales - Tecnólogos,63.0,34,0.01,0.01,-4.6,-0.01
+218,Operadores de Cámara de Cine y Televisión,Técnicos Profesionales - Tecnólogos,153.0,57,0.03,0.01,-6.27,-0.02
+219,Técnicos en Diseño y Arte Gráfico,Técnicos Profesionales - Tecnólogos,53.0,37,0.01,0.01,-3.02,0.0
+220,Técnicos en Transmisión de Radio y Televisión,Técnicos Profesionales - Tecnólogos,13.0,6,0.0,0.0,-5.38,0.0
+221,"Otras Ocupaciones Técnicas en Cine, Televisión y Artes Escénicas n.c.a.",Técnicos Profesionales - Tecnólogos,8.0,5,0.0,0.0,-3.75,0.0
+222,"Ocupaciones de Asistencia en Cine, Televisión y Artes Escénicas",Técnicos Profesionales - Tecnólogos,124.0,42,0.03,0.01,-6.61,-0.02
+223,Productores de Campo para Cine y Televisión,Técnicos Profesionales - Tecnólogos,17.0,4,0.0,0.0,-7.65,0.0
+224,"Locutores de Radio, Televisión y Otros Medios de Comunicación.",Técnicos Profesionales - Tecnólogos,21.0,37,0.0,0.01,7.62,0.0
+225,Curadores y Supervisores Musicales,Técnicos Profesionales - Tecnólogos,12.0,44,0.0,0.01,26.67,0.01
+226,Otros artistas,Técnicos Profesionales - Tecnólogos,3.0,5,0.0,0.0,6.67,0.0
+227,Diseñadores de Interiores,Técnicos Profesionales - Tecnólogos,46.0,75,0.01,0.02,6.3,0.01
+228,"Diseñadores de Teatro, Moda, Exhibición y Otros Diseñadores Creativos",Técnicos Profesionales - Tecnólogos,358.0,176,0.07,0.04,-5.08,-0.04
+229,"Patronistas de Productos de Tela, Cuero y Piel",Técnicos Profesionales - Tecnólogos,158.0,82,0.03,0.02,-4.81,-0.02
+230,Ilustradores,Técnicos Profesionales - Tecnólogos,16.0,2,0.0,0.0,-8.75,0.0
+231,Graficadores de Imágenes Computarizadas,Técnicos Profesionales - Tecnólogos,84.0,78,0.02,0.02,-0.71,0.0
+232,Deportistas,Técnicos Profesionales - Tecnólogos,48.0,15,0.01,0.0,-6.88,-0.01
+233,Entrenadores y Preparadores Físicos,Técnicos Profesionales - Tecnólogos,871.0,692,0.18,0.18,-2.06,-0.04
+234,Árbitros,Técnicos Profesionales - Tecnólogos,64.0,6,0.01,0.0,-9.06,-0.01
+235,Ceramistas,Técnicos Profesionales - Tecnólogos,209.0,9,0.04,0.0,-9.57,-0.04
+236,Tejedores,Técnicos Profesionales - Tecnólogos,146.0,140,0.03,0.04,-0.41,0.0
+237,Artesanos Trabajos en Maderables y No Maderables,Técnicos Profesionales - Tecnólogos,116.0,53,0.02,0.01,-5.43,-0.01
+238,Artesanos Trabajos en Cuero,Técnicos Profesionales - Tecnólogos,31.0,26,0.01,0.01,-1.61,0.0
+239,Artesanos Trabajos en Metal,Técnicos Profesionales - Tecnólogos,125.0,51,0.03,0.01,-5.92,-0.02
+328,Auxiliares administrativos en Salud,Calificados,1125.0,512,0.06,0.04,-5.45,-0.03
+240,Otros Artesanos n.c.a.,Técnicos Profesionales - Tecnólogos,1358.0,768,0.28,0.2,-4.34,-0.12
+241,Artesanos trabajos en vidrio,Técnicos Profesionales - Tecnólogos,5.0,3,0.0,0.0,-4.0,0.0
+242,Artesanos trabajos en materiales líticos,Técnicos Profesionales - Tecnólogos,0.0,0,,,,
+243,Artesanos trabajos en papel,Técnicos Profesionales - Tecnólogos,25.0,5,0.01,0.0,-8.0,0.0
+244,Supervisores de Ventas,Técnicos Profesionales - Tecnólogos,252.0,101,0.05,0.03,-5.99,-0.03
+245,Administradores y Supervisores de Comercio al Por Menor,Técnicos Profesionales - Tecnólogos,1358.0,903,0.28,0.23,-3.35,-0.09
+246,Supervisores de Servicios de Alimentos,Técnicos Profesionales - Tecnólogos,283.0,111,0.06,0.03,-6.08,-0.04
+247,Supervisores de Personal de Manejo Doméstico,Técnicos Profesionales - Tecnólogos,86.0,58,0.02,0.01,-3.26,-0.01
+248,Sommeliers,Técnicos Profesionales - Tecnólogos,1.0,0,0.0,,-10.0,0.0
+249,Supervisores de servicios de Alojamiento y Hospedaje,Técnicos Profesionales - Tecnólogos,42.0,45,0.01,0.01,0.71,0.0
+250,Suboficiales de las Fuerzas Militares,Técnicos Profesionales - Tecnólogos,538.0,36,0.11,0.01,-9.33,-0.1
+251,Suboficiales y nivel ejecutivo de la Policía,Técnicos Profesionales - Tecnólogos,187.0,116,0.04,0.03,-3.8,-0.01
+252,Supervisores de Vigilantes,Técnicos Profesionales - Tecnólogos,92.0,90,0.02,0.02,-0.22,0.0
+253,Suboficiales del Cuerpo de Custodia y Vigilancia,Técnicos Profesionales - Tecnólogos,5.0,2,0.0,0.0,-6.0,0.0
+254,Suboficiales de Bomberos,Técnicos Profesionales - Tecnólogos,0.0,0,,,,
+255,Agentes y Corredores de Seguros,Técnicos Profesionales - Tecnólogos,434.0,905,0.09,0.23,10.85,0.1
+256,Agentes de Bienes Raíces,Técnicos Profesionales - Tecnólogos,61.0,32,0.01,0.01,-4.75,-0.01
+257,Vendedores de Ventas Técnicas,Técnicos Profesionales - Tecnólogos,1609.0,930,0.33,0.24,-4.22,-0.14
+258,Agentes de Compras e Intermediarios,Técnicos Profesionales - Tecnólogos,390.0,312,0.08,0.08,-2.0,-0.02
+259,Representante de servicios especializados,Técnicos Profesionales - Tecnólogos,91.0,78,0.02,0.02,-1.43,0.0
+260,Administradores de Comunidades Virtuales,Técnicos Profesionales - Tecnólogos,67.0,68,0.01,0.02,0.15,0.0
+261,Agentes y Promotores Artísticos,Técnicos Profesionales - Tecnólogos,,21,,0.01,10.0,
+262,Coordinadores y Productores de Eventos y Espectáculos,Técnicos Profesionales - Tecnólogos,354.0,373,0.07,0.1,0.54,0.0
+263,Chefs,Técnicos Profesionales - Tecnólogos,261.0,217,0.05,0.06,-1.69,-0.01
+264,Auxiliares de vuelo y Sobrecargos,Técnicos Profesionales - Tecnólogos,30.0,22,0.01,0.01,-2.67,0.0
+265,Tanatopractores,Técnicos Profesionales - Tecnólogos,0.0,0,,,,
+266,Coordinadores De Servicios Funerarios,Técnicos Profesionales - Tecnólogos,21.0,11,0.0,0.0,-4.76,0.0
+267,Intérpretes De Lengua De Señas Colombiana - Español,Técnicos Profesionales - Tecnólogos,7.0,5,0.0,0.0,-2.86,0.0
+268,Guías-intérpretes,Técnicos Profesionales - Tecnólogos,4.0,2,0.0,0.0,-5.0,0.0
+269,Guías de Turismo,Técnicos Profesionales - Tecnólogos,416.0,275,0.09,0.07,-3.39,-0.03
+270,Supervisores de Minería y Canteras,Técnicos Profesionales - Tecnólogos,23.0,24,0.0,0.01,0.43,0.0
+271,"Supervisores de Perforación y Servicios,Pozos de Petróleo y Gas",Técnicos Profesionales - Tecnólogos,46.0,51,0.01,0.01,1.09,0.0
+272,Inspectores de Sistemas e Instalaciones de Gas,Técnicos Profesionales - Tecnólogos,29.0,20,0.01,0.01,-3.1,0.0
+273,Supervisores y analistas de producción de hidrocarburos,Técnicos Profesionales - Tecnólogos,,10,,0.0,10.0,
+274,Supervisores de Producción Agrícola,Técnicos Profesionales - Tecnólogos,240.0,590,0.05,0.15,14.58,0.07
+275,Supervisores de Producción Pecuaria,Técnicos Profesionales - Tecnólogos,196.0,90,0.04,0.02,-5.41,-0.02
+276,Supervisores de Explotación Forestal y Silvicultura,Técnicos Profesionales - Tecnólogos,3.0,0,0.0,,-10.0,0.0
+277,Agricultores y Administradores Agropecuarios,Técnicos Profesionales - Tecnólogos,5798.0,4280,1.21,1.09,-2.62,-0.32
+278,Contratistas de Servicios Agrícolas y Relacionados,Técnicos Profesionales - Tecnólogos,30.0,27,0.01,0.01,-1.0,0.0
+279,Contratistas y Supervisores de Servicios de Jardinería y Viverismo,Técnicos Profesionales - Tecnólogos,80.0,131,0.02,0.03,6.38,0.01
+280,Capitanes y Patrones de Pesca,Técnicos Profesionales - Tecnólogos,0.0,2,,0.0,10.0,
+281,"Contratistas y Supervisores de Ajustadores de Máquinas y Herramientas, y de Ocupaciones Relacionadas",Técnicos Profesionales - Tecnólogos,5.0,8,0.0,0.0,6.0,0.0
+282,Contratistas y Supervisores de Electricidad y Telecomunicaciones,Técnicos Profesionales - Tecnólogos,60.0,81,0.01,0.02,3.5,0.0
+283,Contratistas y Supervisores de Instalación de Tuberías,Técnicos Profesionales - Tecnólogos,14.0,17,0.0,0.0,2.14,0.0
+284,Contratistas y Supervisores de Moldeo de Forja y Montaje de Estructuras Metálicas,Técnicos Profesionales - Tecnólogos,7.0,8,0.0,0.0,1.43,0.0
+285,Contratistas y Supervisores de Carpintería,Técnicos Profesionales - Tecnólogos,5.0,13,0.0,0.0,16.0,0.0
+286,Contratistas y Supervisores de Mecánica,Técnicos Profesionales - Tecnólogos,75.0,89,0.02,0.02,1.87,0.0
+287,Contratistas y Supervisores de Operación de Equipo Pesado,Técnicos Profesionales - Tecnólogos,1.0,5,0.0,0.0,40.0,0.0
+288,"Maestros Generales de Obra y Supervisores de Construcción, Instalación y Reparación",Técnicos Profesionales - Tecnólogos,553.0,455,0.12,0.12,-1.77,-0.02
+289,Supervisores de Operación de Transporte Ferroviario,Técnicos Profesionales - Tecnólogos,9.0,6,0.0,0.0,-3.33,0.0
+290,Supervisores de Operación de Transporte Terrestre (no ferroviario),Técnicos Profesionales - Tecnólogos,58.0,26,0.01,0.01,-5.52,-0.01
+291,Supervisores de Tratamiento de Metales y Minerales,Técnicos Profesionales - Tecnólogos,4.0,5,0.0,0.0,2.5,0.0
+292,"Supervisores de Procesamiento de Químico, Petróleo, Gas y Tratamiento de Agua y Generación de Energía",Técnicos Profesionales - Tecnólogos,23.0,18,0.0,0.0,-2.17,0.0
+293,"Supervisores de Procesamiento de Alimentos, Bebidas y Tabaco",Técnicos Profesionales - Tecnólogos,106.0,86,0.02,0.02,-1.89,0.0
+294,Supervisores de Fabricación de Productos de Plástico y Caucho,Técnicos Profesionales - Tecnólogos,5.0,4,0.0,0.0,-2.0,0.0
+295,Supervisores de Procesamiento de la Madera y Producción de Pulpa y Papel,Técnicos Profesionales - Tecnólogos,1.0,1,0.0,0.0,0.0,0.0
+296,Supervisores de Procesamiento Textil,Técnicos Profesionales - Tecnólogos,7.0,7,0.0,0.0,0.0,0.0
+297,"Inspectores de Control de Calidad, Procesamiento de Alimentos y Bebidas",Técnicos Profesionales - Tecnólogos,522.0,985,0.11,0.25,8.87,0.1
+298,Supervisores de Ensamble de Vehículos de Motor,Técnicos Profesionales - Tecnólogos,29.0,21,0.01,0.01,-2.76,0.0
+299,Supervisores de Fabricación de Productos Electrónicos,Técnicos Profesionales - Tecnólogos,2.0,0,0.0,,-10.0,0.0
+300,Supervisores de Fabricación de Productos Eléctricos,Técnicos Profesionales - Tecnólogos,2.0,1,0.0,0.0,-5.0,0.0
+301,Supervisores de Fabricación de Muebles y Accesorios,Técnicos Profesionales - Tecnólogos,3.0,11,0.0,0.0,26.67,0.0
+302,"Supervisores de Fabricación de Productos de Tela, Cuero y Piel",Técnicos Profesionales - Tecnólogos,47.0,28,0.01,0.01,-4.04,0.0
+303,Supervisores de Impresión y Ocupaciones Relacionadas,Técnicos Profesionales - Tecnólogos,13.0,88,0.0,0.02,57.69,0.02
+304,Supervisores de Fabricación de Otros Productos Mecánicos y Metálicos,Técnicos Profesionales - Tecnólogos,15.0,12,0.0,0.0,-2.0,0.0
+305,Supervisores de Fabricación y Ensamble de Otros Productos n.c.a,Técnicos Profesionales - Tecnólogos,2.0,5,0.0,0.0,15.0,0.0
+306,"Operadores de Control Central de Procesos, Tratamiento de Metales y Minerales",Técnicos Profesionales - Tecnólogos,1.0,3,0.0,0.0,20.0,0.0
+307,"Operadores de Procesos, Químicos, Gas y Petróleo",Técnicos Profesionales - Tecnólogos,28.0,9,0.01,0.0,-6.79,0.0
+308,"Operadores de Control de Procesos, Producción de Pulpa",Técnicos Profesionales - Tecnólogos,7.0,12,0.0,0.0,7.14,0.0
+309,"Operadores de Control de Procesos, Fabricación de Papel",Técnicos Profesionales - Tecnólogos,1.0,4,0.0,0.0,30.0,0.0
+310,Impresores de Artes Gráficas,Técnicos Profesionales - Tecnólogos,128.0,110,0.03,0.03,-1.41,0.0
+311,Pre-prensistas de Artes Gráficas,Técnicos Profesionales - Tecnólogos,10.0,36,0.0,0.01,26.0,0.01
+312,Operarios de Terminados y Acabados de Artes Gráficas,Técnicos Profesionales - Tecnólogos,63.0,142,0.01,0.04,12.54,0.02
+313,Secretarios,Calificados,1110.0,1236,0.06,0.09,1.14,0.01
+314,Recepcionistas y Operadores de Conmutador,Calificados,436.0,325,0.02,0.02,-2.55,-0.01
+315,Digitadores,Calificados,1678.0,974,0.09,0.07,-4.2,-0.04
+316,Transcriptores y Relatores,Calificados,1.0,3,0.0,0.0,20.0,0.0
+317,Digitalizadores,Calificados,19.0,15,0.0,0.0,-2.11,0.0
+318,"Auxiliares Contables, de Tesorería y Financieros",Calificados,3931.0,2992,0.22,0.21,-2.39,-0.05
+319,Cajeros de Servicios Financieros,Calificados,740.0,536,0.04,0.04,-2.76,-0.01
+320,Auxiliares de servicios financieros,Calificados,220.0,219,0.01,0.02,-0.05,0.0
+321,Auxiliares de Cartera y Cobranzas,Calificados,204.0,178,0.01,0.01,-1.27,0.0
+322,Auxiliares de Nómina y Prestaciones,Calificados,171.0,153,0.01,0.01,-1.05,0.0
+323,Avaluadores,Calificados,7.0,1,0.0,0.0,-8.57,0.0
+324,Auxiliares Administrativos,Calificados,10431.0,7803,0.57,0.55,-2.52,-0.14
+325,Auxiliares de Talento Humano,Calificados,2408.0,1566,0.13,0.11,-3.5,-0.05
+326,Auxiliares de Tribunales,Calificados,14.0,8,0.0,0.0,-4.29,0.0
+327,Auxiliares de Archivo y Registro,Calificados,1374.0,1876,0.08,0.13,3.65,0.03
+329,Auxiliares de aduana,Calificados,277.0,259,0.02,0.02,-0.65,0.0
+330,Auxiliares de Biblioteca,Calificados,41.0,23,0.0,0.0,-4.39,0.0
+331,Auxiliares de Publicación y Afines,Calificados,15.0,9,0.0,0.0,-4.0,0.0
+332,Auxiliares de Información y Servicio al Cliente,Calificados,32574.0,31362,1.79,2.23,-0.37,-0.07
+333,Auxiliares de Estadística y Encuestadores,Calificados,162.0,86,0.01,0.01,-4.69,0.0
+334,Auxiliares de Correo y Servicio Postal,Calificados,21.0,5,0.0,0.0,-7.62,0.0
+335,Carteros y Mensajeros,Calificados,339.0,372,0.02,0.03,0.97,0.0
+336,Auxiliares de Almacén,Calificados,12482.0,4365,0.68,0.31,-6.5,-0.45
+337,Auxiliares de Compras e Inventarios,Calificados,340.0,290,0.02,0.02,-1.47,0.0
+338,Operadores de Radio y Despachadores,Calificados,36.0,52,0.0,0.0,4.44,0.0
+339,Programadores de Rutas y Tripulaciones,Calificados,27.0,34,0.0,0.0,2.59,0.0
+340,Operadores Telefónicos,Calificados,13.0,25,0.0,0.0,9.23,0.0
+341,Asistentes en Saneamiento Ambiental,Calificados,130.0,68,0.01,0.0,-4.77,0.0
+342,Auxiliares de Laboratorio,Calificados,353.0,156,0.02,0.01,-5.58,-0.01
+343,Auxiliares de Seguridad en el Trabajo,Calificados,,343,,0.02,10.0,
+344,Operarios de exploración geofísica y geológica,Calificados,,10,,0.0,10.0,
+345,Auxiliares en Automatización e Instrumentación Industrial,Calificados,228.0,266,0.01,0.02,1.67,0.0
+346,Técnicos en Asistencia y Soporte de Tecnologías de la Información,Calificados,1720.0,1707,0.09,0.12,-0.08,0.0
+347,Auxiliares en Enfermería,Calificados,2579.0,2151,0.14,0.15,-1.66,-0.02
+348,Auxiliares de Salud oral,Calificados,313.0,271,0.02,0.02,-1.34,0.0
+349,Auxiliares en Salud pública,Calificados,248.0,189,0.01,0.01,-2.38,0.0
+350,Auxiliares de Laboratorio Clínico,Calificados,52.0,44,0.0,0.0,-1.54,0.0
+351,Auxiliares de Droguería y Farmacia,Calificados,599.0,537,0.03,0.04,-1.04,0.0
+352,Otros Auxiliares de Servicios a la Salud n.c.a.,Calificados,21.0,21,0.0,0.0,0.0,0.0
+353,Auxiliares en mecánica dental,Calificados,19.0,11,0.0,0.0,-4.21,0.0
+354,Auxiliares de educación para la primera infancia,Calificados,1560.0,1190,0.09,0.08,-2.37,-0.02
+355,Operadores de audio y sonido,Calificados,211.0,24,0.01,0.0,-8.86,-0.01
+356,Ejecutantes Musicales,Calificados,,25,,0.0,10.0,
+357,Auxiliares de Producción de Audio y Sonido,Calificados,,80,,0.01,10.0,
+358,Vendedores de Ventas no Técnicas,Calificados,27172.0,20668,1.49,1.47,-2.39,-0.36
+359,Auxiliares de Promoción Artística,Calificados,,42,,0.0,10.0,
+360,Vendedores de Mostrador,Calificados,5338.0,2878,0.29,0.2,-4.61,-0.13
+361,Mercaderistas e Impulsadores,Calificados,22506.0,18947,1.23,1.34,-1.58,-0.2
+362,Cajeros de Comercio,Calificados,2866.0,2746,0.16,0.19,-0.42,-0.01
+363,Modelos,Calificados,16.0,4,0.0,0.0,-7.5,0.0
+364,Agentes de Viajes,Calificados,559.0,418,0.03,0.03,-2.52,-0.01
+365,"Empleados de Ventas y Servicios de Líneas Aéreas, Marítimas y Terrestres",Calificados,512.0,193,0.03,0.01,-6.23,-0.02
+366,Empleados de Recepción Hotelera,Calificados,202.0,108,0.01,0.01,-4.65,-0.01
+367,Informadores Turísticos,Calificados,513.0,123,0.03,0.01,-7.6,-0.02
+368,Recreadores,Calificados,192.0,337,0.01,0.02,7.55,0.01
+369,Operadores de Juegos Mecánicos y de Salón,Calificados,19.0,2,0.0,0.0,-8.95,0.0
+370,Auxiliares de Producción de Eventos y Espectáculos,Calificados,,103,,0.01,10.0,
+371,Cortadores de Carne para Comercio Mayorista y al Detal,Calificados,189.0,272,0.01,0.02,4.39,0.0
+372,Panaderos y Pasteleros,Calificados,1054.0,793,0.06,0.06,-2.48,-0.01
+373,Meseros y Capitán de Meseros,Calificados,1696.0,1035,0.09,0.07,-3.9,-0.04
+374,Bartender,Calificados,81.0,29,0.0,0.0,-6.42,0.0
+375,Cocineros,Calificados,601.0,524,0.03,0.04,-1.28,0.0
+376,Baristas,Calificados,161.0,20,0.01,0.0,-8.76,-0.01
+377,Inspectores de Policía,Calificados,4.0,2,0.0,0.0,-5.0,0.0
+378,Funcionarios de Regulación,Calificados,32.0,42,0.0,0.0,3.13,0.0
+379,Auxiliares de policía,Calificados,179.0,241,0.01,0.02,3.46,0.0
+380,Bomberos,Calificados,28.0,25,0.0,0.0,-1.07,0.0
+381,Guardianes de Prisión,Calificados,30.0,12,0.0,0.0,-6.0,0.0
+382,Soldados,Calificados,1826.0,153,0.1,0.01,-9.16,-0.09
+383,Vigilantes y Guardias de Seguridad,Calificados,3137.0,1894,0.17,0.13,-3.96,-0.07
+384,Técnicos Investigadores Criminalísticos y Judiciales,Calificados,21.0,7,0.0,0.0,-6.67,0.0
+385,Acompañantes Domiciliarios,Calificados,202.0,144,0.01,0.01,-2.87,0.0
+386,Auxiliares del Cuidado de Niños,Calificados,198.0,241,0.01,0.02,2.17,0.0
+387,Peluqueros,Calificados,692.0,639,0.04,0.05,-0.77,0.0
+388,Trabajadores del Cuidado de Animales,Calificados,141.0,128,0.01,0.01,-0.92,0.0
+389,Auxiliares de Servicios Funerarios,Calificados,3.0,10,0.0,0.0,23.33,0.0
+390,"Astrólogos, Adivinadores y Relacionados",Calificados,2.0,0,0.0,,-10.0,0.0
+391,Manicuristas y Pedicuristas,Calificados,329.0,163,0.02,0.01,-5.05,-0.01
+392,Cosmetólogos Esteticistas,Calificados,183.0,128,0.01,0.01,-3.01,0.0
+393,Maquilladores,Calificados,66.0,17,0.0,0.0,-7.42,0.0
+394,Operarios de Apoyo y Servicios en Minería Bajo Tierra,Calificados,35.0,78,0.0,0.01,12.29,0.0
+395,Operarios de Apoyo y Servicios en Perforación de Petróleo y Gas,Calificados,793.0,291,0.04,0.02,-6.33,-0.03
+396,Mineros de Producción Bajo Tierra,Calificados,167.0,141,0.01,0.01,-1.56,0.0
+397,Perforadores de Pozos de Gas y Petróleo y Trabajadores Relacionados,Calificados,94.0,21,0.01,0.0,-7.77,0.0
+398,Inspectores de Construcción de Oleoductos y Gasoductos,Calificados,4.0,5,0.0,0.0,2.5,0.0
+399,Operadores de Equipo Minero,Calificados,55.0,30,0.0,0.0,-4.55,0.0
+400,Operadores de producción de hidrocarburos,Calificados,,28,,0.0,10.0,
+401,Operarios de servicios a pozos de hidrocarburos,Calificados,,18,,0.0,10.0,
+402,Operarios torres de perforación de hidrocarburos,Calificados,,9,,0.0,10.0,
+403,Trabajadores de Explotación Forestal,Calificados,9.0,1,0.0,0.0,-8.89,0.0
+404,Trabajadores de Silvicultura y Forestación,Calificados,72.0,19,0.0,0.0,-7.36,0.0
+405,Trabajadores Agrícolas,Calificados,1250.0,1190,0.07,0.08,-0.48,0.0
+406,Trabajadores Pecuarios,Calificados,664.0,910,0.04,0.06,3.7,0.01
+407,Trabajadores de Vivero,Calificados,249.0,128,0.01,0.01,-4.86,-0.01
+408,Trabajadores del Campo,Calificados,1533.0,1359,0.08,0.1,-1.14,-0.01
+409,Trabajadores de Plantas de Incubación Artificial,Calificados,17.0,18,0.0,0.0,0.59,0.0
+410,Rayadores de Caucho,Calificados,13.0,0,0.0,,-10.0,0.0
+411,Operarios de Riego Agrícola,Calificados,24.0,55,0.0,0.0,12.92,0.0
+412,Pescadores,Calificados,79.0,91,0.0,0.01,1.52,0.0
+413,Operario Acuícola,Calificados,186.0,191,0.01,0.01,0.27,0.0
+414,Técnico Acuícola en Sistemas de Reproducción,Calificados,20.0,8,0.0,0.0,-6.0,0.0
+415,Técnico Acuícola en Sistemas de Levante y Engorde,Calificados,4.0,4,0.0,0.0,0.0,0.0
+416,Ajustadores de Máquinas y Herramientas,Calificados,139.0,187,0.01,0.01,3.45,0.0
+417,Modelistas y Matriceros,Calificados,6.0,3,0.0,0.0,-5.0,0.0
+418,Electricistas Industriales,Calificados,200.0,242,0.01,0.02,2.1,0.0
+419,Electricistas Residenciales,Calificados,398.0,408,0.02,0.03,0.25,0.0
+420,Instaladores de Redes de Energía Eléctrica,Calificados,277.0,178,0.02,0.01,-3.57,-0.01
+421,Técnicos instaladores de Redes y Líneas de Telecomunicaciones,Calificados,121.0,57,0.01,0.0,-5.29,0.0
+422,"Auxiliares técnicos de instalación, mantenimiento y reparación de sistemas de Telecomunicaciones",Calificados,522.0,224,0.03,0.02,-5.71,-0.02
+423,Operarios de Mantenimiento y Servicio de Televisión por Cable,Calificados,3.0,8,0.0,0.0,16.67,0.0
+424,Plomeros,Calificados,71.0,46,0.0,0.0,-3.52,0.0
+425,Instaladores de Tuberías para Sistemas de Extinción de Incendios,Calificados,28.0,15,0.0,0.0,-4.64,0.0
+426,Instaladores de Redes y Equipos a Gas,Calificados,65.0,162,0.0,0.01,14.92,0.01
+427,"Chapistas, Caldereros y Paileros",Calificados,27.0,23,0.0,0.0,-1.48,0.0
+428,Soldadores,Calificados,751.0,464,0.04,0.03,-3.82,-0.02
+429,Montadores de Estructuras Metálicas,Calificados,129.0,96,0.01,0.01,-2.56,0.0
+430,Ornamentistas y Forjadores,Calificados,39.0,36,0.0,0.0,-0.77,0.0
+431,Tuberos,Calificados,13.0,13,0.0,0.0,0.0,0.0
+432,Carpinteros,Calificados,261.0,227,0.01,0.02,-1.3,0.0
+433,Ebanistas,Calificados,366.0,69,0.02,0.0,-8.11,-0.02
+434,Oficiales de Construcción,Calificados,1349.0,978,0.07,0.07,-2.75,-0.02
+435,"Trabajadores en Concreto, Hormigón y Enfoscado",Calificados,7.0,4,0.0,0.0,-4.29,0.0
+437,Techadores,Calificados,1.0,1,0.0,0.0,0.0,0.0
+438,Instaladores de Material Aislante,Calificados,50.0,30,0.0,0.0,-4.0,0.0
+439,Pintores y Empapeladores,Calificados,108.0,57,0.01,0.0,-4.72,0.0
+440,Instaladores de Pisos,Calificados,8.0,2,0.0,0.0,-7.5,0.0
+441,Revocadores,Calificados,10.0,9,0.0,0.0,-1.0,0.0
+442,Mecánicos Industriales,Calificados,751.0,813,0.04,0.06,0.83,0.0
+443,"Mecánicos de Maquinaria Textil, confección, cuero, calzado y marroquinería",Calificados,177.0,78,0.01,0.01,-5.59,-0.01
+444,Mecánicos de Equipo Pesado,Calificados,122.0,81,0.01,0.01,-3.36,0.0
+445,Mecánicos de Aviación,Calificados,16.0,24,0.0,0.0,5.0,0.0
+446,Técnicos de Aire Acondicionado y Refrigeración,Calificados,50.0,116,0.0,0.01,13.2,0.0
+447,Mecánicos de Vehículos Automotores,Calificados,943.0,812,0.05,0.06,-1.39,-0.01
+448,Electricistas de Vehículos Automotores,Calificados,32.0,91,0.0,0.01,18.44,0.0
+449,Mecánicos de Motos,Calificados,772.0,562,0.04,0.04,-2.72,-0.01
+450,Latoneros,Calificados,74.0,56,0.0,0.0,-2.43,0.0
+451,Reparadores de Aparatos Electrodomésticos,Calificados,10.0,15,0.0,0.0,5.0,0.0
+452,Mecánicos Electricistas,Calificados,177.0,168,0.01,0.01,-0.51,0.0
+453,Auxiliares técnicos en electrónica,Calificados,893.0,812,0.05,0.06,-0.91,0.0
+454,Mecánicos de Otros Pequeñas Máquinas y Motores,Calificados,26.0,10,0.0,0.0,-6.15,0.0
+455,"Operadores de Máquinas, Tratamiento de Metales y Minerales",Calificados,28.0,24,0.0,0.0,-1.43,0.0
+456,Trabajadores de Fundición,Calificados,16.0,4,0.0,0.0,-7.5,0.0
+457,"Operadores de Fabricación, Moldeo y Acabado del Vidrio",Calificados,178.0,18,0.01,0.0,-8.99,-0.01
+458,"Operadores de Moldeo de Arcilla, Piedra y Concreto",Calificados,165.0,192,0.01,0.01,1.64,0.0
+459,"Inspectores de Control de Calidad, Tratamiento de Metales y Minerales",Calificados,3.0,1,0.0,0.0,-6.67,0.0
+460,Operadores de Máquinas de Planta Química,Calificados,35.0,16,0.0,0.0,-5.43,0.0
+461,Operadores de Máquinas para Procesamiento de Plásticos,Calificados,120.0,45,0.01,0.0,-6.25,0.0
+462,Operadores de Máquinas y Trabajadores Relacionados con el Procesamiento del Caucho,Calificados,29.0,32,0.0,0.0,1.03,0.0
+463,Operadores de Plantas de Tratamiento de Aguas y Desechos,Calificados,285.0,197,0.02,0.01,-3.09,0.0
+464,Operadores de Máquinas para Procesamiento de la Madera,Calificados,13.0,11,0.0,0.0,-1.54,0.0
+465,Operadores de Máquinas para la Producción de Pulpa,Calificados,0.0,0,,,,
+466,Operadores de Máquinas para la Fabricación de Papel,Calificados,4.0,1,0.0,0.0,-7.5,0.0
+467,Operadores de Máquinas para la Fabricación de Productos de Papel,Calificados,7.0,24,0.0,0.0,24.29,0.0
+468,"Inspectores de Control de Calidad, Procesamiento de la Madera",Calificados,3.0,2,0.0,0.0,-3.33,0.0
+469,Operadores de Máquinas para la Preparación de Fibras Textiles,Calificados,244.0,32,0.01,0.0,-8.69,-0.01
+470,Operadores de Telares y Otras Máquinas Tejedoras,Calificados,60.0,26,0.0,0.0,-5.67,0.0
+471,"Operadores de Máquinas de Tintura, Acabado Textil y Prendas",Calificados,69.0,65,0.0,0.0,-0.58,0.0
+472,"Analistas de Calidad, Textiles",Calificados,65.0,94,0.0,0.01,4.46,0.0
+473,Operadores de Máquinas para Coser y Bordar,Calificados,1561.0,982,0.09,0.07,-3.71,-0.03
+474,"Cortadores de Tela, Cuero y Piel",Calificados,1197.0,925,0.07,0.07,-2.27,-0.01
+475,Operadores de Máquinas y Trabajadores Relacionados con la Fabricación de Calzado y Marroquinería,Calificados,265.0,80,0.01,0.01,-6.98,-0.01
+476,Trabajadores del Tratamiento de Pieles y Cueros,Calificados,3.0,91,0.0,0.01,293.33,0.0
+477,"Inspectores de Control de Calidad, Fabricación de Productos de Tela, Piel y Cuero",Calificados,274.0,236,0.02,0.02,-1.39,0.0
+478,Operadores de Control de Procesos y Máquinas para la Elaboración de Alimentos y Bebidas,Calificados,523.0,757,0.03,0.05,4.47,0.01
+479,Operarios de Planta de Beneficio Animal,Calificados,50.0,602,0.0,0.04,110.4,0.03
+480,Operarios de Planta de Procesamiento y Empaque de Pescado y Mariscos,Calificados,131.0,323,0.01,0.02,14.66,0.01
+481,Operarios de Máquinas para la Elaboración de Productos de Tabaco,Calificados,12.0,4,0.0,0.0,-6.67,0.0
+482,Procesadores Fotográficos y de Películas,Calificados,15.0,20,0.0,0.0,3.33,0.0
+483,Ensambladores e Inspectores de Vehículos Automotores,Calificados,67.0,30,0.0,0.0,-5.52,0.0
+484,Ensambladores de productos Electrónicos,Calificados,23.0,36,0.0,0.0,5.65,0.0
+485,Ensambladores e Inspectores de Aparatos y Equipo Eléctrico,Calificados,22.0,52,0.0,0.0,13.64,0.0
+486,"Ensambladores, Fabricantes e Inspectores de Transformadores y Motores Eléctricos Industriales",Calificados,26.0,44,0.0,0.0,6.92,0.0
+487,Ensambladores e Inspectores de Productos Mecánicos,Calificados,29.0,50,0.0,0.0,7.24,0.0
+488,Ensambladores e Inspectores de Ensamble de Aeronaves,Calificados,6.0,2,0.0,0.0,-6.67,0.0
+489,Operadores de Máquinas e Inspectores de la Fabricación de Productos y Componentes Eléctricos,Calificados,3.0,2,0.0,0.0,-3.33,0.0
+490,Ensambladores e Inspectores de Embarcaciones,Calificados,0.0,0,,,,
+491,Ensambladores e Inspectores de Muebles y Accesorios,Calificados,23.0,22,0.0,0.0,-0.43,0.0
+492,Operarios de Acabado de Muebles,Calificados,134.0,53,0.01,0.0,-6.04,0.0
+493,Ensambladores de Productos Plásticos e Inspectores,Calificados,21.0,39,0.0,0.0,8.57,0.0
+494,Operarios de Recubrimientos Metálicos,Calificados,6.0,4,0.0,0.0,-3.33,0.0
+495,Pintores en Procesos de Manufactura,Calificados,64.0,51,0.0,0.0,-2.03,0.0
+496,Otros Ensambladores e Inspectores n.c.a.,Calificados,23.0,17,0.0,0.0,-2.61,0.0
+497,Auxiliares de Producción Gráfica,Calificados,655.0,520,0.04,0.04,-2.06,-0.01
+498,Instaladores Residenciales y Comerciales,Calificados,933.0,806,0.05,0.06,-1.36,-0.01
+499,Operarios de Mantenimiento de Instalaciones de Abastecimiento de Agua y Gas,Calificados,82.0,28,0.0,0.0,-6.59,0.0
+500,Vidrieros,Calificados,6.0,6,0.0,0.0,0.0,0.0
+501,Ayudantes Electricistas,Calificados,1823.0,802,0.1,0.06,-5.6,-0.06
+502,Ayudantes de Mecánica,Calificados,528.0,601,0.03,0.04,1.38,0.0
+503,Otros Reparadores,Calificados,25.0,24,0.0,0.0,-0.4,0.0
+504,Tapiceros,Calificados,20.0,18,0.0,0.0,-1.0,0.0
+505,"Sastres, Modistos, Peleteros y Sombrereros",Calificados,1990.0,273,0.11,0.02,-8.63,-0.09
+506,Zapateros y Afines,Calificados,67.0,37,0.0,0.0,-4.48,0.0
+507,Joyeros y Relojeros,Calificados,28.0,64,0.0,0.0,12.86,0.0
+508,Tipógrafos,Calificados,25.0,2,0.0,0.0,-9.2,0.0
+509,Cerrajeros y afines,Calificados,5.0,4,0.0,0.0,-2.0,0.0
+510,Buzos,Calificados,7.0,2,0.0,0.0,-7.14,0.0
+511,Operadores de Máquinas Estacionarias y Equipo Auxiliar,Calificados,536.0,324,0.03,0.02,-3.96,-0.01
+512,Operadores de Plantas de Generación y Distribución de Energía,Calificados,19.0,16,0.0,0.0,-1.58,0.0
+513,Operadores de Planta de Gas,Calificados,,11,,0.0,10.0,
+514,Operadores de Grúa,Calificados,40.0,20,0.0,0.0,-5.0,0.0
+515,Perforadores y Operarios de Voladura para Minería de Superficie de Canteras y Construcción,Calificados,29.0,55,0.0,0.0,8.97,0.0
+516,Perforadores de Pozos de Agua,Calificados,4.0,2,0.0,0.0,-5.0,0.0
+517,Operadores de Equipo Pesado (excepto grúa),Calificados,364.0,434,0.02,0.03,1.92,0.0
+518,Operadores de Equipo para Limpieza de Vías y Alcantarillado,Calificados,9.0,18,0.0,0.0,10.0,0.0
+519,Operadores de Maquinaria Agrícola,Calificados,48.0,99,0.0,0.01,10.63,0.0
+520,Maquinistas de Transporte Ferroviario,Calificados,1.0,1,0.0,0.0,0.0,0.0
+521,Guardafrenos y Otros Operadores Ferroviarios,Calificados,16.0,3,0.0,0.0,-8.13,0.0
+522,Conductores de Vehículos Pesados,Calificados,681.0,717,0.04,0.05,0.53,0.0
+523,"Conductores de Bus, Operadores de Metro y Otros Medios de Transporte Colectivo",Calificados,1136.0,543,0.06,0.04,-5.22,-0.03
+524,Conductores de Vehículos Livianos,Calificados,2118.0,1113,0.12,0.08,-4.75,-0.06
+525,Conductores de Transporte de Alimentos,Calificados,94.0,130,0.01,0.01,3.83,0.0
+526,Marineros de Cubierta,Calificados,22.0,27,0.0,0.0,2.27,0.0
+527,Marineros de Sala de Máquinas,Calificados,97.0,4,0.01,0.0,-9.59,-0.01
+528,Operadores de Pequeñas Embarcaciones,Calificados,7.0,33,0.0,0.0,37.14,0.0
+529,Operarios de Rampa de Transporte Aéreo,Calificados,82.0,64,0.0,0.0,-2.2,0.0
+530,Operarios Portuarios,Calificados,768.0,486,0.04,0.03,-3.67,-0.02
+531,Operarios de Cargue y Descargue de Materiales,Calificados,508.0,564,0.03,0.04,1.1,0.0
+532,Aparejadores,Calificados,46.0,17,0.0,0.0,-6.3,0.0
+533,Operadores de Máquinas Herramientas,Calificados,124.0,337,0.01,0.02,17.18,0.01
+534,Operadores de Máquinas para el Trabajo de la Madera,Calificados,39.0,41,0.0,0.0,0.51,0.0
+535,Operadores de Máquinas para el Trabajo del Metal,Calificados,19.0,65,0.0,0.0,24.21,0.0
+536,Operadores de Máquinas para Forja,Calificados,0.0,0,,,,
+537,Operadores de Máquinas de Soldadura,Calificados,96.0,67,0.01,0.0,-3.02,0.0
+538,Operadores de Máquinas para la Fabricación de Otros Productos Metálicos (n.c.a),Calificados,2.0,6,0.0,0.0,20.0,0.0
+539,Operadores de Máquinas para la fabricación de Otros Productos n.c.a.,Calificados,125.0,43,0.01,0.0,-6.56,0.0
+540,Trabajadores de Estación de Servicio,Elemental,154.0,79,0.02,0.02,-4.87,-0.01
+541,Otras Ocupaciones Elementales de las Ventas,Elemental,16148.0,969,1.99,0.19,-9.4,-1.87
+542,Ayudantes de establecimientos de alimentos y bebidas,Elemental,7221.0,6079,0.89,1.19,-1.58,-0.14
+543,Aseadores y Servicio Doméstico,Elemental,9214.0,7668,1.14,1.5,-1.68,-0.19
+544,Aseadores Especializados y Fumigadores,Elemental,440.0,264,0.05,0.05,-4.0,-0.02
+545,Recolectores de Material para Reciclaje,Elemental,38.0,32,0.0,0.01,-1.58,0.0
+546,Auxiliares de Servicios a Viajeros,Elemental,47.0,36,0.01,0.01,-2.34,0.0
+547,Auxiliares de Servicios de Recreación y Deporte,Elemental,524.0,172,0.06,0.03,-6.72,-0.04
+548,Empleados de Lavandería,Elemental,46.0,22,0.01,0.0,-5.22,0.0
+549,Otras Ocupaciones Elementales de los Servicios n.c.a.,Elemental,958.0,65,0.12,0.01,-9.32,-0.11
+550,Auxiliares de servicios hoteleros,Elemental,479.0,279,0.06,0.05,-4.18,-0.02
+551,Operarios de Cementerios,Elemental,1.0,4,0.0,0.0,30.0,0.0
+552,Anfitriones Turísticos Locales,Elemental,,29,,0.01,10.0,
+553,Obreros y Ayudantes de Minería,Elemental,118.0,185,0.01,0.04,5.68,0.01
+554,Obreros y Ayudantes de Producción en Pozos de Petróleo y Gas,Elemental,1128.0,439,0.14,0.09,-6.11,-0.09
+555,Obreros Agropecuarios,Elemental,2387.0,3083,0.29,0.6,2.92,0.09
+556,Jardineros,Elemental,372.0,197,0.05,0.04,-4.7,-0.02
+557,Ayudantes y Obreros de Construcción,Elemental,9112.0,4110,1.13,0.81,-5.49,-0.62
+558,Ayudantes de Otros Oficios,Elemental,21827.0,19002,2.7,3.72,-1.29,-0.35
+559,Obreros de Mantenimiento de Obras Públicas,Elemental,138.0,177,0.02,0.03,2.83,0.0
+560,Ayudantes de Transporte Automotor,Elemental,263.0,515,0.03,0.1,9.58,0.03
+561,Obreros y Ayudantes en el Tratamiento de Metales y Minerales,Elemental,25.0,13,0.0,0.0,-4.8,0.0
+562,Ayudantes en la Fabricación Metálica,Elemental,412.0,318,0.05,0.06,-2.28,-0.01
+563,Obreros y Ayudantes de Planta Química,Elemental,132.0,124,0.02,0.02,-0.61,0.0
+564,Obreros y Ayudantes en el Procesamiento de la Madera y Producción de Pulpa y Papel,Elemental,564.0,231,0.07,0.05,-5.9,-0.04
+565,Obreros y Ayudantes en la Elaboración de Alimentos y Bebidas,Elemental,1226.0,1000,0.15,0.2,-1.84,-0.03
+566,Otros Obreros y Ayudantes en Fabricación y Procesamiento n.c.a.,Elemental,7991.0,5938,0.99,1.16,-2.57,-0.25

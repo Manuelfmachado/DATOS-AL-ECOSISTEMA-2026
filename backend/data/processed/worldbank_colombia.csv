@@ -1,0 +1,128 @@
+indicator_code,indicator_name,year,value,country
+SL.AGR.EMPL.ZS,Empleo en agricultura (% del total),2010,17.5076310660453,Colombia
+SL.AGR.EMPL.ZS,Empleo en agricultura (% del total),2011,17.0134199316647,Colombia
+SL.AGR.EMPL.ZS,Empleo en agricultura (% del total),2012,16.6076637300636,Colombia
+SL.AGR.EMPL.ZS,Empleo en agricultura (% del total),2013,16.0476525581668,Colombia
+SL.AGR.EMPL.ZS,Empleo en agricultura (% del total),2014,15.4842412833454,Colombia
+SL.AGR.EMPL.ZS,Empleo en agricultura (% del total),2015,15.3875001230881,Colombia
+SL.AGR.EMPL.ZS,Empleo en agricultura (% del total),2016,15.3821230426391,Colombia
+SL.AGR.EMPL.ZS,Empleo en agricultura (% del total),2017,15.9879816403274,Colombia
+SL.AGR.EMPL.ZS,Empleo en agricultura (% del total),2018,16.0283372646524,Colombia
+SL.AGR.EMPL.ZS,Empleo en agricultura (% del total),2019,15.1829622104953,Colombia
+SL.AGR.EMPL.ZS,Empleo en agricultura (% del total),2020,15.8122822919019,Colombia
+SL.AGR.EMPL.ZS,Empleo en agricultura (% del total),2021,15.1143754822074,Colombia
+SL.AGR.EMPL.ZS,Empleo en agricultura (% del total),2022,14.6393218523914,Colombia
+SL.AGR.EMPL.ZS,Empleo en agricultura (% del total),2023,14.3964971136151,Colombia
+SL.AGR.EMPL.ZS,Empleo en agricultura (% del total),2024,14.2538227689156,Colombia
+SL.AGR.EMPL.ZS,Empleo en agricultura (% del total),2025,14.1575818404901,Colombia
+SL.EMP.SELF.ZS,Trabajadores por cuenta propia (%),2010,49.8691677172027,Colombia
+SL.EMP.SELF.ZS,Trabajadores por cuenta propia (%),2011,50.1139022036089,Colombia
+SL.EMP.SELF.ZS,Trabajadores por cuenta propia (%),2012,49.5858799500518,Colombia
+SL.EMP.SELF.ZS,Trabajadores por cuenta propia (%),2013,48.6611938288479,Colombia
+SL.EMP.SELF.ZS,Trabajadores por cuenta propia (%),2014,47.8233794586941,Colombia
+SL.EMP.SELF.ZS,Trabajadores por cuenta propia (%),2015,47.5146218272095,Colombia
+SL.EMP.SELF.ZS,Trabajadores por cuenta propia (%),2016,47.4677748591114,Colombia
+SL.EMP.SELF.ZS,Trabajadores por cuenta propia (%),2017,47.7116901165463,Colombia
+SL.EMP.SELF.ZS,Trabajadores por cuenta propia (%),2018,48.0208807951618,Colombia
+SL.EMP.SELF.ZS,Trabajadores por cuenta propia (%),2019,46.0724712800847,Colombia
+SL.EMP.SELF.ZS,Trabajadores por cuenta propia (%),2020,47.3076257455852,Colombia
+SL.EMP.SELF.ZS,Trabajadores por cuenta propia (%),2021,47.3807665915212,Colombia
+SL.EMP.SELF.ZS,Trabajadores por cuenta propia (%),2022,47.1021792130971,Colombia
+SL.EMP.SELF.ZS,Trabajadores por cuenta propia (%),2023,46.5934810037881,Colombia
+SL.EMP.SELF.ZS,Trabajadores por cuenta propia (%),2024,45.7478042930504,Colombia
+SL.EMP.SELF.ZS,Trabajadores por cuenta propia (%),2025,45.6406312116437,Colombia
+SL.EMP.TOTL.SP.ZS,Población activa (% total),2010,59.598,Colombia
+SL.EMP.TOTL.SP.ZS,Población activa (% total),2011,60.569,Colombia
+SL.EMP.TOTL.SP.ZS,Población activa (% total),2012,61.293,Colombia
+SL.EMP.TOTL.SP.ZS,Población activa (% total),2013,61.053,Colombia
+SL.EMP.TOTL.SP.ZS,Población activa (% total),2014,61.096,Colombia
+SL.EMP.TOTL.SP.ZS,Población activa (% total),2015,61.275,Colombia
+SL.EMP.TOTL.SP.ZS,Población activa (% total),2016,60.492,Colombia
+SL.EMP.TOTL.SP.ZS,Población activa (% total),2017,60.015,Colombia
+SL.EMP.TOTL.SP.ZS,Población activa (% total),2018,59.131,Colombia
+SL.EMP.TOTL.SP.ZS,Población activa (% total),2019,57.709,Colombia
+SL.EMP.TOTL.SP.ZS,Población activa (% total),2020,53.279,Colombia
+SL.EMP.TOTL.SP.ZS,Población activa (% total),2021,55.389,Colombia
+SL.EMP.TOTL.SP.ZS,Población activa (% total),2022,56.498,Colombia
+SL.EMP.TOTL.SP.ZS,Población activa (% total),2023,57.623,Colombia
+SL.EMP.TOTL.SP.ZS,Población activa (% total),2024,57.418,Colombia
+SL.EMP.TOTL.SP.ZS,Población activa (% total),2025,58.142,Colombia
+SL.EMP.WORK.ZS,Asalariados formales (% del empleo),2010,50.1308271170737,Colombia
+SL.EMP.WORK.ZS,Asalariados formales (% del empleo),2011,49.8860928087744,Colombia
+SL.EMP.WORK.ZS,Asalariados formales (% del empleo),2012,50.4141200499482,Colombia
+SL.EMP.WORK.ZS,Asalariados formales (% del empleo),2013,51.3388109450582,Colombia
+SL.EMP.WORK.ZS,Asalariados formales (% del empleo),2014,52.1766205413059,Colombia
+SL.EMP.WORK.ZS,Asalariados formales (% del empleo),2015,52.4853827742136,Colombia
+SL.EMP.WORK.ZS,Asalariados formales (% del empleo),2016,52.5322297211047,Colombia
+SL.EMP.WORK.ZS,Asalariados formales (% del empleo),2017,52.2883053695501,Colombia
+SL.EMP.WORK.ZS,Asalariados formales (% del empleo),2018,51.9791192048383,Colombia
+SL.EMP.WORK.ZS,Asalariados formales (% del empleo),2019,53.9275242615818,Colombia
+SL.EMP.WORK.ZS,Asalariados formales (% del empleo),2020,52.6923695220801,Colombia
+SL.EMP.WORK.ZS,Asalariados formales (% del empleo),2021,52.6192334084788,Colombia
+SL.EMP.WORK.ZS,Asalariados formales (% del empleo),2022,52.8978207869029,Colombia
+SL.EMP.WORK.ZS,Asalariados formales (% del empleo),2023,53.4065231734757,Colombia
+SL.EMP.WORK.ZS,Asalariados formales (% del empleo),2024,54.2521957069496,Colombia
+SL.EMP.WORK.ZS,Asalariados formales (% del empleo),2025,54.3593647646194,Colombia
+SL.GDP.PCAP.EM.KD,PIB por persona empleada (USD const. 2017),2010,32468.6223280651,Colombia
+SL.GDP.PCAP.EM.KD,PIB por persona empleada (USD const. 2017),2011,33527.118877721,Colombia
+SL.GDP.PCAP.EM.KD,PIB por persona empleada (USD const. 2017),2012,33807.7059868675,Colombia
+SL.GDP.PCAP.EM.KD,PIB por persona empleada (USD const. 2017),2013,35058.5651371068,Colombia
+SL.GDP.PCAP.EM.KD,PIB por persona empleada (USD const. 2017),2014,35996.4595285993,Colombia
+SL.GDP.PCAP.EM.KD,PIB por persona empleada (USD const. 2017),2015,36355.5637432912,Colombia
+SL.GDP.PCAP.EM.KD,PIB por persona empleada (USD const. 2017),2016,36943.6403776327,Colombia
+SL.GDP.PCAP.EM.KD,PIB por persona empleada (USD const. 2017),2017,36903.5625254914,Colombia
+SL.GDP.PCAP.EM.KD,PIB por persona empleada (USD const. 2017),2018,37412.4444096565,Colombia
+SL.GDP.PCAP.EM.KD,PIB por persona empleada (USD const. 2017),2019,38575.7202575428,Colombia
+SL.GDP.PCAP.EM.KD,PIB por persona empleada (USD const. 2017),2020,38004.1223580052,Colombia
+SL.GDP.PCAP.EM.KD,PIB por persona empleada (USD const. 2017),2021,39876.7885971864,Colombia
+SL.GDP.PCAP.EM.KD,PIB por persona empleada (USD const. 2017),2022,41331.834908291,Colombia
+SL.GDP.PCAP.EM.KD,PIB por persona empleada (USD const. 2017),2023,40177.9882764965,Colombia
+SL.GDP.PCAP.EM.KD,PIB por persona empleada (USD const. 2017),2024,40362.5120192748,Colombia
+SL.IND.EMPL.ZS,Empleo en industria (% del total),2010,20.3105530062707,Colombia
+SL.IND.EMPL.ZS,Empleo en industria (% del total),2011,21.0189701518555,Colombia
+SL.IND.EMPL.ZS,Empleo en industria (% del total),2012,20.9626394647681,Colombia
+SL.IND.EMPL.ZS,Empleo en industria (% del total),2013,19.8906804138614,Colombia
+SL.IND.EMPL.ZS,Empleo en industria (% del total),2014,20.0792693277619,Colombia
+SL.IND.EMPL.ZS,Empleo en industria (% del total),2015,19.8413281990038,Colombia
+SL.IND.EMPL.ZS,Empleo en industria (% del total),2016,19.3700893503894,Colombia
+SL.IND.EMPL.ZS,Empleo en industria (% del total),2017,19.5897881408186,Colombia
+SL.IND.EMPL.ZS,Empleo en industria (% del total),2018,20.1046913076125,Colombia
+SL.IND.EMPL.ZS,Empleo en industria (% del total),2019,20.4208399455994,Colombia
+SL.IND.EMPL.ZS,Empleo en industria (% del total),2020,19.8177540065247,Colombia
+SL.IND.EMPL.ZS,Empleo en industria (% del total),2021,20.0073603857086,Colombia
+SL.IND.EMPL.ZS,Empleo en industria (% del total),2022,20.3326564240754,Colombia
+SL.IND.EMPL.ZS,Empleo en industria (% del total),2023,19.9926020656988,Colombia
+SL.IND.EMPL.ZS,Empleo en industria (% del total),2024,20.0219824701985,Colombia
+SL.IND.EMPL.ZS,Empleo en industria (% del total),2025,19.9996732725827,Colombia
+SL.SRV.EMPL.ZS,Empleo en servicios (% del total),2010,62.1818262591324,Colombia
+SL.SRV.EMPL.ZS,Empleo en servicios (% del total),2011,61.9676099164799,Colombia
+SL.SRV.EMPL.ZS,Empleo en servicios (% del total),2012,62.4296968051682,Colombia
+SL.SRV.EMPL.ZS,Empleo en servicios (% del total),2013,64.0616670279718,Colombia
+SL.SRV.EMPL.ZS,Empleo en servicios (% del total),2014,64.4364987701002,Colombia
+SL.SRV.EMPL.ZS,Empleo en servicios (% del total),2015,64.7711854821781,Colombia
+SL.SRV.EMPL.ZS,Empleo en servicios (% del total),2016,65.2477738663245,Colombia
+SL.SRV.EMPL.ZS,Empleo en servicios (% del total),2017,64.4222392466619,Colombia
+SL.SRV.EMPL.ZS,Empleo en servicios (% del total),2018,63.8669669659889,Colombia
+SL.SRV.EMPL.ZS,Empleo en servicios (% del total),2019,64.3961978439053,Colombia
+SL.SRV.EMPL.ZS,Empleo en servicios (% del total),2020,64.3699637015735,Colombia
+SL.SRV.EMPL.ZS,Empleo en servicios (% del total),2021,64.878264132084,Colombia
+SL.SRV.EMPL.ZS,Empleo en servicios (% del total),2022,65.0280217235331,Colombia
+SL.SRV.EMPL.ZS,Empleo en servicios (% del total),2023,65.6109008206861,Colombia
+SL.SRV.EMPL.ZS,Empleo en servicios (% del total),2024,65.7241823694145,Colombia
+SL.SRV.EMPL.ZS,Empleo en servicios (% del total),2025,65.8427408631905,Colombia
+SL.UEM.TOTL.ZS,Desempleo total (% fuerza laboral),2010,11.153,Colombia
+SL.UEM.TOTL.ZS,Desempleo total (% fuerza laboral),2011,10.288,Colombia
+SL.UEM.TOTL.ZS,Desempleo total (% fuerza laboral),2012,9.959,Colombia
+SL.UEM.TOTL.ZS,Desempleo total (% fuerza laboral),2013,9.246,Colombia
+SL.UEM.TOTL.ZS,Desempleo total (% fuerza laboral),2014,8.799,Colombia
+SL.UEM.TOTL.ZS,Desempleo total (% fuerza laboral),2015,8.572,Colombia
+SL.UEM.TOTL.ZS,Desempleo total (% fuerza laboral),2016,8.922,Colombia
+SL.UEM.TOTL.ZS,Desempleo total (% fuerza laboral),2017,9.086,Colombia
+SL.UEM.TOTL.ZS,Desempleo total (% fuerza laboral),2018,9.36,Colombia
+SL.UEM.TOTL.ZS,Desempleo total (% fuerza laboral),2019,10.28,Colombia
+SL.UEM.TOTL.ZS,Desempleo total (% fuerza laboral),2020,15.983,Colombia
+SL.UEM.TOTL.ZS,Desempleo total (% fuerza laboral),2021,13.898,Colombia
+SL.UEM.TOTL.ZS,Desempleo total (% fuerza laboral),2022,10.541,Colombia
+SL.UEM.TOTL.ZS,Desempleo total (% fuerza laboral),2023,9.591,Colombia
+SL.UEM.TOTL.ZS,Desempleo total (% fuerza laboral),2024,9.619,Colombia
+SL.UEM.TOTL.ZS,Desempleo total (% fuerza laboral),2025,8.29,Colombia

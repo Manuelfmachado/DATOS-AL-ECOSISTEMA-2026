@@ -21,7 +21,7 @@ from pydantic import BaseModel
 
 router = APIRouter(prefix="/api/simulacion", tags=["Simulacion"])
 
-DATA = Path(__file__).resolve().parents[3] / "data" / "processed"
+DATA = Path(__file__).resolve().parents[2] / "data" / "processed"
 
 # ---------------------------------------------------------------------------
 # Helpers

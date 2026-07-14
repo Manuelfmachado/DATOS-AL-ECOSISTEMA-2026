@@ -11,7 +11,7 @@ from pathlib import Path
 from typing import List, Dict, Optional, Any
 from app.services.embeddings import get_embeddings_sync
 
-ROOT = Path(__file__).resolve().parents[3]
+ROOT = Path(__file__).resolve().parents[2]
 DATA = ROOT / "data" / "processed"
 
 

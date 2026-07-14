@@ -19,7 +19,7 @@ from app.data.ciiu_nombres import obtener_nombre_ciiu
 
 router = APIRouter(prefix="/api/observatorio", tags=["observatorio"])
 
-PREDICCIONES_PATH = Path(__file__).resolve().parents[3] / "data" / "processed" / "predicciones_mundiales.json"
+PREDICCIONES_PATH = Path(__file__).resolve().parents[2] / "data" / "processed" / "predicciones_mundiales.json"
 
 
 def _norm(s: str) -> str:
@@ -502,7 +502,7 @@ async def get_mapa_metricas():
 
         # Fallback: leer del CSV local si Supabase no tiene las columnas
         if not extras_map:
-            extras_path = Path(__file__).resolve().parents[3] / "data" / "processed" / "geih_extras_departamento.csv"
+            extras_path = Path(__file__).resolve().parents[2] / "data" / "processed" / "geih_extras_departamento.csv"
             if extras_path.exists():
                 try:
                     df_extras = pd.read_csv(extras_path)
@@ -1127,7 +1127,7 @@ async def get_salario_ocupacion():
 
 # ─────────────────── NUEVOS ENDPOINTS (ALBA v2 — impacto política pública) ──────────
 
-DATA_PROCESSED = Path(__file__).resolve().parents[3] / "data" / "processed"
+DATA_PROCESSED = Path(__file__).resolve().parents[2] / "data" / "processed"
 
 
 @router.get("/dashboard")

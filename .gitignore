@@ -11,6 +11,10 @@ __pycache__
 *.csv
 service-account.json
 
+# Allow backend data (needed for Railway deployment)
+!backend/data/
+!backend/data/**
+
 # Large data directories (not needed in repo)
 data/raw/
 data/processed/embeddings/

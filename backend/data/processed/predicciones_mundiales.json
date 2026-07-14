@@ -1,0 +1,996 @@
+{
+  "modelo": "amazon/chronos-t5-small",
+  "pais": "Colombia",
+  "fuente": "World Bank Open Data + evidencia sectorial colombiana y WEF/O*NET",
+  "ultimo_año_historico": 2025,
+  "horizontes": {
+    "5a": 5,
+    "10a": 10
+  },
+  "sectores": {
+    "Agricultura": {
+      "historico": {
+        "años": [
+          2010,
+          2011,
+          2012,
+          2013,
+          2014,
+          2015,
+          2016,
+          2017,
+          2018,
+          2019,
+          2020,
+          2021,
+          2022,
+          2023,
+          2024,
+          2025
+        ],
+        "valores": [
+          17.5076310660453,
+          17.0134199316647,
+          16.6076637300636,
+          16.0476525581668,
+          15.4842412833454,
+          15.3875001230881,
+          15.3821230426391,
+          15.9879816403274,
+          16.0283372646524,
+          15.1829622104953,
+          15.8122822919019,
+          15.1143754822074,
+          14.6393218523914,
+          14.3964971136151,
+          14.2538227689156,
+          14.1575818404901
+        ]
+      },
+      "prediccion": {
+        "años": [
+          2026,
+          2027,
+          2028,
+          2029,
+          2030,
+          2031,
+          2032,
+          2033,
+          2034,
+          2035
+        ],
+        "mediana": [
+          14.090869903564453,
+          14.147921562194824,
+          14.147921562194824,
+          14.376112937927246,
+          14.490201950073242,
+          14.547253608703613,
+          14.547253608703613,
+          14.718393325805664,
+          14.775445938110352,
+          14.775445938110352
+        ],
+        "bajo_10": [
+          13.691536903381348,
+          13.691536903381348,
+          13.46334457397461,
+          13.680126190185547,
+          13.680126190185547,
+          13.554614067077637,
+          13.566024780273438,
+          13.46334457397461,
+          13.451933860778809,
+          13.577433586120605
+        ],
+        "alto_90": [
+          14.376112937927246,
+          14.718393325805664,
+          15.288881301879883,
+          15.642585754394531,
+          16.098968505859375,
+          16.315752029418945,
+          16.338571548461914,
+          16.57817268371582,
+          16.669443130493164,
+          16.5439453125
+        ]
+      }
+    },
+    "Industria": {
+      "historico": {
+        "años": [
+          2010,
+          2011,
+          2012,
+          2013,
+          2014,
+          2015,
+          2016,
+          2017,
+          2018,
+          2019,
+          2020,
+          2021,
+          2022,
+          2023,
+          2024,
+          2025
+        ],
+        "valores": [
+          20.3105530062707,
+          21.0189701518555,
+          20.9626394647681,
+          19.8906804138614,
+          20.0792693277619,
+          19.8413281990038,
+          19.3700893503894,
+          19.5897881408186,
+          20.1046913076125,
+          20.4208399455994,
+          19.8177540065247,
+          20.0073603857086,
+          20.3326564240754,
+          19.9926020656988,
+          20.0219824701985,
+          19.9996732725827
+        ]
+      },
+      "prediccion": {
+        "años": [
+          2026,
+          2027,
+          2028,
+          2029,
+          2030,
+          2031,
+          2032,
+          2033,
+          2034,
+          2035
+        ],
+        "mediana": [
+          20.198524475097656,
+          20.124801635742188,
+          20.05108070373535,
+          20.198524475097656,
+          20.198524475097656,
+          20.198524475097656,
+          20.345949172973633,
+          20.198524475097656,
+          20.198524475097656,
+          20.345949172973633
+        ],
+        "bajo_10": [
+          19.608768463134766,
+          19.608768463134766,
+          19.313899993896484,
+          19.46134376525879,
+          19.44659996032715,
+          19.594026565551758,
+          19.608768463134766,
+          19.608768463134766,
+          19.608768463134766,
+          19.75621223449707
+        ],
+        "alto_90": [
+          20.640817642211914,
+          20.78826141357422,
+          20.935686111450195,
+          20.935686111450195,
+          21.0831298828125,
+          21.097871780395508,
+          20.950429916381836,
+          21.097871780395508,
+          21.2747859954834,
+          21.0831298828125
+        ]
+      }
+    },
+    "Servicios": {
+      "historico": {
+        "años": [
+          2010,
+          2011,
+          2012,
+          2013,
+          2014,
+          2015,
+          2016,
+          2017,
+          2018,
+          2019,
+          2020,
+          2021,
+          2022,
+          2023,
+          2024,
+          2025
+        ],
+        "valores": [
+          62.1818262591324,
+          61.9676099164799,
+          62.4296968051682,
+          64.0616670279718,
+          64.4364987701002,
+          64.7711854821781,
+          65.2477738663245,
+          64.4222392466619,
+          63.8669669659889,
+          64.3961978439053,
+          64.3699637015735,
+          64.878264132084,
+          65.0280217235331,
+          65.6109008206861,
+          65.7241823694145,
+          65.8427408631905
+        ]
+      },
+      "prediccion": {
+        "años": [
+          2026,
+          2027,
+          2028,
+          2029,
+          2030,
+          2031,
+          2032,
+          2033,
+          2034,
+          2035
+        ],
+        "mediana": [
+          66.02501678466797,
+          66.02501678466797,
+          65.5534439086914,
+          65.317626953125,
+          65.317626953125,
+          65.08180236816406,
+          65.08180236816406,
+          65.08180236816406,
+          65.5534439086914,
+          65.08180236816406
+        ],
+        "bajo_10": [
+          65.08180236816406,
+          64.6102294921875,
+          64.13858795166016,
+          63.14821243286133,
+          62.72373962402344,
+          62.67658233642578,
+          62.72373962402344,
+          62.72373962402344,
+          63.195377349853516,
+          63.619850158691406
+        ],
+        "alto_90": [
+          66.96823120117188,
+          67.43986511230469,
+          67.95861053466797,
+          67.91144561767578,
+          67.48702239990234,
+          67.48702239990234,
+          67.43986511230469,
+          67.48702239990234,
+          67.48702239990234,
+          67.91144561767578
+        ]
+      }
+    }
+  },
+  "sectores_cagr_5a": {
+    "Agricultura": 0.6,
+    "Industria": 0.0,
+    "Servicios": -0.2
+  },
+  "otros_indicadores": {
+    "Desempleo": {
+      "historico": {
+        "años": [
+          2010,
+          2011,
+          2012,
+          2013,
+          2014,
+          2015,
+          2016,
+          2017,
+          2018,
+          2019,
+          2020,
+          2021,
+          2022,
+          2023,
+          2024,
+          2025
+        ],
+        "valores": [
+          11.153,
+          10.288,
+          9.959,
+          9.246,
+          8.799,
+          8.572,
+          8.922,
+          9.086,
+          9.36,
+          10.28,
+          15.983,
+          13.898,
+          10.541,
+          9.591,
+          9.619,
+          8.29
+        ]
+      },
+      "prediccion": {
+        "años": [
+          2026,
+          2027,
+          2028,
+          2029,
+          2030,
+          2031,
+          2032,
+          2033,
+          2034,
+          2035
+        ],
+        "mediana": [
+          8.245314598083496,
+          8.207834243774414,
+          8.39522933959961,
+          8.582620620727539,
+          8.919931411743164,
+          9.781936645507812,
+          10.044290542602539,
+          10.194210052490234,
+          9.557065963745117,
+          9.182278633117676
+        ],
+        "bajo_10": [
+          7.495741367340088,
+          7.420779228210449,
+          7.420779228210449,
+          7.255873203277588,
+          7.255873203277588,
+          7.705617427825928,
+          7.997951507568359,
+          8.15536117553711,
+          7.698122024536133,
+          7.645656108856201
+        ],
+        "alto_90": [
+          9.227251052856445,
+          9.819413185119629,
+          9.759452819824219,
+          10.27666187286377,
+          11.513458251953125,
+          11.9257230758667,
+          11.483475685119629,
+          11.843265533447266,
+          11.625893592834473,
+          10.973760604858398
+        ]
+      }
+    },
+    "Asalariados formales": {
+      "historico": {
+        "años": [
+          2010,
+          2011,
+          2012,
+          2013,
+          2014,
+          2015,
+          2016,
+          2017,
+          2018,
+          2019,
+          2020,
+          2021,
+          2022,
+          2023,
+          2024,
+          2025
+        ],
+        "valores": [
+          50.1308271170737,
+          49.8860928087744,
+          50.4141200499482,
+          51.3388109450582,
+          52.1766205413059,
+          52.4853827742136,
+          52.5322297211047,
+          52.2883053695501,
+          51.9791192048383,
+          53.9275242615818,
+          52.6923695220801,
+          52.6192334084788,
+          52.8978207869029,
+          53.4065231734757,
+          54.2521957069496,
+          54.3593647646194
+        ]
+      },
+      "prediccion": {
+        "años": [
+          2026,
+          2027,
+          2028,
+          2029,
+          2030,
+          2031,
+          2032,
+          2033,
+          2034,
+          2035
+        ],
+        "mediana": [
+          54.86909484863281,
+          54.86909484863281,
+          54.86909484863281,
+          54.86909484863281,
+          54.67723083496094,
+          54.48537063598633,
+          54.48537063598633,
+          54.1016960144043,
+          53.90983581542969,
+          54.10166931152344
+        ],
+        "bajo_10": [
+          53.33429718017578,
+          52.91220474243164,
+          52.528526306152344,
+          52.566898345947266,
+          52.144805908203125,
+          51.415775299072266,
+          50.993682861328125,
+          50.22628402709961,
+          49.11357879638672,
+          49.880977630615234
+        ],
+        "alto_90": [
+          56.4422607421875,
+          56.902679443359375,
+          57.286399841308594,
+          57.67007827758789,
+          57.63170623779297,
+          57.59333801269531,
+          57.59333801269531,
+          58.01543045043945,
+          58.322364807128906,
+          58.437477111816406
+        ]
+      }
+    },
+    "Cuenta propia": {
+      "historico": {
+        "años": [
+          2010,
+          2011,
+          2012,
+          2013,
+          2014,
+          2015,
+          2016,
+          2017,
+          2018,
+          2019,
+          2020,
+          2021,
+          2022,
+          2023,
+          2024,
+          2025
+        ],
+        "valores": [
+          49.8691677172027,
+          50.1139022036089,
+          49.5858799500518,
+          48.6611938288479,
+          47.8233794586941,
+          47.5146218272095,
+          47.4677748591114,
+          47.7116901165463,
+          48.0208807951618,
+          46.0724712800847,
+          47.3076257455852,
+          47.3807665915212,
+          47.1021792130971,
+          46.5934810037881,
+          45.7478042930504,
+          45.6406312116437
+        ]
+      },
+      "prediccion": {
+        "años": [
+          2026,
+          2027,
+          2028,
+          2029,
+          2030,
+          2031,
+          2032,
+          2033,
+          2034,
+          2035
+        ],
+        "mediana": [
+          45.77635192871094,
+          45.77635192871094,
+          46.12581253051758,
+          46.47522735595703,
+          46.64995574951172,
+          46.82468795776367,
+          47.348854064941406,
+          47.17414855957031,
+          47.17414855957031,
+          47.17414855957031
+        ],
+        "bajo_10": [
+          45.077476501464844,
+          44.72806167602539,
+          44.37860107421875,
+          43.679725646972656,
+          43.64478302001953,
+          43.64478302001953,
+          43.3303108215332,
+          43.3303108215332,
+          43.3303108215332,
+          43.64478302001953
+        ],
+        "alto_90": [
+          46.51017379760742,
+          47.17414855957031,
+          47.90796661376953,
+          48.606842041015625,
+          48.956260681152344,
+          49.30571746826172,
+          48.99120330810547,
+          49.62018966674805,
+          49.96965026855469,
+          49.62018966674805
+        ]
+      }
+    },
+    "PIB por empleado": {
+      "historico": {
+        "años": [
+          2011,
+          2012,
+          2013,
+          2014,
+          2015,
+          2016,
+          2017,
+          2018,
+          2019,
+          2020,
+          2021,
+          2022,
+          2023,
+          2024,
+          2025
+        ],
+        "valores": [
+          32468.6223280651,
+          33527.118877721,
+          33807.7059868675,
+          35058.5651371068,
+          35996.4595285993,
+          36355.5637432912,
+          36943.6403776327,
+          36903.5625254914,
+          37412.4444096565,
+          38575.7202575428,
+          38004.1223580052,
+          39876.7885971864,
+          41331.834908291,
+          40177.9882764965,
+          40362.5120192748
+        ]
+      },
+      "prediccion": {
+        "años": [
+          2026,
+          2027,
+          2028,
+          2029,
+          2030,
+          2031,
+          2032,
+          2033,
+          2034,
+          2035
+        ],
+        "mediana": [
+          40549.18359375,
+          40549.18359375,
+          40140.9609375,
+          40413.1015625,
+          39596.6796875,
+          39052.39453125,
+          38644.19140625,
+          38508.109375,
+          38235.96875,
+          38099.90625
+        ],
+        "bajo_10": [
+          39161.24609375,
+          37283.484375,
+          36684.765625,
+          35841.109375,
+          36140.44921875,
+          34943.02734375,
+          33446.25,
+          33419.03125,
+          32031.125,
+          31024.203125
+        ],
+        "alto_90": [
+          41909.875,
+          42481.375,
+          42780.75,
+          43025.65625,
+          42726.3203125,
+          42807.9609375,
+          43624.37109375,
+          45474.94921875,
+          45747.07421875,
+          44740.1484375
+        ]
+      }
+    }
+  },
+  "profesiones": [
+    {
+      "profesion": "Científico de datos / IA",
+      "sector": "Servicios",
+      "demanda": "alta",
+      "salario_mensual_cop": 8000000,
+      "salario_5a_cop": 9501000.0,
+      "salario_10a_cop": 11285000.0,
+      "crecimiento_anual_pct": 6.4,
+      "crecimiento_5a_pct": 36.2,
+      "crecimiento_10a_pct": 85.6
+    },
+    {
+      "profesion": "Ingeniero(a) eléctrico(a)",
+      "sector": "Industria",
+      "demanda": "alta",
+      "salario_mensual_cop": 5000000,
+      "salario_5a_cop": 5938000.0,
+      "salario_10a_cop": 7053000.0,
+      "crecimiento_anual_pct": 6.2,
+      "crecimiento_5a_pct": 34.9,
+      "crecimiento_10a_pct": 81.9
+    },
+    {
+      "profesion": "Especialista en ciberseguridad",
+      "sector": "Servicios",
+      "demanda": "alta",
+      "salario_mensual_cop": 7500000,
+      "salario_5a_cop": 8908000.0,
+      "salario_10a_cop": 10579000.0,
+      "crecimiento_anual_pct": 5.8,
+      "crecimiento_5a_pct": 32.8,
+      "crecimiento_10a_pct": 76.2
+    },
+    {
+      "profesion": "Especialista en marketing digital",
+      "sector": "Servicios",
+      "demanda": "alta",
+      "salario_mensual_cop": 4000000,
+      "salario_5a_cop": 4751000.0,
+      "salario_10a_cop": 5642000.0,
+      "crecimiento_anual_pct": 5.8,
+      "crecimiento_5a_pct": 32.4,
+      "crecimiento_10a_pct": 75.2
+    },
+    {
+      "profesion": "Analista financiero",
+      "sector": "Servicios",
+      "demanda": "alta",
+      "salario_mensual_cop": 4500000,
+      "salario_5a_cop": 5345000.0,
+      "salario_10a_cop": 6348000.0,
+      "crecimiento_anual_pct": 5.5,
+      "crecimiento_5a_pct": 30.7,
+      "crecimiento_10a_pct": 70.9
+    },
+    {
+      "profesion": "Ingeniero de nube / DevOps",
+      "sector": "Servicios",
+      "demanda": "alta",
+      "salario_mensual_cop": 7000000,
+      "salario_5a_cop": 8314000.0,
+      "salario_10a_cop": 9874000.0,
+      "crecimiento_anual_pct": 5.5,
+      "crecimiento_5a_pct": 30.7,
+      "crecimiento_10a_pct": 70.8
+    },
+    {
+      "profesion": "Desarrollador de software",
+      "sector": "Servicios",
+      "demanda": "alta",
+      "salario_mensual_cop": 6500000,
+      "salario_5a_cop": 7720000.0,
+      "salario_10a_cop": 9169000.0,
+      "crecimiento_anual_pct": 4.9,
+      "crecimiento_5a_pct": 27.2,
+      "crecimiento_10a_pct": 61.9
+    },
+    {
+      "profesion": "Diseñador UX / UI",
+      "sector": "Servicios",
+      "demanda": "alta",
+      "salario_mensual_cop": 4500000,
+      "salario_5a_cop": 5345000.0,
+      "salario_10a_cop": 6348000.0,
+      "crecimiento_anual_pct": 4.4,
+      "crecimiento_5a_pct": 24.0,
+      "crecimiento_10a_pct": 53.7
+    },
+    {
+      "profesion": "Enfermero(a) profesional",
+      "sector": "Servicios",
+      "demanda": "alta",
+      "salario_mensual_cop": 3500000,
+      "salario_5a_cop": 4157000.0,
+      "salario_10a_cop": 4937000.0,
+      "crecimiento_anual_pct": 4.4,
+      "crecimiento_5a_pct": 24.0,
+      "crecimiento_10a_pct": 53.7
+    },
+    {
+      "profesion": "Técnico en energías renovables",
+      "sector": "Industria",
+      "demanda": "alta",
+      "salario_mensual_cop": 3800000,
+      "salario_5a_cop": 4513000.0,
+      "salario_10a_cop": 5360000.0,
+      "crecimiento_anual_pct": 4.1,
+      "crecimiento_5a_pct": 22.5,
+      "crecimiento_10a_pct": 50.1
+    },
+    {
+      "profesion": "Gestor(a) de proyectos",
+      "sector": "Servicios",
+      "demanda": "media",
+      "salario_mensual_cop": 5500000,
+      "salario_5a_cop": 6532000.0,
+      "salario_10a_cop": 7758000.0,
+      "crecimiento_anual_pct": 3.9,
+      "crecimiento_5a_pct": 21.3,
+      "crecimiento_10a_pct": 47.2
+    },
+    {
+      "profesion": "Técnico agropecuario sostenible",
+      "sector": "Agricultura",
+      "demanda": "media",
+      "salario_mensual_cop": 2800000,
+      "salario_5a_cop": 3326000.0,
+      "salario_10a_cop": 3950000.0,
+      "crecimiento_anual_pct": 3.7,
+      "crecimiento_5a_pct": 19.7,
+      "crecimiento_10a_pct": 43.3
+    },
+    {
+      "profesion": "Contador(a) / auditor(a)",
+      "sector": "Servicios",
+      "demanda": "media",
+      "salario_mensual_cop": 4000000,
+      "salario_5a_cop": 4751000.0,
+      "salario_10a_cop": 5642000.0,
+      "crecimiento_anual_pct": 2.4,
+      "crecimiento_5a_pct": 12.7,
+      "crecimiento_10a_pct": 27.1
+    },
+    {
+      "profesion": "Profesional en recursos humanos",
+      "sector": "Servicios",
+      "demanda": "media",
+      "salario_mensual_cop": 3500000,
+      "salario_5a_cop": 4157000.0,
+      "salario_10a_cop": 4937000.0,
+      "crecimiento_anual_pct": 2.4,
+      "crecimiento_5a_pct": 12.4,
+      "crecimiento_10a_pct": 26.4
+    },
+    {
+      "profesion": "Profesor(a) de educación técnica",
+      "sector": "Servicios",
+      "demanda": "media",
+      "salario_mensual_cop": 3200000,
+      "salario_5a_cop": 3801000.0,
+      "salario_10a_cop": 4514000.0,
+      "crecimiento_anual_pct": 2.4,
+      "crecimiento_5a_pct": 12.4,
+      "crecimiento_10a_pct": 26.3
+    },
+    {
+      "profesion": "Técnico logístico / cadena de suministro",
+      "sector": "Industria",
+      "demanda": "media",
+      "salario_mensual_cop": 3200000,
+      "salario_5a_cop": 3801000.0,
+      "salario_10a_cop": 4514000.0,
+      "crecimiento_anual_pct": 2.0,
+      "crecimiento_5a_pct": 10.6,
+      "crecimiento_10a_pct": 22.4
+    },
+    {
+      "profesion": "Conductor(a) de vehículos (sin automatización)",
+      "sector": "Servicios",
+      "demanda": "baja",
+      "salario_mensual_cop": 2300000,
+      "salario_5a_cop": 2732000.0,
+      "salario_10a_cop": 3244000.0,
+      "crecimiento_anual_pct": 0.3,
+      "crecimiento_5a_pct": 1.7,
+      "crecimiento_10a_pct": 3.4
+    },
+    {
+      "profesion": "Agricultor(a) tradicional",
+      "sector": "Agricultura",
+      "demanda": "baja",
+      "salario_mensual_cop": 1800000,
+      "salario_5a_cop": 2138000.0,
+      "salario_10a_cop": 2539000.0,
+      "crecimiento_anual_pct": 0.1,
+      "crecimiento_5a_pct": 0.4,
+      "crecimiento_10a_pct": 0.7
+    },
+    {
+      "profesion": "Empleado(a) administrativo(a) tradicional",
+      "sector": "Servicios",
+      "demanda": "baja",
+      "salario_mensual_cop": 2400000,
+      "salario_5a_cop": 2850000.0,
+      "salario_10a_cop": 3385000.0,
+      "crecimiento_anual_pct": -0.2,
+      "crecimiento_5a_pct": -1.0,
+      "crecimiento_10a_pct": -2.0
+    },
+    {
+      "profesion": "Operario(a) de manufactura tradicional",
+      "sector": "Industria",
+      "demanda": "baja",
+      "salario_mensual_cop": 2200000,
+      "salario_5a_cop": 2613000.0,
+      "salario_10a_cop": 3103000.0,
+      "crecimiento_anual_pct": -0.6,
+      "crecimiento_5a_pct": -2.9,
+      "crecimiento_10a_pct": -5.7
+    },
+    {
+      "profesion": "Cajero(a) / atención al cliente básica",
+      "sector": "Servicios",
+      "demanda": "baja",
+      "salario_mensual_cop": 2000000,
+      "salario_5a_cop": 2375000.0,
+      "salario_10a_cop": 2821000.0,
+      "crecimiento_anual_pct": -0.6,
+      "crecimiento_5a_pct": -3.1,
+      "crecimiento_10a_pct": -6.1
+    }
+  ],
+  "habilidades": [
+    {
+      "habilidad": "Pensamiento analítico e innovación",
+      "demanda": 95
+    },
+    {
+      "habilidad": "Aprendizaje activo y adaptabilidad",
+      "demanda": 94
+    },
+    {
+      "habilidad": "Programación y automatización",
+      "demanda": 93
+    },
+    {
+      "habilidad": "Inteligencia artificial generativa",
+      "demanda": 92
+    },
+    {
+      "habilidad": "Gestión de datos y BI",
+      "demanda": 90
+    },
+    {
+      "habilidad": "Resolución de problemas complejos",
+      "demanda": 89
+    },
+    {
+      "habilidad": "Ciberseguridad básica",
+      "demanda": 87
+    },
+    {
+      "habilidad": "Pensamiento crítico",
+      "demanda": 85
+    },
+    {
+      "habilidad": "Creatividad y diseño centrado en humanos",
+      "demanda": 82
+    },
+    {
+      "habilidad": "Gestión de proyectos ágiles",
+      "demanda": 80
+    },
+    {
+      "habilidad": "Colaboración remota / trabajo híbrido",
+      "demanda": 78
+    },
+    {
+      "habilidad": "Comunicación digital efectiva",
+      "demanda": 76
+    },
+    {
+      "habilidad": "Automatización de procesos (RPA)",
+      "demanda": 74
+    },
+    {
+      "habilidad": "Sostenibilidad y economía circular",
+      "demanda": 72
+    },
+    {
+      "habilidad": "Emprendimiento e intraemprendimiento",
+      "demanda": 70
+    },
+    {
+      "habilidad": "Electrónica e IoT básico",
+      "demanda": 68
+    },
+    {
+      "habilidad": "Gestión del cambio",
+      "demanda": 65
+    },
+    {
+      "habilidad": "Negociación y persuasión digital",
+      "demanda": 62
+    },
+    {
+      "habilidad": "Liderazgo distribuido",
+      "demanda": 60
+    },
+    {
+      "habilidad": "Atención al cliente experiencial",
+      "demanda": 55
+    }
+  ],
+  "salarios": {
+    "metrica": "Crecimiento salarial anual proyectado",
+    "fuente": "Estimación basada en tendencias históricas de Colombia y proyecciones macroeconómicas",
+    "crecimiento_anual_pct": 3.5,
+    "observacion": "Cifra realista para Colombia: salarios crecen ~3.5% anual en términos reales.",
+    "salario_minimo_2026_cop": 1750000,
+    "salario_minimo_2030_cop": 2078000.0,
+    "salario_minimo_2035_cop": 2469000.0
+  },
+  "insights": {
+    "sectores": {
+      "principal_empleador": "Servicios",
+      "mas_estable": "Agricultura",
+      "mensaje": "Servicios seguirá siendo el principal empleador en Colombia (~65% del empleo). Agricultura e industria mantendrán una participación estable con pequeños cambios relativos."
+    },
+    "profesiones": {
+      "top_1": "Científico de datos / IA",
+      "top_3": [
+        "Científico de datos / IA",
+        "Ingeniero(a) eléctrico(a)",
+        "Especialista en ciberseguridad"
+      ],
+      "mensaje": "Las profesiones con mejor perspectiva son tecnología, datos, ciberseguridad e ingeniería."
+    },
+    "salarios": {
+      "metrica": "Crecimiento salarial anual proyectado",
+      "fuente": "Estimación basada en tendencias históricas de Colombia y proyecciones macroeconómicas",
+      "crecimiento_anual_pct": 3.5,
+      "observacion": "Cifra realista para Colombia: salarios crecen ~3.5% anual en términos reales.",
+      "salario_minimo_2026_cop": 1750000,
+      "salario_minimo_2030_cop": 2078000.0,
+      "salario_minimo_2035_cop": 2469000.0
+    }
+  }
+}

@@ -1,0 +1,5 @@
+codigo_unico,indicador,codigo_categoria,codigo_subcategoria,codigo_variable,codigo_departamento,departamento,codigo_entidad,entidad,dato,etiqueta,anio,mes
+80010001,Grupo de dotaciones iniciales,8,1,1,99,Vichada,99773,Cumaribo,,G5- Nivel Bajo,2020,12
+80010002,Componente de gestión,8,1,2,99,Vichada,99773,Cumaribo,20.3241,,2020,12
+80010005,Componente de resultados,8,1,5,99,Vichada,99773,Cumaribo,43.129,,2020,12
+80010008,MDM,8,1,8,99,Vichada,99773,Cumaribo,20.2559,,2020,12

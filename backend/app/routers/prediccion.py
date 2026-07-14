@@ -15,7 +15,7 @@ from app.data.ciuo_nombres import obtener_nombre_ciuo
 
 router = APIRouter(prefix="/api/prediccion", tags=["Predicción IA"])
 
-DATA_PATH = Path(__file__).resolve().parents[3] / "data" / "processed" / "predicciones_mundiales.json"
+DATA_PATH = Path(__file__).resolve().parents[2] / "data" / "processed" / "predicciones_mundiales.json"
 
 
 def _load_predictions() -> dict[str, Any]:
@@ -136,7 +136,7 @@ async def salarios_reales_geih(limit: int = 50, ordenar_por: str = "empleo_total
 # NUEVOS ENDPOINTS: Predicciones Chronos T5 sobre GEIH mensual (52 meses)
 # ============================================================================
 
-GEIH_PATH = Path(__file__).resolve().parents[3] / "data" / "processed" / "predicciones_geih.json"
+GEIH_PATH = Path(__file__).resolve().parents[2] / "data" / "processed" / "predicciones_geih.json"
 
 
 def _load_geih_predictions() -> dict[str, Any]:
@@ -332,7 +332,7 @@ async def sectores_dashboards():
 # Proyección de TODOS los macrosectores colombianos (GEIH + Chronos T5)
 # ============================================================================
 
-GEIH_SECTOR_PATH = Path(__file__).resolve().parents[3] / "data" / "processed" / "geih_empleo_sector_mensual.csv"
+GEIH_SECTOR_PATH = Path(__file__).resolve().parents[2] / "data" / "processed" / "geih_empleo_sector_mensual.csv"
 
 
 def _macrosector_name(code: int) -> str:
