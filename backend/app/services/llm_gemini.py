@@ -6,6 +6,7 @@ Reemplaza progresivamente a DeepInfra/Gemma 4 para reducir costos y habilitar
 
 import os
 import json
+import tempfile
 from typing import Any
 from dotenv import load_dotenv
 from google import genai
@@ -17,6 +18,18 @@ GOOGLE_API_KEY = os.getenv("GOOGLE_API_KEY", "")
 GOOGLE_CLOUD_PROJECT = os.getenv("GOOGLE_CLOUD_PROJECT", "datos-al-ecosistema-501905")
 GOOGLE_CLOUD_LOCATION = os.getenv("GOOGLE_CLOUD_LOCATION", "us-central1")
 
+# Si hay un service account JSON en variable de entorno, escribirlo a archivo temporal
+# y configurar GOOGLE_APPLICATION_CREDENTIALS para que el SDK lo use (Vertex AI / ADC).
+_SA_JSON = os.getenv("GOOGLE_SERVICE_ACCOUNT_JSON", "")
+if _SA_JSON and not os.getenv("GOOGLE_APPLICATION_CREDENTIALS"):
+    try:
+        _sa_path = os.path.join(tempfile.gettempdir(), "service-account.json")
+        with open(_sa_path, "w") as f:
+            f.write(_SA_JSON)
+        os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = _sa_path
+    except Exception:
+        pass
+
 # Modelo por defecto para tareas de texto estructurado
 TEXT_MODEL = "gemini-2.5-flash-lite"
 
@@ -24,20 +37,13 @@ TEXT_MODEL = "gemini-2.5-flash-lite"
 REASONING_MODEL = "gemini-2.5-flash"
 
 # Modelo para conversacion de audio en vivo (Gemini Live API).
-# En AI Studio (API key) el modelo se llama distinto que en Vertex AI.
-_LIVE_MODEL_VERTEX = "gemini-live-2.5-flash-native-audio"
-_LIVE_MODEL_AISTUDIO = "gemini-2.5-flash-preview-tts"
-LIVE_MODEL = os.getenv(
-    "GEMINI_LIVE_MODEL",
-    _LIVE_MODEL_AISTUDIO if GOOGLE_API_KEY else _LIVE_MODEL_VERTEX,
-)
+# En Vertex AI el modelo de audio nativo usa este nombre.
+# Sobreescribible con la variable de entorno GEMINI_LIVE_MODEL.
+LIVE_MODEL = os.getenv("GEMINI_LIVE_MODEL", "gemini-live-2.5-flash-native-audio")
 
 
 def _get_client() -> genai.Client:
-    # Priorizar API key de AI Studio (mas simple para Railway/sin ADC)
-    if GOOGLE_API_KEY:
-        return genai.Client(api_key=GOOGLE_API_KEY)
-    # Fallback a Vertex AI con ADC (local con gcloud auth application-default login)
+    # Priorizar Vertex AI (ADC con service account) si hay proyecto configurado
     if GOOGLE_CLOUD_PROJECT:
         try:
             return genai.Client(
@@ -48,13 +54,16 @@ def _get_client() -> genai.Client:
             )
         except Exception as e:
             msg = (
-                "No se pudieron cargar credenciales de Google Cloud. "
-                "En local ejecuta: gcloud auth application-default login. "
-                "En produccin configura GOOGLE_API_KEY o GOOGLE_APPLICATION_CREDENTIALS. "
+                "No se pudieron cargar credenciales de Google Cloud (Vertex AI). "
+                "Configura GOOGLE_SERVICE_ACCOUNT_JSON (contenido del JSON) o "
+                "GOOGLE_APPLICATION_CREDENTIALS (ruta al archivo). "
                 f"Error: {e}"
             )
             raise RuntimeError(msg)
-    raise RuntimeError("GOOGLE_API_KEY o GOOGLE_CLOUD_PROJECT deben estar configurados")
+    # Fallback a AI Studio con API key
+    if GOOGLE_API_KEY:
+        return genai.Client(api_key=GOOGLE_API_KEY)
+    raise RuntimeError("GOOGLE_CLOUD_PROJECT (con service account) o GOOGLE_API_KEY deben estar configurados")
 
 
 def _build_config(
