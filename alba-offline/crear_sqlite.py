@@ -6,7 +6,7 @@ import sqlite3
 import pandas as pd
 from pathlib import Path
 
-ROOT = Path(__file__).resolve().parent.parent
+ROOT = Path(__file__).resolve().parent
 CSV_DIR = ROOT / "data" / "processed"
 DB_PATH = ROOT / "data" / "alba_offline.db"
 

@@ -19,9 +19,11 @@ COMO USAR
 ---------
 1. Descomprime este ZIP en una carpeta
 2. Doble clic en iniciar_alba.bat
-3. La primera vez tarda 10-30 min (descarga modelos de IA)
-4. Se abre automaticamente en tu navegador en http://localhost:8080
-5. Listo! Usa ALBA sin internet
+3. Se abre automaticamente una ventana de ALBA como una app nativa
+4. Listo! Usa ALBA sin internet
+
+NOTA: ALBA se abre como una ventana nativa (como VS Code),
+sin navegador ni consola visible despues del inicio.
 
 QUE INCLUYE
 -----------

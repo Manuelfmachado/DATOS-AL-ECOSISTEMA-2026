@@ -1,13 +1,14 @@
 """
 ALBA Offline - Backend FastAPI principal.
 Usa Gemma 4 E4B local en lugar de Gemini cloud.
+Sirve el frontend React compilado (mismo que ALBA Online).
 """
 import os
 from pathlib import Path
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
-from fastapi.responses import FileResponse
+from fastapi.responses import FileResponse, JSONResponse
 
 from app.routers import observatorio, prediccion, match, emprende, coach, simulacion, ia
 
@@ -35,30 +36,62 @@ app.include_router(ia.router)
 
 _FRONTEND_DIR = Path(__file__).resolve().parent.parent.parent / "frontend"
 
+# Servir archivos estaticos del frontend React compilado
+if (_FRONTEND_DIR / "assets").exists():
+    app.mount("/assets", StaticFiles(directory=str(_FRONTEND_DIR / "assets")), name="assets")
+
+# Servir archivos publicos del frontend (logo, geojson, dashboard.json, etc.)
+if (_FRONTEND_DIR / "colombia-departments.geojson").exists():
+    @app.get("/colombia-departments.geojson")
+    async def geojson():
+        return FileResponse(str(_FRONTEND_DIR / "colombia-departments.geojson"))
+
+if (_FRONTEND_DIR / "colombia.geo.json").exists():
+    @app.get("/colombia.geo.json")
+    async def geo_json():
+        return FileResponse(str(_FRONTEND_DIR / "colombia.geo.json"))
+
+if (_FRONTEND_DIR / "dashboard.json").exists():
+    @app.get("/dashboard.json")
+    async def dashboard():
+        return FileResponse(str(_FRONTEND_DIR / "dashboard.json"))
+
+if (_FRONTEND_DIR / "logo-alba.png").exists():
+    @app.get("/logo-alba.png")
+    async def logo():
+        return FileResponse(str(_FRONTEND_DIR / "logo-alba.png"))
+
+if (_FRONTEND_DIR / "pcm-processor.js").exists():
+    @app.get("/pcm-processor.js")
+    async def pcm():
+        return FileResponse(str(_FRONTEND_DIR / "pcm-processor.js"))
+
 
 @app.get("/")
 async def root():
-    frontend_index = _FRONTEND_DIR / "index.html"
-    if frontend_index.exists():
-        return FileResponse(str(frontend_index))
-    return {
-        "proyecto": "ALBA Offline",
-        "version": "1.0.0-offline",
-        "modelo_llm": "Gemma 4 E4B (local)",
-        "modelo_tts": "OmniVoice (local)",
-        "docs": "/docs",
-    }
+    index = _FRONTEND_DIR / "index.html"
+    if index.exists():
+        return FileResponse(str(index))
+    return {"proyecto": "ALBA Offline", "docs": "/docs"}
 
 
 @app.get("/health")
 async def health():
-    from app.services.llm_local import is_model_loaded
-    from app.services.tts_local import is_tts_available
     from app.db.sqlite_db import list_tables
     return {
         "status": "ok",
         "mode": "offline",
-        "llm_loaded": is_model_loaded(),
-        "tts_available": is_tts_available(),
         "db_tables": len(list_tables()),
     }
+
+
+# Catch-all para SPA routing (React Router)
+@app.get("/{path:path}")
+async def spa_fallback(path: str):
+    # No interceptar API
+    if path.startswith("api/") or path.startswith("assets/") or path.startswith("docs"):
+        return JSONResponse({"error": "Not found"}, status_code=404)
+    index = _FRONTEND_DIR / "index.html"
+    if index.exists():
+        return FileResponse(str(index))
+    return JSONResponse({"error": "Not found"}, status_code=404)
