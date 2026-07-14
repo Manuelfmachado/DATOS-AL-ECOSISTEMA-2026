@@ -82,13 +82,16 @@ export default function Dashboard() {
   const [loadingKpis, setLoadingKpis] = useState(true)
 
   useEffect(() => {
-    api.get('/observatorio/dashboard')
-      .then((res) => {
-        const data = res.data.mapa?.departamentos || []
+    // Cargar del JSON estatico (instantaneo), fallback a API si no existe
+    fetch('/dashboard.json')
+      .then((res) => res.ok ? res.json() : Promise.reject('no static'))
+      .catch(() => api.get('/observatorio/dashboard').then((res) => res.data))
+      .then((d: any) => {
+        const data = d.mapa?.departamentos || []
         const mapa = new Map<string, DeptoData>()
-        data.forEach((d: any) => { mapa.set(d.departamento, d) })
+        data.forEach((depto: any) => { mapa.set(depto.departamento, depto) })
         setDepartamentos(Array.from(mapa.values()))
-        setSectorLiderNacional(res.data.mapa?.sector_lider_nacional || null)
+        setSectorLiderNacional(d.mapa?.sector_lider_nacional || null)
         setLoadingMapa(false)
         setLoadingRankings(false)
         setLoadingKpis(false)

@@ -45,17 +45,20 @@ export default function Observatorio() {
   }, [deptoDefault])
 
   useEffect(() => {
-    api.get('/observatorio/dashboard')
-      .then((res) => {
+    // Cargar del JSON estatico (instantaneo), fallback a API si no existe
+    fetch('/dashboard.json')
+      .then((res) => res.ok ? res.json() : Promise.reject('no static'))
+      .catch(() => api.get('/observatorio/dashboard').then((res) => res.data))
+      .then((d: any) => {
         setData({
-          kpi: res.data.resumen_nacional,
-          tendencia: res.data.tendencia,
-          emergentes: res.data.emergentes,
-          prioridad: res.data.prioridad,
-          brecha: res.data.brecha,
-          sectores_formales: res.data.sectores_formales?.sectores || [],
-          spe: res.data.spe?.ocupaciones_demanda_creciente || [],
-          mapa: res.data.mapa?.departamentos || [],
+          kpi: d.resumen_nacional,
+          tendencia: d.tendencia,
+          emergentes: d.emergentes,
+          prioridad: d.prioridad,
+          brecha: d.brecha,
+          sectores_formales: d.sectores_formales?.sectores || [],
+          spe: d.spe?.ocupaciones_demanda_creciente || [],
+          mapa: d.mapa?.departamentos || [],
         })
       })
       .catch((e) => {
