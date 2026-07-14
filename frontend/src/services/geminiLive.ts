@@ -117,9 +117,11 @@ export class CoachLiveClient {
 
     try {
       this.mediaStream = await navigator.mediaDevices.getUserMedia({ audio: true })
+      console.log('[CoachLive] Microfono activo, sampleRate:', this.audioContext.sampleRate)
       const source = this.audioContext.createMediaStreamSource(this.mediaStream)
       this.audioWorkletNode = new AudioWorkletNode(this.audioContext, 'pcm-processor')
 
+      let chunkCount = 0
       this.audioWorkletNode.port.onmessage = (e: MessageEvent) => {
         if (!this.isRecording) return
         const downsampled = this.downsampleBuffer(
@@ -128,6 +130,10 @@ export class CoachLiveClient {
           INPUT_SAMPLE_RATE,
         )
         const pcm16 = this.convertFloat32ToInt16(downsampled)
+        chunkCount++
+        if (chunkCount % 10 === 0) {
+          console.log('[CoachLive] Audio chunk', chunkCount, 'bytes:', pcm16.byteLength, 'ws:', this.ws?.readyState)
+        }
         if (this.isConnected()) {
           this.ws!.send(pcm16)
         }
@@ -140,6 +146,7 @@ export class CoachLiveClient {
       muteGain.connect(this.audioContext.destination)
 
       this.isRecording = true
+      console.log('[CoachLive] Grabando audio. isRecording:', this.isRecording, 'wsConnected:', this.isConnected())
     } catch (e) {
       console.error('[CoachLive] Error iniciando microfono:', e)
       throw e
