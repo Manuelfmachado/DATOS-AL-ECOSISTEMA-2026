@@ -1,4 +1,5 @@
 // Cliente de la entrevista en vivo con Gemini Live API (solo microfono).
+// Version: 1.0.1 - fix codigo duplicado.
 // Conecta un WebSocket al backend /api/coach/live y gestiona:
 //   - captura de audio del microfono (16kHz mono PCM 16-bit)
 //   - envio de chunks al backend
