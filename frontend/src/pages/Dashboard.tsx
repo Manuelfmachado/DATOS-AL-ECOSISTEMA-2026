@@ -77,34 +77,31 @@ export default function Dashboard() {
   const [selectedDepto, setSelectedDepto] = useState<DeptoData | null>(null)
   const [insights, setInsights] = useState<DeptoInsights | null>(null)
   const [insightsLoading, setInsightsLoading] = useState(false)
-  const [loading, setLoading] = useState(true)
-  const [kpis, setKpis] = useState<{
-    ocupados: number
-    desocupados: number
-    tasa_desempleo: number
-  } | null>(null)
+  const [loadingMapa, setLoadingMapa] = useState(true)
+  const [loadingRankings, setLoadingRankings] = useState(true)
+  const [loadingKpis, setLoadingKpis] = useState(true)
 
   useEffect(() => {
-    Promise.all([
-      api.get('/observatorio/mapa-metricas'),
-      api.get('/observatorio/resumen-nacional'),
-    ])
-      .then(([resDeptos, resKpis]) => {
-        const data: DeptoData[] = resDeptos.data.departamentos || []
+    api.get('/observatorio/dashboard')
+      .then((res) => {
+        const data = res.data.mapa?.departamentos || []
         const mapa = new Map<string, DeptoData>()
-        data.forEach((d) => { mapa.set(d.departamento, d) })
+        data.forEach((d: any) => { mapa.set(d.departamento, d) })
         setDepartamentos(Array.from(mapa.values()))
-        setSectorLiderNacional(resDeptos.data.sector_lider_nacional || null)
-
-        setKpis({
-          ocupados: resKpis.data.ocupados_totales || 0,
-          desocupados: resKpis.data.desocupados_totales || 0,
-          tasa_desempleo: resKpis.data.tasa_desempleo_nacional || 0,
-        })
+        setSectorLiderNacional(res.data.mapa?.sector_lider_nacional || null)
+        setLoadingMapa(false)
+        setLoadingRankings(false)
+        setLoadingKpis(false)
       })
       .catch(() => {})
-      .finally(() => setLoading(false))
+      .finally(() => {
+        setLoadingMapa(false)
+        setLoadingRankings(false)
+        setLoadingKpis(false)
+      })
   }, [])
+
+  const loading = loadingMapa && loadingRankings && loadingKpis
 
   useEffect(() => {
     if (!selectedDepto?.departamento) {
@@ -210,21 +207,39 @@ export default function Dashboard() {
         <div className="plate card py-3 px-4 flex items-center gap-3">
           <div>
             <div className="kpi-label leading-none">Ocupados Colombia</div>
-            <div className="kpi-value text-2xl mt-0.5">{kpis ? Math.round(kpis.ocupados).toLocaleString('es-CO') : '—'}</div>
+            <div className="kpi-value text-2xl mt-0.5">{loadingKpis ? (
+              <span className="inline-block w-24 h-5 bg-slate-700/40 rounded animate-pulse" />
+            ) : (
+              departamentos.length ? Math.round(
+                departamentos.reduce((s, d) => s + (d.ocupados || 0), 0)
+              ).toLocaleString('es-CO') : '—'
+            )}</div>
           </div>
         </div>
 
         <div className="plate card p-3 text-center flex flex-col justify-center min-h-[64px]">
           <p className="kpi-label">Desempleo</p>
-          <p className="text-xl font-bold text-white font-display leading-tight">{rankingNacional ? rankingNacional.promDesempleo.toFixed(1) : '—'}%</p>
+          <p className="text-xl font-bold text-white font-display leading-tight">{loadingKpis ? (
+            <span className="inline-block w-12 h-5 bg-slate-700/40 rounded animate-pulse" />
+          ) : (
+            rankingNacional ? rankingNacional.promDesempleo.toFixed(1) : '—'
+          )}%</p>
         </div>
         <div className="plate card p-3 text-center flex flex-col justify-center min-h-[64px]">
           <p className="kpi-label">Salario</p>
-          <p className="text-base lg:text-lg font-bold text-white font-display leading-none whitespace-nowrap overflow-hidden text-ellipsis px-1">{rankingNacional ? formatCOP(rankingNacional.promIngreso) : '—'} COP</p>
+          <p className="text-base lg:text-lg font-bold text-white font-display leading-none whitespace-nowrap overflow-hidden text-ellipsis px-1">{loadingKpis ? (
+            <span className="inline-block w-20 h-5 bg-slate-700/40 rounded animate-pulse" />
+          ) : (
+            rankingNacional ? formatCOP(rankingNacional.promIngreso) : '—'
+          )} COP</p>
         </div>
         <div className="plate card p-3 text-center flex flex-col justify-center min-h-[64px]">
           <p className="kpi-label">Formalidad</p>
-          <p className="text-xl font-bold text-white font-display leading-tight">{rankingNacional ? rankingNacional.promFormalidad.toFixed(0) : '—'}%</p>
+          <p className="text-xl font-bold text-white font-display leading-tight">{loadingKpis ? (
+            <span className="inline-block w-12 h-5 bg-slate-700/40 rounded animate-pulse" />
+          ) : (
+            rankingNacional ? rankingNacional.promFormalidad.toFixed(0) : '—'
+          )}%</p>
         </div>
       </section>
 
@@ -244,8 +259,11 @@ export default function Dashboard() {
           <div className="grid grid-cols-1 xl:grid-cols-12 gap-0 items-stretch">
             {/* Mapa */}
             <div className="xl:col-span-7 relative h-[70vh] min-h-[480px] max-h-[780px] bg-[#050813] rounded-bl-xl overflow-hidden">
-            {loading ? (
-              <div className="w-full h-full flex items-center justify-center text-[#6b7390] text-xs">Cargando mapa...</div>
+            {loadingMapa ? (
+              <div className="w-full h-full flex flex-col items-center justify-center text-[#6b7390]">
+                <span className="inline-block w-16 h-16 border-4 border-slate-700 border-t-gold-500 rounded-full animate-spin mb-3" />
+                <span className="text-sm">Cargando mapa...</span>
+              </div>
             ) : (
               <MapaColombia
                 data={departamentos}
@@ -260,7 +278,16 @@ export default function Dashboard() {
 
           {/* Panel derecho: panorama nacional en tablas claras tipo factura */}
           <div className="xl:col-span-5 border-t xl:border-t-0 xl:border-l border-gold-500/20 p-4 sm:p-5 flex flex-col overflow-y-auto">
-            {rankingNacional ? (
+            {loadingRankings ? (
+              <div className="flex flex-col gap-4">
+                <div className="flex items-center gap-2 pb-3 border-b border-gold-500/30">
+                  <span className="text-xl font-bold text-gold-400 font-display">Panorama nacional</span>
+                </div>
+                {[1, 2, 3, 4, 5, 6].map((i) => (
+                  <div key={i} className="h-24 bg-slate-700/20 rounded-lg animate-pulse" />
+                ))}
+              </div>
+            ) : rankingNacional ? (
               <div className="flex flex-col gap-4">
                 {/* Titulo */}
                 <div className="flex items-center gap-2 pb-3 border-b border-gold-500/30">

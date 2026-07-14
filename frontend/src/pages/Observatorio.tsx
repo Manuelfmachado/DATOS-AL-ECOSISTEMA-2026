@@ -31,12 +31,12 @@ const MACRO_COLORS = ['#d4af37', '#3b82f6', '#22c55e', '#a855f7', '#f97316', '#e
 export default function Observatorio() {
   const [data, setData] = useState<any>(null)
   const [loading, setLoading] = useState(true)
+  const [loadingSectores, setLoadingSectores] = useState(false)
   const { deptos: departamentosLista, cargando: cargandoDeptos } = useDepartamentos()
   const deptoDefault = departamentosLista.find((d) => d.nombre === 'Bogotá')?.nombre || (departamentosLista[0]?.nombre ?? null)
 
   const [deptoSeleccionado, setDeptoSeleccionado] = useState<string | null>(deptoDefault)
   const [sectoresDepto, setSectoresDepto] = useState<any[] | null>(null)
-  const [loadingSectores, setLoadingSectores] = useState(false)
 
   useEffect(() => {
     if (deptoDefault) {
@@ -45,29 +45,23 @@ export default function Observatorio() {
   }, [deptoDefault])
 
   useEffect(() => {
-    Promise.all([
-      api.get('/observatorio/resumen-nacional'),
-      api.get('/observatorio/tendencia-empleo'),
-      api.get('/observatorio/sectores-emergentes-tendencia'),
-      api.get('/observatorio/indice-prioridad'),
-      api.get('/observatorio/brecha'),
-      api.get('/observatorio/sectores-formales?limit=50'),
-      api.get('/observatorio/spe-demanda?limit=15'),
-      api.get('/observatorio/mapa-metricas'),
-    ]).then(([kpi, tend, emer, prior, brecha, formal, spe, mapa]) => {
-      setData({
-        kpi: kpi.data,
-        tendencia: tend.data,
-        emergentes: emer.data,
-        prioridad: prior.data,
-        brecha: brecha.data,
-        sectores_formales: formal.data.sectores || [],
-        spe: spe.data.ocupaciones_demanda_creciente || [],
-        mapa: mapa.data.departamentos || [],
+    api.get('/observatorio/dashboard')
+      .then((res) => {
+        setData({
+          kpi: res.data.resumen_nacional,
+          tendencia: res.data.tendencia,
+          emergentes: res.data.emergentes,
+          prioridad: res.data.prioridad,
+          brecha: res.data.brecha,
+          sectores_formales: res.data.sectores_formales?.sectores || [],
+          spe: res.data.spe?.ocupaciones_demanda_creciente || [],
+          mapa: res.data.mapa?.departamentos || [],
+        })
       })
-    }).catch((e) => {
-      console.error('[Observatorio]', e)
-    }).finally(() => setLoading(false))
+      .catch((e) => {
+        console.error('[Observatorio]', e)
+      })
+      .finally(() => setLoading(false))
   }, [])
 
   const cargarSectoresDepto = async (depto: string) => {
@@ -83,11 +77,23 @@ export default function Observatorio() {
     setLoadingSectores(false)
   }
 
+  const Skeleton = ({ height = 'h-64' }: { height?: string }) => (
+    <div className={`plate card rounded-2xl ${height} bg-slate-800/20 animate-pulse border border-white/5`} />
+  )
+
   if (loading) {
     return (
-      <div className="animate-fade-in">
-        <div className="plate card rounded-2xl h-96 flex items-center justify-center">
-          <p className="text-slate-500 text-sm">Cargando datos del observatorio...</p>
+      <div className="animate-fade-in space-y-5">
+        <div className="plate card p-5 h-32 bg-slate-800/20 animate-pulse border border-white/5" />
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
+          <Skeleton height="h-80" />
+          <Skeleton height="h-80" />
+        </div>
+        <Skeleton height="h-96" />
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
+          <Skeleton height="h-72" />
+          <Skeleton height="h-72" />
+          <Skeleton height="h-72" />
         </div>
       </div>
     )
