@@ -72,13 +72,13 @@ function ScoreGauge({ score, label }: { score: number; label: string }) {
   const bg = score >= 75 ? 'bg-green-500/10' : score >= 50 ? 'bg-amber-500/10' : 'bg-rose-500/10'
   const border = score >= 75 ? 'border-green-500/30' : score >= 50 ? 'border-amber-500/30' : 'border-rose-500/30'
   return (
-    <div className="flex items-center gap-4">
-      <div className={`w-24 h-24 rounded-full ${bg} border-2 ${border} flex items-center justify-center`}>
-        <span className={`text-3xl font-bold ${color}`}>{Math.round(score)}</span>
+    <div className="flex items-center gap-6">
+      <div className={`w-32 h-32 rounded-full ${bg} border-2 ${border} flex items-center justify-center`}>
+        <span className={`text-5xl font-bold ${color}`}>{Math.round(score)}</span>
       </div>
       <div>
-        <p className="text-sm text-slate-400">{label}</p>
-        <p className={`text-lg font-semibold ${color}`}>
+        <p className="text-base text-slate-400 font-semibold">{label}</p>
+        <p className={`text-2xl font-bold ${color}`}>
           {score >= 75 ? 'Alto' : score >= 50 ? 'Medio' : 'Bajo'}
         </p>
       </div>
@@ -189,11 +189,11 @@ export default function Match() {
       </div>
 
       {/* Nota metodológica */}
-      <div className="plate card p-4">
+      <div className="plate card p-5">
         <div className="flex items-start gap-3">
           <div>
-            <p className="text-sm text-slate-200 font-semibold mb-1">¿Cómo funciona este análisis?</p>
-            <p className="text-xs text-slate-400 leading-relaxed">
+            <p className="text-lg text-white font-bold mb-2">¿Cómo funciona este análisis?</p>
+            <p className="text-base text-slate-300 leading-relaxed">
               La IA (Gemini 2.5 Flash-Lite) analiza tu perfil o pensum comparándolo con los requisitos de la vacante o las tendencias del mercado laboral.
               El score es una estimación basada en el conocimiento del modelo sobre el mercado colombiano. Las brechas muestran qué te falta y cómo cubrirlo,
               con recursos clasificados por tipo: SENA (gratuito), online (plataformas como Coursera), certificaciones y recursos libres.
@@ -207,23 +207,23 @@ export default function Match() {
         <div className="space-y-6">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             <div className="plate card p-5">
-              <label className="block text-sm font-semibold text-slate-200 mb-2">Pega tu CV o describe tu perfil</label>
+              <label className="block text-base text-white font-bold mb-2">Pega tu CV o describe tu perfil</label>
               <textarea
                 value={cv}
                 onChange={(e) => setCv(e.target.value)}
                 rows={10}
-                className="w-full px-4 py-3 border border-white/10 rounded-lg focus:ring-2 focus:ring-amber-500/50 text-sm bg-white/[0.03] text-slate-100"
+                className="w-full px-4 py-3 border border-white/10 rounded-lg focus:ring-2 focus:ring-amber-500/50 text-base bg-white/[0.03] text-slate-100"
                 placeholder="Ej: Ingeniero de sistemas con 3 años de experiencia..."
               />
             </div>
 
             <div className="plate card p-5">
-              <label className="block text-sm font-semibold text-slate-200 mb-2">Pega la vacante laboral</label>
+              <label className="block text-base text-white font-bold mb-2">Pega la vacante laboral</label>
               <textarea
                 value={vacante}
                 onChange={(e) => setVacante(e.target.value)}
                 rows={10}
-                className="w-full px-4 py-3 border border-white/10 rounded-lg focus:ring-2 focus:ring-amber-500/50 text-sm bg-white/[0.03] text-slate-100"
+                className="w-full px-4 py-3 border border-white/10 rounded-lg focus:ring-2 focus:ring-amber-500/50 text-base bg-white/[0.03] text-slate-100"
                 placeholder="Ej: Desarrollador Full Stack. Requisitos:..."
               />
             </div>
@@ -247,7 +247,7 @@ export default function Match() {
                 <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-6">
                   <ScoreGauge score={cvResultado.score_match} label="Match actual" />
                   <div className="flex-1">
-                    <p className="text-slate-200">{cvResultado.interpretacion}</p>
+                    <p className="text-lg text-white font-semibold">{cvResultado.interpretacion}</p>
                   </div>
                 </div>
               </div>
@@ -255,59 +255,59 @@ export default function Match() {
               {/* Datos reales de ESCO + OLE */}
               {(cvResultado.esco_ocupacion || cvResultado.salario_real) && (
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {cvResultado.esco_ocupacion && (
-                    <div className="plate card p-5">
-                      <h3 className="font-bold text-white mb-3">
-                        Ocupación ESCO detectada
-                      </h3>
-                      <p className="text-lg font-semibold text-blue-300 mb-2">{cvResultado.esco_ocupacion}</p>
-                      {cvResultado.habilidades_requeridas_esco !== undefined && (
-                        <div className="flex items-center gap-4 text-sm">
-                          <div>
-                            <span className="text-slate-500">Requeridas: </span>
-                            <span className="font-bold text-white">{cvResultado.habilidades_requeridas_esco}</span>
-                          </div>
-                          <div>
-                            <span className="text-slate-500">Detectadas en CV: </span>
-                            <span className="font-bold text-green-400">{cvResultado.habilidades_detectadas?.length || 0}</span>
-                          </div>
+                      {cvResultado.esco_ocupacion && (
+                        <div className="plate card p-5">
+                          <h3 className="text-xl font-bold text-white mb-3">
+                            Ocupación ESCO detectada
+                          </h3>
+                          <p className="text-xl font-semibold text-gold-400 mb-4">{cvResultado.esco_ocupacion}</p>
+                          {cvResultado.habilidades_requeridas_esco !== undefined && (
+                            <div className="flex items-center gap-6 text-base mb-3">
+                              <div>
+                                <span className="text-slate-400">Requeridas: </span>
+                                <span className="font-bold text-white">{cvResultado.habilidades_requeridas_esco}</span>
+                              </div>
+                              <div>
+                                <span className="text-slate-400">Detectadas en CV: </span>
+                                <span className="font-bold text-green-400">{cvResultado.habilidades_detectadas?.length || 0}</span>
+                              </div>
+                            </div>
+                          )}
+                          {cvResultado.habilidades_detectadas && cvResultado.habilidades_detectadas.length > 0 && (
+                            <div className="mt-3 flex flex-wrap gap-2">
+                              {cvResultado.habilidades_detectadas.map((h, i) => (
+                                <span key={i} className="text-sm px-3 py-1 rounded-full bg-green-500/15 text-green-400 border border-green-500/30">
+                                  {h}
+                                </span>
+                              ))}
+                            </div>
+                          )}
                         </div>
                       )}
-                      {cvResultado.habilidades_detectadas && cvResultado.habilidades_detectadas.length > 0 && (
-                        <div className="mt-3 flex flex-wrap gap-1">
-                          {cvResultado.habilidades_detectadas.map((h, i) => (
-                            <span key={i} className="text-xs px-2 py-0.5 rounded-full bg-green-500/15 text-green-400 border border-green-500/30">
-                              {h}
-                            </span>
-                          ))}
-                        </div>
-                      )}
-                    </div>
-                  )}
 
-                  {cvResultado.salario_real && (
-                    <div className="plate card p-5">
-                      <h3 className="font-bold text-white mb-3">
-                        Salario real de egresados
-                      </h3>
-                      <p className="text-lg font-semibold text-gold-400 mb-2">{cvResultado.salario_real.rango_modal}</p>
-                      <p className="text-sm text-slate-400">
-                        Basado en <strong className="text-white">{Math.round(cvResultado.salario_real.total_graduados).toLocaleString("es-CO")}</strong> graduados reales
-                      </p>
-                      <p className="text-xs text-slate-500 mt-1">Fuente: {cvResultado.salario_real.fuente}</p>
-                    </div>
-                  )}
+                      {cvResultado.salario_real && (
+                        <div className="plate card p-5">
+                          <h3 className="text-xl font-bold text-white mb-3">
+                            Salario real de egresados
+                          </h3>
+                          <p className="text-2xl font-bold text-gold-400 mb-2">{cvResultado.salario_real.rango_modal}</p>
+                          <p className="text-base text-slate-300">
+                            Basado en <strong className="text-white">{Math.round(cvResultado.salario_real.total_graduados).toLocaleString("es-CO")}</strong> graduados reales
+                          </p>
+                          <p className="text-sm text-slate-500 mt-1">Fuente: {cvResultado.salario_real.fuente}</p>
+                        </div>
+                      )}
                 </div>
               )}
 
               {cvResultado.fortalezas.length > 0 && (
                 <div className="plate card p-6">
-                  <h3 className="font-bold text-white mb-4">
+                  <h3 className="text-xl font-bold text-white mb-4">
                     Fortalezas
                   </h3>
-                  <ul className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                  <ul className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     {cvResultado.fortalezas.map((f, i) => (
-                      <li key={i} className="flex items-start gap-2 text-sm text-slate-200">
+                      <li key={i} className="flex items-start gap-2 text-base text-slate-200">
                         {f}
                       </li>
                     ))}
@@ -317,37 +317,37 @@ export default function Match() {
 
               {cvResultado.brechas.length > 0 && (
                 <div className="plate card p-6">
-                  <h3 className="font-bold text-white mb-4">
+                  <h3 className="text-xl font-bold text-white mb-4">
                     ¿Qué te falta? Marca lo que ya cumples o podrías cubrir
                   </h3>
-                  <div className="space-y-3">
+                  <div className="space-y-4">
                     {cvResultado.brechas.map((b, i) => (
                       <label
                         key={i}
-                        className={`flex items-start gap-3 p-4 rounded-lg border cursor-pointer transition-colors ${
+                        className={`flex items-start gap-3 p-5 rounded-lg border cursor-pointer transition-colors ${
                           checkedBrechas[i] ? 'bg-green-500/10 border-green-500/30' : 'bg-white/[0.03] border-white/10 hover:bg-white/[0.05]'
                         }`}
                       >
                         <input
                           type="checkbox"
-                          className="mt-1 w-4 h-4 text-amber-600"
+                          className="mt-1 w-5 h-5 text-amber-600"
                           checked={!!checkedBrechas[i]}
                           onChange={() => toggleBrecha(i)}
                         />
                         <div className="flex-1">
                           <div className="flex items-center justify-between mb-2">
-                            <span className="font-semibold text-white">{b.requisito}</span>
-                            <span className="text-xs font-medium bg-amber-500/20 text-amber-400 px-2 py-0.5 rounded-full border border-amber-500/30">
+                            <span className="text-lg font-bold text-white">{b.requisito}</span>
+                            <span className="text-sm font-bold bg-amber-500/20 text-amber-400 px-3 py-1 rounded-full border border-amber-500/30">
                               +{b.peso} pts
                             </span>
                           </div>
-                          <p className="text-sm text-slate-300 mb-3">{b.como_cubrir}</p>
+                          <p className="text-base text-slate-300 mb-3">{b.como_cubrir}</p>
                           {b.recursos && b.recursos.length > 0 && (
-                            <div className="space-y-1">
-                              <p className="text-xs text-slate-500 font-semibold">Recursos recomendados:</p>
+                            <div className="space-y-2">
+                              <p className="text-sm text-slate-400 font-bold">Recursos recomendados:</p>
                               {b.recursos.map((r, idx) => (
-                                <div key={idx} className="flex items-center gap-2 text-xs">
-                                  <span className={`px-1.5 py-0.5 rounded font-medium ${
+                                <div key={idx} className="flex items-center gap-2 text-base">
+                                  <span className={`px-2 py-0.5 rounded font-bold ${
                                     r.tipo === 'SENA' ? 'bg-green-500/20 text-green-400' :
                                     r.tipo === 'online' ? 'bg-blue-500/20 text-blue-400' :
                                     r.tipo === 'certificacion' ? 'bg-purple-500/20 text-purple-400' :
@@ -355,7 +355,7 @@ export default function Match() {
                                   }`}>
                                     {r.tipo}
                                   </span>
-                                  <span className="text-slate-300">{r.nombre}</span>
+                                  <span className="text-slate-200">{r.nombre}</span>
                                 </div>
                               ))}
                             </div>
@@ -367,23 +367,23 @@ export default function Match() {
 
                   <div className="mt-6 p-5 bg-blue-500/10 border border-blue-500/30 rounded-xl flex items-center justify-between">
                     <div>
-                      <p className="text-sm text-blue-300">Si cubres lo marcado, tu score podría subir a:</p>
-                      <p className="text-xs text-blue-400/70">El puntaje es una estimación; el orden y la profundidad también importan.</p>
+                      <p className="text-base text-blue-300">Si cubres lo marcado, tu score podría subir a:</p>
+                      <p className="text-sm text-blue-400/70">El puntaje es una estimación; el orden y la profundidad también importan.</p>
                     </div>
                     <div className="text-right">
-                      <p className="text-3xl font-bold text-blue-400">{Math.round(scoreSimulado())}</p>
-                      <p className="text-xs text-blue-400/70">puntos</p>
+                      <p className="text-4xl font-bold text-blue-400">{Math.round(scoreSimulado())}</p>
+                      <p className="text-sm text-blue-400/70">puntos</p>
                     </div>
                   </div>
                 </div>
               )}
 
               {cvResultado.recomendacion_general && (
-                <div className="plate card p-5 bg-amber-500/5 border-amber-500/20">
-                  <h4 className="font-semibold text-amber-300 mb-2">
+                <div className="plate card p-6 bg-amber-500/5 border-amber-500/20">
+                  <h4 className="text-lg font-bold text-amber-300 mb-2">
                     Recomendación general
                   </h4>
-                  <p className="text-sm text-amber-200/90">{cvResultado.recomendacion_general}</p>
+                  <p className="text-base text-amber-200/90">{cvResultado.recomendacion_general}</p>
                 </div>
               )}
             </div>
@@ -395,12 +395,12 @@ export default function Match() {
       {activeTab === 'pensum' && (
         <div className="space-y-6">
           <div className="plate card p-5">
-            <label className="block text-sm font-semibold text-slate-200 mb-2">Pega el pensum académico o contenido del programa</label>
+            <label className="block text-base text-white font-bold mb-2">Pega el pensum académico o contenido del programa</label>
             <textarea
               value={pensum}
               onChange={(e) => setPensum(e.target.value)}
               rows={14}
-              className="w-full px-4 py-3 border border-white/10 rounded-lg focus:ring-2 focus:ring-amber-500/50 text-sm bg-white/[0.03] text-slate-100"
+              className="w-full px-4 py-3 border border-white/10 rounded-lg focus:ring-2 focus:ring-amber-500/50 text-base bg-white/[0.03] text-slate-100"
               placeholder="Ej: Semestre 1: Cálculo, Programación básica..."
             />
           </div>
@@ -423,19 +423,19 @@ export default function Match() {
                 <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-6">
                   <ScoreGauge score={pensumResultado.score_alineacion} label="Alineación con el mercado" />
                   <div className="flex-1">
-                    <p className="text-slate-200">{pensumResultado.interpretacion}</p>
+                    <p className="text-lg text-white font-semibold">{pensumResultado.interpretacion}</p>
                   </div>
                 </div>
               </div>
 
               {pensumResultado.fortalezas.length > 0 && (
                 <div className="plate card p-6">
-                  <h3 className="font-bold text-white mb-4">
+                  <h3 className="text-xl font-bold text-white mb-4">
                     Fortalezas del pensum
                   </h3>
-                  <ul className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                  <ul className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     {pensumResultado.fortalezas.map((f, i) => (
-                      <li key={i} className="flex items-start gap-2 text-sm text-slate-200">
+                      <li key={i} className="flex items-start gap-2 text-base text-slate-200">
                         {f}
                       </li>
                     ))}
@@ -445,16 +445,16 @@ export default function Match() {
 
               {pensumResultado.brechas_mercado.length > 0 && (
                 <div className="plate card p-6">
-                  <h3 className="font-bold text-white mb-4">
+                  <h3 className="text-xl font-bold text-white mb-4">
                     Brechas con el mercado laboral
                   </h3>
-                  <div className="space-y-3">
+                  <div className="space-y-4">
                     {pensumResultado.brechas_mercado.map((b, i) => (
-                      <div key={i} className="p-4 rounded-lg border bg-white/[0.03] border-white/10">
-                        <div className="flex items-center justify-between mb-1">
-                          <span className="font-semibold text-white">{b.area}</span>
+                      <div key={i} className="p-5 rounded-lg border bg-white/[0.03] border-white/10">
+                        <div className="flex items-center justify-between mb-2">
+                          <span className="text-lg font-bold text-white">{b.area}</span>
                           <span
-                            className={`text-xs font-medium px-2 py-0.5 rounded-full ${
+                            className={`text-sm font-bold px-3 py-1 rounded-full ${
                               b.nivel_importancia === 'alta'
                                 ? 'bg-rose-500/20 text-rose-400 border border-rose-500/30'
                                 : b.nivel_importancia === 'media'
@@ -465,7 +465,7 @@ export default function Match() {
                             {b.nivel_importancia === 'alta' ? 'Alta importancia' : b.nivel_importancia === 'media' ? 'Media importancia' : 'Baja importancia'}
                           </span>
                         </div>
-                        <p className="text-sm text-slate-300">{b.sugerencia}</p>
+                        <p className="text-base text-slate-300">{b.sugerencia}</p>
                       </div>
                     ))}
                   </div>
@@ -473,11 +473,11 @@ export default function Match() {
               )}
 
               {pensumResultado.recomendacion_general && (
-                <div className="plate card p-5 bg-amber-500/5 border-amber-500/20">
-                  <h4 className="font-semibold text-amber-300 mb-2">
+                <div className="plate card p-6 bg-amber-500/5 border-amber-500/20">
+                  <h4 className="text-lg font-bold text-amber-300 mb-2">
                     Recomendación general
                   </h4>
-                  <p className="text-sm text-amber-200/90">{pensumResultado.recomendacion_general}</p>
+                  <p className="text-base text-amber-200/90">{pensumResultado.recomendacion_general}</p>
                 </div>
               )}
             </div>
