@@ -400,7 +400,7 @@ export default function Coach() {
                   </div>
                 )}
 
-                <label className="block text-sm font-semibold mb-2" style={{ color: 'var(--text-dim)' }}>Vacante objetivo</label>
+                <label className="block text-sm font-semibold mb-2" style={{ color: 'var(--text-dim)' }}>Vacante objetivo {modoLive === 'libre' && '(opcional)'}</label>
                 <textarea
                   value={vacanteLive}
                   onChange={(e) => setVacanteLive(e.target.value)}
@@ -438,7 +438,7 @@ export default function Coach() {
                 {!connected ? (
                   <button
                     onClick={connectLive}
-                    disabled={liveStatus === 'connecting' || (modoLive === 'realista' && !cvLive.trim()) || !vacanteLive.trim()}
+                    disabled={liveStatus === 'connecting' || (modoLive === 'realista' && (!cvLive.trim() || !vacanteLive.trim()))}
                     className="btn btn-gold"
                   >
                     {liveStatus === 'connecting' ? 'Conectando...' : `Iniciar entrevista ${modoLive === 'realista' ? 'realista' : 'libre'}`}
@@ -468,19 +468,33 @@ export default function Coach() {
               </div>
 
               {liveStatus === 'connecting' && (
-                <p className="text-sm mt-3" style={{ color: 'var(--text-dim)' }}>Estableciendo conexión con Gemini Live...</p>
-              )}
-              {liveStatus === 'connected' && (
-                <p className="text-sm mt-3 flex items-center gap-1" style={{ color: 'var(--green)' }}>
-                  <span className="inline-block w-2 h-2 rounded-full animate-pulse" style={{ background: 'var(--green)' }} />
-                  Entrevista en curso. Habla normalmente para responder a ALBA.
+                <p className="text-sm mt-3 flex items-center gap-2" style={{ color: 'var(--text-dim)' }}>
+                  <span className="inline-block w-2 h-2 rounded-full animate-pulse" style={{ background: 'var(--gold-soft)' }} />
+                  Estableciendo conexión con Gemini Live...
                 </p>
               )}
+              {liveStatus === 'connected' && (
+                <div className="mt-3 p-3 rounded-lg flex items-center gap-3" style={{ background: 'rgba(34, 197, 94, 0.08)', border: '1px solid rgba(34, 197, 94, 0.25)' }}>
+                  <span className="inline-block w-3 h-3 rounded-full animate-pulse" style={{ background: '#22c55e' }} />
+                  <span className="text-sm font-semibold" style={{ color: '#22c55e' }}>
+                    Entrevista en curso
+                  </span>
+                  <span className="text-xs" style={{ color: 'var(--text-dim)' }}>
+                    ALBA escucha lo que dices. Habla con naturalidad cuando termine su pregunta.
+                  </span>
+                </div>
+              )}
               {liveStatus === 'disconnected' && (
-                <p className="text-sm mt-3" style={{ color: 'var(--text-dim)' }}>La sesión finalizó.</p>
+                <p className="text-sm mt-3 flex items-center gap-2" style={{ color: 'var(--text-dim)' }}>
+                  <span className="inline-block w-2 h-2 rounded-full" style={{ background: 'var(--text-dim)' }} />
+                  La sesión finalizó. Puedes iniciar otra entrevista cuando quieras.
+                </p>
               )}
               {liveStatus === 'error' && (
-                <p className="text-sm mt-3" style={{ color: '#ff6b6b' }}>Error de conexión. Verifica que el backend esté corriendo y tengas credenciales de Gemini configuradas.</p>
+                <p className="text-sm mt-3 flex items-center gap-2" style={{ color: '#ff6b6b' }}>
+                  <span className="inline-block w-2 h-2 rounded-full" style={{ background: '#ff6b6b' }} />
+                  Error de conexión. Verifica que el backend esté corriendo y tengas credenciales de Gemini configuradas.
+                </p>
               )}
             </div>
           </div>
