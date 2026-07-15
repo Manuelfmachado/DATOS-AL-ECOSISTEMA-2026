@@ -6,6 +6,7 @@ import json
 from fastapi import APIRouter
 from typing import Any
 from pydantic import BaseModel, Field
+from app.services.llm_local import call_llm_text
 
 router = APIRouter(prefix="/api/ia", tags=["ia"])
 
@@ -37,6 +38,8 @@ async def analizar_widget(req: WidgetRequest):
     )
     try:
         result = call_llm_text(system, user, temperature=0.4, max_tokens=500)
+        if result is None:
+            return {"error": "IA no disponible", "respuesta": "La IA local no esta disponible. Instala llama-cpp-python para activar el analisis con IA.", "widget_title": req.widget_title, "dashboard": req.dashboard}
         return {
             "respuesta": result,
             "widget_title": req.widget_title,
@@ -46,15 +49,21 @@ async def analizar_widget(req: WidgetRequest):
         return {"error": str(e), "respuesta": "No se pudo analizar en este momento."}
 
 
+class PreguntaRequest(BaseModel):
+    question: str = ""
+
+
 @router.post("/pregunta-general")
-async def pregunta_general(question: str = ""):
+async def pregunta_general(req: PreguntaRequest):
     system = (
         "Eres ALBA, una plataforma de inteligencia laboral de Colombia. "
         "Responde preguntas sobre empleo, educacion, salarios y mercado laboral. "
         "Responde en espanol, de forma clara y concisa."
     )
     try:
-        result = call_llm_text(system, question, temperature=0.4, max_tokens=500)
+        result = call_llm_text(system, req.question, temperature=0.4, max_tokens=500)
+        if result is None:
+            return {"respuesta": "La IA local no esta disponible. Instala llama-cpp-python para activar esta funcion."}
         return {"respuesta": result}
     except Exception as e:
-        return {"error": str(e)}
+        return {"error": str(e), "respuesta": "No se pudo procesar la pregunta."}
