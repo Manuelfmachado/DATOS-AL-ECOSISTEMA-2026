@@ -47,6 +47,21 @@ def _norm_depto(name: str) -> str:
     return s
 
 
+def _dedup_filas(rows: list, key: str = "departamento") -> list:
+    """Elimina filas duplicadas de una tabla de Supabase, conservando la primera
+    ocurrencia de cada valor de `key`. Las tablas departamentales se cargaron
+    multiples veces (insert sin upsert) y acumularon filas repetidas."""
+    seen = set()
+    out = []
+    for r in rows or []:
+        k = r.get(key)
+        if k is None or k in seen:
+            continue
+        seen.add(k)
+        out.append(r)
+    return out
+
+
 # ============================================================================
 # Endpoints legacy (mantenidos por compatibilidad con Dashboard y vistas previas)
 # ============================================================================
@@ -57,8 +72,8 @@ async def get_resumen_departamentos():
     try:
         ocu = supabase.table("geih_resumen_departamento").select("*").execute()
         des = supabase.table("geih_desempleo_departamento").select("*").execute()
-        df_ocu = pd.DataFrame(ocu.data)
-        df_des = pd.DataFrame(des.data)
+        df_ocu = pd.DataFrame(_dedup_filas(ocu.data))
+        df_des = pd.DataFrame(_dedup_filas(des.data))
         if not df_ocu.empty and not df_des.empty:
             df = df_ocu.merge(df_des, on="departamento", how="outer")
         elif not df_ocu.empty:
@@ -82,13 +97,17 @@ async def get_resumen_departamentos():
 async def get_departamento_detalle(departamento: str):
     """Detalle laboral de un departamento específico."""
     try:
-        ocu = supabase.table("geih_resumen_departamento").select("*").eq("departamento", departamento.upper()).execute()
-        des = supabase.table("geih_desempleo_departamento").select("*").eq("departamento", departamento.upper()).execute()
-        if not ocu.data:
+        ocu = _dedup_filas(
+            supabase.table("geih_resumen_departamento").select("*").eq("departamento", departamento.upper()).execute().data
+        )
+        des = _dedup_filas(
+            supabase.table("geih_desempleo_departamento").select("*").eq("departamento", departamento.upper()).execute().data
+        )
+        if not ocu:
             raise HTTPException(status_code=404, detail=f"Departamento {departamento} no encontrado")
-        data = ocu.data[0]
-        if des.data:
-            data["no_ocupados"] = des.data[0].get("no_ocupados")
+        data = ocu[0]
+        if des:
+            data["no_ocupados"] = des[0].get("no_ocupados")
             ocu_count = data.get("ocupados", 0)
             des_count = data.get("no_ocupados", 0)
             total = ocu_count + des_count
@@ -245,7 +264,7 @@ async def get_mapa_metricas():
             "n": 0,
             "no_ocupados": 0,
         })
-        for row in r_ocu.data:
+        for row in _dedup_filas(r_ocu.data):
             d = row["departamento"]
             agg[d]["departamento"] = d
             agg[d]["ocupados"] += row.get("ocupados") or 0
@@ -254,7 +273,7 @@ async def get_mapa_metricas():
             agg[d]["sum_formalidad"] += (row.get("tasa_formalidad") or 0) * (row.get("ocupados") or 0)
             agg[d]["sum_mujeres_ocu"] += (row.get("mujeres_pct") or 0) * (row.get("ocupados") or 0)
             agg[d]["n"] += 1
-        for row in r_des.data:
+        for row in _dedup_filas(r_des.data):
             d = row["departamento"]
             if d in agg:
                 agg[d]["no_ocupados"] += row.get("no_ocupados") or 0
@@ -285,7 +304,7 @@ async def get_mapa_metricas():
 
         # Agregar SNIES por depto normalizado
         snies_map = {}
-        for row in r_snies.data:
+        for row in _dedup_filas(r_snies.data):
             key = _norm_depto(row["departamento"])
             snies_map[key] = (snies_map.get(key, 0) or 0) + (row.get("matriculados") or 0)
         for d in departamentos:
@@ -293,7 +312,7 @@ async def get_mapa_metricas():
 
         # Agregar DNP por depto normalizado
         dnp_map = {}
-        for row in r_dnp.data:
+        for row in _dedup_filas(r_dnp.data):
             key = _norm_depto(row["departamento"])
             dnp_map[key] = row.get("promedio_desempeno")
         for d in departamentos:
@@ -323,7 +342,7 @@ async def get_mapa_metricas_fast():
             "n": 0,
             "no_ocupados": 0,
         })
-        for row in r_ocu.data:
+        for row in _dedup_filas(r_ocu.data):
             d = row["departamento"]
             agg[d]["departamento"] = d
             agg[d]["ocupados"] += row.get("ocupados") or 0
@@ -332,7 +351,7 @@ async def get_mapa_metricas_fast():
             agg[d]["sum_formalidad"] += (row.get("tasa_formalidad") or 0) * (row.get("ocupados") or 0)
             agg[d]["sum_mujeres_ocu"] += (row.get("mujeres_pct") or 0) * (row.get("ocupados") or 0)
             agg[d]["n"] += 1
-        for row in r_des.data:
+        for row in _dedup_filas(r_des.data):
             d = row["departamento"]
             if d in agg:
                 agg[d]["no_ocupados"] += row.get("no_ocupados") or 0
@@ -357,14 +376,14 @@ async def get_mapa_metricas_fast():
             })
 
         snies_map = {}
-        for row in r_snies.data:
+        for row in _dedup_filas(r_snies.data):
             key = _norm_depto(row["departamento"])
             snies_map[key] = (snies_map.get(key, 0) or 0) + (row.get("matriculados") or 0)
         for d in departamentos:
             d["matriculados_snies"] = round(snies_map.get(d["departamento_norm"], 0), 0)
 
         dnp_map = {}
-        for row in r_dnp.data:
+        for row in _dedup_filas(r_dnp.data):
             key = _norm_depto(row["departamento"])
             dnp_map[key] = row.get("promedio_desempeno")
         for d in departamentos:
@@ -424,7 +443,7 @@ async def get_mapa_metricas():
             "n": 0,
             "no_ocupados": 0,
         })
-        for row in r_ocu.data:
+        for row in _dedup_filas(r_ocu.data):
             d = row["departamento"]
             agg[d]["departamento"] = d
             agg[d]["ocupados"] += row.get("ocupados") or 0
@@ -433,7 +452,7 @@ async def get_mapa_metricas():
             agg[d]["sum_formalidad"] += (row.get("tasa_formalidad") or 0) * (row.get("ocupados") or 0)
             agg[d]["sum_mujeres_ocu"] += (row.get("mujeres_pct") or 0) * (row.get("ocupados") or 0)
             agg[d]["n"] += 1
-        for row in r_des.data:
+        for row in _dedup_filas(r_des.data):
             d = row["departamento"]
             if d in agg:
                 agg[d]["no_ocupados"] += row.get("no_ocupados") or 0
@@ -464,7 +483,7 @@ async def get_mapa_metricas():
 
         # Agregar SNIES por depto normalizado
         snies_map = {}
-        for row in r_snies.data:
+        for row in _dedup_filas(r_snies.data):
             key = _norm_depto(row["departamento"])
             snies_map[key] = (snies_map.get(key, 0) or 0) + (row.get("matriculados") or 0)
         for d in departamentos:
@@ -472,7 +491,7 @@ async def get_mapa_metricas():
 
         # Agregar DNP por depto normalizado
         dnp_map = {}
-        for row in r_dnp.data:
+        for row in _dedup_filas(r_dnp.data):
             key = _norm_depto(row["departamento"])
             dnp_map[key] = row.get("promedio_desempeno")
         for d in departamentos:
@@ -485,7 +504,7 @@ async def get_mapa_metricas():
         extras_map = {}
         # Intentar leer de Supabase primero
         try:
-            matching_rows_all = [r for r in r_ocu.data]
+            matching_rows_all = [r for r in _dedup_filas(r_ocu.data)]
             for r in matching_rows_all:
                 key = _norm_depto(r.get("departamento", ""))
                 muj = r.get("mujeres_cabeza_hogar_pct")
@@ -635,7 +654,7 @@ async def get_brecha_oferta_demanda():
         # Oferta: SNIES matriculados por nucleo_conocimiento
         r_snies = supabase.table("snies_programas_matriculados").select("nucleo_conocimiento, matriculados").execute()
         oferta = defaultdict(float)
-        for row in r_snies.data:
+        for row in _dedup_filas(r_snies.data):
             cat = _categoria_nucleo(row.get("nucleo_conocimiento", ""))
             oferta[cat] += row.get("matriculados") or 0
         total_oferta = sum(oferta.values()) or 1
@@ -780,8 +799,8 @@ async def get_detalle_departamento(departamento: str):
         r_sena = supabase.table("sena_programas_activos").select("programa, area_desempeno, duracion_horas").eq("departamento", departamento.upper()).limit(50).execute()
 
         # Filtrar GEIH por depto
-        ocu_rows = [r for r in r_ocu.data if _norm_depto(r["departamento"]) == depto_norm]
-        des_rows = [r for r in r_des.data if _norm_depto(r["departamento"]) == depto_norm]
+        ocu_rows = [r for r in _dedup_filas(r_ocu.data) if _norm_depto(r["departamento"]) == depto_norm]
+        des_rows = [r for r in _dedup_filas(r_des.data) if _norm_depto(r["departamento"]) == depto_norm]
 
         if not ocu_rows:
             raise HTTPException(status_code=404, detail=f"Departamento {departamento} no encontrado")
@@ -797,8 +816,8 @@ async def get_detalle_departamento(departamento: str):
         mujeres = sum((r.get("mujeres_pct") or 0) * (r.get("ocupados") or 0) for r in ocu_rows) / max(ocupados, 1)
 
         # Formacion
-        snies_row = next((r for r in r_snies.data if _norm_depto(r["departamento"]) == depto_norm), None)
-        dnp_row = next((r for r in r_dnp.data if _norm_depto(r["departamento"]) == depto_norm), None)
+        snies_row = next((r for r in _dedup_filas(r_snies.data) if _norm_depto(r["departamento"]) == depto_norm), None)
+        dnp_row = next((r for r in _dedup_filas(r_dnp.data) if _norm_depto(r["departamento"]) == depto_norm), None)
 
         # Top areas SENA en este depto
         sena_areas = defaultdict(int)
@@ -864,8 +883,8 @@ async def get_departamento_insights(departamento: str):
         # Datos del departamento
         r_ocu = supabase.table("geih_resumen_departamento").select("*").execute()
         r_des = supabase.table("geih_desempleo_departamento").select("*").execute()
-        ocu_rows = [r for r in r_ocu.data if _norm_depto(r.get("departamento", "")) == depto_norm]
-        des_rows = [r for r in r_des.data if _norm_depto(r.get("departamento", "")) == depto_norm]
+        ocu_rows = [r for r in _dedup_filas(r_ocu.data) if _norm_depto(r.get("departamento", "")) == depto_norm]
+        des_rows = [r for r in _dedup_filas(r_des.data) if _norm_depto(r.get("departamento", "")) == depto_norm]
 
         ocupados = sum(r.get("ocupados") or 0 for r in ocu_rows)
         no_ocupados = sum(r.get("no_ocupados") or 0 for r in des_rows)
@@ -1419,7 +1438,7 @@ def _calcular_mapa_metricas_sync():
             "n": 0,
             "no_ocupados": 0,
         })
-        for row in r_ocu.data or []:
+        for row in _dedup_filas(r_ocu.data or []):
             d = row["departamento"]
             agg[d]["departamento"] = d
             agg[d]["ocupados"] += row.get("ocupados") or 0
@@ -1428,7 +1447,7 @@ def _calcular_mapa_metricas_sync():
             agg[d]["sum_formalidad"] += (row.get("tasa_formalidad") or 0) * (row.get("ocupados") or 0)
             agg[d]["sum_mujeres_ocu"] += (row.get("mujeres_pct") or 0) * (row.get("ocupados") or 0)
             agg[d]["n"] += 1
-        for row in r_des.data or []:
+        for row in _dedup_filas(r_des.data or []):
             d = row["departamento"]
             if d in agg:
                 agg[d]["no_ocupados"] += row.get("no_ocupados") or 0
@@ -1453,14 +1472,14 @@ def _calcular_mapa_metricas_sync():
             })
 
         snies_map = {}
-        for row in r_snies.data or []:
+        for row in _dedup_filas(r_snies.data) or []:
             key = _norm_depto(row["departamento"])
             snies_map[key] = (snies_map.get(key, 0) or 0) + (row.get("matriculados") or 0)
         for d in departamentos:
             d["matriculados_snies"] = round(snies_map.get(d["departamento_norm"], 0), 0)
 
         dnp_map = {}
-        for row in r_dnp.data or []:
+        for row in _dedup_filas(r_dnp.data) or []:
             key = _norm_depto(row["departamento"])
             dnp_map[key] = row.get("promedio_desempeno")
         for d in departamentos:
