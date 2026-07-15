@@ -261,6 +261,8 @@ async def get_mapa_metricas():
             "sum_ingreso_med": 0.0,
             "sum_formalidad": 0.0,
             "sum_mujeres_ocu": 0.0,
+            "sum_mujeres_cabeza": 0.0,
+            "sum_edu_superior": 0.0,
             "n": 0,
             "no_ocupados": 0,
         })
@@ -272,6 +274,8 @@ async def get_mapa_metricas():
             agg[d]["sum_ingreso_med"] += (row.get("ingreso_mediano") or 0) * (row.get("ocupados") or 0)
             agg[d]["sum_formalidad"] += (row.get("tasa_formalidad") or 0) * (row.get("ocupados") or 0)
             agg[d]["sum_mujeres_ocu"] += (row.get("mujeres_pct") or 0) * (row.get("ocupados") or 0)
+            agg[d]["sum_mujeres_cabeza"] += row.get("mujeres_cabeza_hogar_pct") or 0
+            agg[d]["sum_edu_superior"] += row.get("pct_educacion_superior") or 0
             agg[d]["n"] += 1
         for row in _dedup_filas(r_des.data):
             d = row["departamento"]
@@ -300,6 +304,8 @@ async def get_mapa_metricas():
                 "tasa_ocupacion": round(
                     a["ocupados"] / (a["ocupados"] + a["no_ocupados"]) * 100, 2
                 ) if (a["ocupados"] + a["no_ocupados"]) > 0 else None,
+                "mujeres_cabeza_hogar_pct": round(a["sum_mujeres_cabeza"] / a["n"], 2) if a["n"] and a["sum_mujeres_cabeza"] > 0 else None,
+                "pct_educacion_superior": round(a["sum_edu_superior"] / a["n"], 2) if a["n"] and a["sum_edu_superior"] > 0 else None,
             })
 
         # Agregar SNIES por depto normalizado
@@ -339,6 +345,8 @@ async def get_mapa_metricas_fast():
             "sum_ingreso_med": 0.0,
             "sum_formalidad": 0.0,
             "sum_mujeres_ocu": 0.0,
+            "sum_mujeres_cabeza": 0.0,
+            "sum_edu_superior": 0.0,
             "n": 0,
             "no_ocupados": 0,
         })
@@ -350,6 +358,8 @@ async def get_mapa_metricas_fast():
             agg[d]["sum_ingreso_med"] += (row.get("ingreso_mediano") or 0) * (row.get("ocupados") or 0)
             agg[d]["sum_formalidad"] += (row.get("tasa_formalidad") or 0) * (row.get("ocupados") or 0)
             agg[d]["sum_mujeres_ocu"] += (row.get("mujeres_pct") or 0) * (row.get("ocupados") or 0)
+            agg[d]["sum_mujeres_cabeza"] += row.get("mujeres_cabeza_hogar_pct") or 0
+            agg[d]["sum_edu_superior"] += row.get("pct_educacion_superior") or 0
             agg[d]["n"] += 1
         for row in _dedup_filas(r_des.data):
             d = row["departamento"]
@@ -373,6 +383,8 @@ async def get_mapa_metricas_fast():
                 "tasa_formalidad": round(a["sum_formalidad"] / ocu * 100, 2) if a["ocupados"] else None,
                 "mujeres_pct": round(a["sum_mujeres_ocu"] / ocu * 100, 2) if a["ocupados"] and a["sum_mujeres_ocu"] > 0 else None,
                 "tasa_ocupacion": round(a["ocupados"] / (a["ocupados"] + a["no_ocupados"]) * 100, 2) if (a["ocupados"] + a["no_ocupados"]) > 0 else None,
+                "mujeres_cabeza_hogar_pct": round(a["sum_mujeres_cabeza"] / a["n"], 2) if a["n"] and a["sum_mujeres_cabeza"] > 0 else None,
+                "pct_educacion_superior": round(a["sum_edu_superior"] / a["n"], 2) if a["n"] and a["sum_edu_superior"] > 0 else None,
             })
 
         snies_map = {}
@@ -440,6 +452,8 @@ async def get_mapa_metricas():
             "sum_ingreso_med": 0.0,
             "sum_formalidad": 0.0,
             "sum_mujeres_ocu": 0.0,
+            "sum_mujeres_cabeza": 0.0,
+            "sum_edu_superior": 0.0,
             "n": 0,
             "no_ocupados": 0,
         })
@@ -451,6 +465,8 @@ async def get_mapa_metricas():
             agg[d]["sum_ingreso_med"] += (row.get("ingreso_mediano") or 0) * (row.get("ocupados") or 0)
             agg[d]["sum_formalidad"] += (row.get("tasa_formalidad") or 0) * (row.get("ocupados") or 0)
             agg[d]["sum_mujeres_ocu"] += (row.get("mujeres_pct") or 0) * (row.get("ocupados") or 0)
+            agg[d]["sum_mujeres_cabeza"] += row.get("mujeres_cabeza_hogar_pct") or 0
+            agg[d]["sum_edu_superior"] += row.get("pct_educacion_superior") or 0
             agg[d]["n"] += 1
         for row in _dedup_filas(r_des.data):
             d = row["departamento"]
@@ -479,6 +495,8 @@ async def get_mapa_metricas():
                 "tasa_ocupacion": round(
                     a["ocupados"] / (a["ocupados"] + a["no_ocupados"]) * 100, 2
                 ) if (a["ocupados"] + a["no_ocupados"]) > 0 else None,
+                "mujeres_cabeza_hogar_pct": round(a["sum_mujeres_cabeza"] / a["n"], 2) if a["n"] and a["sum_mujeres_cabeza"] > 0 else None,
+                "pct_educacion_superior": round(a["sum_edu_superior"] / a["n"], 2) if a["n"] and a["sum_edu_superior"] > 0 else None,
             })
 
         # Agregar SNIES por depto normalizado
@@ -1435,6 +1453,8 @@ def _calcular_mapa_metricas_sync():
             "sum_ingreso_med": 0.0,
             "sum_formalidad": 0.0,
             "sum_mujeres_ocu": 0.0,
+            "sum_mujeres_cabeza": 0.0,
+            "sum_edu_superior": 0.0,
             "n": 0,
             "no_ocupados": 0,
         })
@@ -1446,6 +1466,8 @@ def _calcular_mapa_metricas_sync():
             agg[d]["sum_ingreso_med"] += (row.get("ingreso_mediano") or 0) * (row.get("ocupados") or 0)
             agg[d]["sum_formalidad"] += (row.get("tasa_formalidad") or 0) * (row.get("ocupados") or 0)
             agg[d]["sum_mujeres_ocu"] += (row.get("mujeres_pct") or 0) * (row.get("ocupados") or 0)
+            agg[d]["sum_mujeres_cabeza"] += row.get("mujeres_cabeza_hogar_pct") or 0
+            agg[d]["sum_edu_superior"] += row.get("pct_educacion_superior") or 0
             agg[d]["n"] += 1
         for row in _dedup_filas(r_des.data or []):
             d = row["departamento"]
@@ -1469,6 +1491,8 @@ def _calcular_mapa_metricas_sync():
                 "tasa_formalidad": round(a["sum_formalidad"] / ocu * 100, 2) if a["ocupados"] else None,
                 "mujeres_pct": round(a["sum_mujeres_ocu"] / ocu * 100, 2) if a["ocupados"] and a["sum_mujeres_ocu"] > 0 else None,
                 "tasa_ocupacion": round(a["ocupados"] / (a["ocupados"] + a["no_ocupados"]) * 100, 2) if (a["ocupados"] + a["no_ocupados"]) > 0 else None,
+                "mujeres_cabeza_hogar_pct": round(a["sum_mujeres_cabeza"] / a["n"], 2) if a["n"] and a["sum_mujeres_cabeza"] > 0 else None,
+                "pct_educacion_superior": round(a["sum_edu_superior"] / a["n"], 2) if a["n"] and a["sum_edu_superior"] > 0 else None,
             })
 
         snies_map = {}
