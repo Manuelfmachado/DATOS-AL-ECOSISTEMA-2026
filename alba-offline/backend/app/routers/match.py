@@ -33,6 +33,8 @@ async def match_cv_vacante(req: CVVacanteRequest):
     user = f"CV:\n{req.cv_text}\n\nVacante:\n{req.vacante_text}"
     try:
         result = call_llm_json(system, user, temperature=0.3)
+        if result is None or "error" in result:
+            return {"error": "IA no disponible. Instala llama-cpp-python.", "score_match": 0}
         return result
     except Exception as e:
         return {"error": str(e), "score_match": 0}

@@ -32,6 +32,8 @@ async def evaluar_idea(req: IdeaRequest):
     )
     try:
         result = call_llm_json(system, user, temperature=0.4)
+        if result is None or "error" in result:
+            return {"error": "IA no disponible. Instala llama-cpp-python.", "indice_oportunidad": 0}
         return result
     except Exception as e:
         return {"error": str(e), "indice_oportunidad": 0}

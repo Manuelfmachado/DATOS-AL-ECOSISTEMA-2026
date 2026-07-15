@@ -31,6 +31,8 @@ async def trayectoria(req: TrayectoriaRequest):
     )
     try:
         result = call_llm_json(system, user, temperature=0.4)
+        if result is None or "error" in result:
+            return {"error": "IA no disponible. Instala llama-cpp-python."}
         return result
     except Exception as e:
         return {"error": str(e)}

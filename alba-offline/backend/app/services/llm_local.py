@@ -49,6 +49,15 @@ def _detect_gpu():
     return False
 
 
+def _llama_available() -> bool:
+    """Verifica si llama-cpp-python está instalado."""
+    try:
+        import llama_cpp  # noqa: F401
+        return True
+    except ImportError:
+        return False
+
+
 def _start_server():
     """Inicia llama-server como subprocess con modelo + mmproj."""
     global _server_process, _server_ready
@@ -56,11 +65,16 @@ def _start_server():
     if _server_ready:
         return True
 
+    if not _llama_available():
+        print("[LLM] llama-cpp-python NO esta instalado. Instala con: pip install llama-cpp-python")
+        print("[LLM] Las funciones de IA (match, emprende, coach) no estaran disponibles.")
+        print("[LLM] Los datos del Observatorio y Prediccion si funcionan (no requieren LLM).")
+        return False
+
     if not Path(GEMMA_MODEL_PATH).exists():
-        raise FileNotFoundError(
-            f"Modelo no encontrado en {GEMMA_MODEL_PATH}. "
-            "Los modelos deben venir incluidos en el paquete."
-        )
+        print(f"[LLM] Modelo no encontrado en {GEMMA_MODEL_PATH}")
+        print("[LLM] Las funciones de IA no estaran disponibles.")
+        return False
 
     has_gpu = _detect_gpu()
     ngl = "999" if has_gpu else "0"
@@ -84,12 +98,16 @@ def _start_server():
         "--chat-format", "gemma",
     ]
 
-    _server_process = subprocess.Popen(
-        cmd,
-        stdout=subprocess.PIPE,
-        stderr=subprocess.STDOUT,
-        text=True,
-    )
+    try:
+        _server_process = subprocess.Popen(
+            cmd,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.STDOUT,
+            text=True,
+        )
+    except Exception as e:
+        print(f"[LLM] No se pudo iniciar llama-server: {e}")
+        return False
 
     # Esperar a que el servidor este listo
     print("[LLM] Esperando a que el servidor este listo...")
@@ -155,16 +173,26 @@ def _extract_json(text: str) -> dict[str, Any]:
 def call_llm_json(system_prompt: str, user_prompt: str, temperature: float = 0.3) -> dict[str, Any]:
     """Llama al LLM y devuelve el contenido como JSON."""
     text = call_llm_text(system_prompt, user_prompt, temperature, 1500)
+    if text is None:
+        return {"error": "LLM no disponible. Instala llama-cpp-python para activar las funciones de IA."}
     return _extract_json(text)
 
 
 def call_llm_text(system_prompt: str, user_prompt: str, temperature: float = 0.4, max_tokens: int = 2048) -> str:
     """Llama al LLM y devuelve texto plano."""
+    if not _llama_available():
+        return None
+    if not _start_server():
+        return None
     messages = [
         {"role": "system", "content": system_prompt},
         {"role": "user", "content": user_prompt},
     ]
-    return _call_api(messages, temperature, max_tokens)
+    try:
+        return _call_api(messages, temperature, max_tokens)
+    except Exception as e:
+        print(f"[LLM] Error llamando al modelo: {e}")
+        return None
 
 
 def call_llm_audio(system_prompt: str, audio_path: str, temperature: float = 0.4) -> str:

@@ -213,8 +213,9 @@ _sesiones_entrevista: dict[str, dict] = {}
 
 
 class EntrevistaRealistaIniciarReq(BaseModel):
-    cv: str
-    vacante: str
+    cv: str = ""
+    vacante: str = ""
+    modo: str = "realista"  # "realista" | "libre"
 
 
 class EntrevistaRealistaAvanzarReq(BaseModel):
@@ -224,32 +225,55 @@ class EntrevistaRealistaAvanzarReq(BaseModel):
 
 @router.post("/entrevista-realista/iniciar")
 async def iniciar_entrevista_realista(req: EntrevistaRealistaIniciarReq):
-    """Analiza el CV y la vacante, genera 10 preguntas de entrevista y devuelve
-    el saludo inicial + la primera pregunta. El flujo es: saludo -> 10 preguntas
-    una a una -> feedback oral final."""
+    """Analiza el CV y la vacante (o modo libre), genera 10 preguntas de entrevista
+    y devuelve el saludo inicial + la primera pregunta. El flujo es: saludo -> 10
+    preguntas una a una -> feedback final."""
     try:
-        system = (
-            "Eres ALBA, una reclutadora experta de RRHH en Colombia. Vas a conducir "
-            "una entrevista estructurada de EXACTAMENTE 10 preguntas basadas en el CV "
-            "del candidato y la vacante objetivo.\n\n"
-            "Genera 10 preguntas relevantes y específicas que un reclutador real haría "
-            "para evaluar si el candidato encaja en la vacante. Usa el CV para personalizar "
-            "las preguntas (pedir detalles de experiencias, profundizar en habilidades, etc).\n\n"
-            "Las preguntas deben seguir una progresión lógica:\n"
-            "1-2: Presentación y experiencia general\n"
-            "3-5: Experiencia técnica específica relacionada con la vacante\n"
-            "6-7: Habilidades blandas, trabajo en equipo, liderazgo\n"
-            "8-9: Casos prácticos o hipotéticos del rol\n"
-            "10: Motivación y expectativas\n\n"
-            "Devuelve ÚNICAMENTE un JSON válido con esta estructura exacta:\n"
-            "{\n"
-            '  "saludo": string,\n'
-            '  "preguntas": [string, string, ...]  (exactamente 10)\n'
-            "}\n"
-            "El saludo debe ser cálido, presentar la vacante brevemente y mencionar que la "
-            "entrevista tendrá 10 preguntas. En español neutro colombiano."
-        )
-        user = f"CV DEL CANDIDATO:\n{req.cv}\n\nVACANTE OBJETIVO:\n{req.vacante}"
+        modo_libre = req.modo == "libre"
+
+        if modo_libre:
+            system = (
+                "Eres ALBA, una reclutadora experta de RRHH en Colombia. Vas a conducir "
+                "una entrevista general de EXACTAMENTE 10 preguntas.\n\n"
+                "El usuario quiere practicar entrevista sin una vacante específica. Genera "
+                "10 preguntas de entrevista laborales generales y variadas que evalúen:\n"
+                "1-2: Presentación profesional y trayectoria\n"
+                "3-5: Fortalezas, debilidades y logros\n"
+                "6-7: Trabajo en equipo, manejo de conflictos, liderazgo\n"
+                "8-9: Casos hipotéticos y resolución de problemas\n"
+                "10: Motivación, metas y expectativas profesionales\n\n"
+                "Devuelve ÚNICAMENTE un JSON válido con esta estructura exacta:\n"
+                "{\n"
+                '  "saludo": string,\n'
+                '  "preguntas": [string, string, ...]  (exactamente 10)\n'
+                "}\n"
+                "El saludo debe ser cálido y mencionar que la entrevista tendrá 10 preguntas "
+                "generales para practicar. En español neutro colombiano."
+            )
+            user = "Genera 10 preguntas de entrevista laboral general para practicar."
+        else:
+            system = (
+                "Eres ALBA, una reclutadora experta de RRHH en Colombia. Vas a conducir "
+                "una entrevista estructurada de EXACTAMENTE 10 preguntas basadas en el CV "
+                "del candidato y la vacante objetivo.\n\n"
+                "Genera 10 preguntas relevantes y específicas que un reclutador real haría "
+                "para evaluar si el candidato encaja en la vacante. Usa el CV para personalizar "
+                "las preguntas (pedir detalles de experiencias, profundizar en habilidades, etc).\n\n"
+                "Las preguntas deben seguir una progresión lógica:\n"
+                "1-2: Presentación y experiencia general\n"
+                "3-5: Experiencia técnica específica relacionada con la vacante\n"
+                "6-7: Habilidades blandas, trabajo en equipo, liderazgo\n"
+                "8-9: Casos prácticos o hipotéticos del rol\n"
+                "10: Motivación y expectativas\n\n"
+                "Devuelve ÚNICAMENTE un JSON válido con esta estructura exacta:\n"
+                "{\n"
+                '  "saludo": string,\n'
+                '  "preguntas": [string, string, ...]  (exactamente 10)\n'
+                "}\n"
+                "El saludo debe ser cálido, presentar la vacante brevemente y mencionar que la "
+                "entrevista tendrá 10 preguntas. En español neutro colombiano."
+            )
+            user = f"CV DEL CANDIDATO:\n{req.cv}\n\nVACANTE OBJETIVO:\n{req.vacante}"
 
         resultado = call_gemini_json(system, user, temperature=0.5, max_tokens=3000)
 
@@ -258,13 +282,14 @@ async def iniciar_entrevista_realista(req: EntrevistaRealistaIniciarReq):
 
         if len(preguntas) < 10:
             while len(preguntas) < 10:
-                preguntas.append(f"Cuéntame más sobre tu experiencia relacionada con la vacante.")
+                preguntas.append("Cuéntame más sobre tu experiencia.")
         preguntas = preguntas[:10]
 
         session_id = str(uuid.uuid4())[:12]
         _sesiones_entrevista[session_id] = {
             "cv": req.cv,
             "vacante": req.vacante,
+            "modo": req.modo,
             "preguntas": preguntas,
             "indice_actual": 0,
             "respuestas": [],
@@ -328,29 +353,49 @@ async def avanzar_entrevista_realista(req: EntrevistaRealistaAvanzarReq):
 
 async def _generar_feedback_final(sesion: dict) -> dict:
     """Genera el feedback oral final usando el LLM con todas las preguntas y respuestas."""
-    system = (
-        "Eres ALBA, una reclutadora experta en Colombia. La entrevista ha terminado "
-        "(10 preguntas respondidas). Genera un feedback estructurado y realista.\n\n"
-        "Sé honesta, específica y útil. Basa el puntaje en la calidad de las respuestas, "
-        "la alineación del CV con la vacante y la comunicación general.\n\n"
-        "Devuelve ÚNICAMENTE un JSON válido con esta estructura exacta:\n"
-        "{\n"
-        '  "puntaje_general": number (0-100),\n'
-        '  "fortalezas": [string],\n'
-        '  "areas_mejora": [string],\n'
-        '  "recomendacion": string (pasaría o no a siguiente fase y por qué),\n'
-        '  "sugerencia_practica": string\n'
-        "}\n"
-    )
+    modo_libre = sesion.get("modo") == "libre"
+    if modo_libre:
+        system = (
+            "Eres ALBA, una reclutadora experta en Colombia. La entrevista ha terminado "
+            "(10 preguntas respondidas). Genera un feedback estructurado y realista.\n\n"
+            "Sé honesta, específica y útil. Basa el puntaje en la calidad de las respuestas "
+            "y la comunicación general del candidato.\n\n"
+            "Devuelve ÚNICAMENTE un JSON válido con esta estructura exacta:\n"
+            "{\n"
+            '  "puntaje_general": number (0-100),\n'
+            '  "fortalezas": [string],\n'
+            '  "areas_mejora": [string],\n'
+            '  "recomendacion": string,\n'
+            '  "sugerencia_practica": string\n'
+            "}\n"
+        )
+    else:
+        system = (
+            "Eres ALBA, una reclutadora experta en Colombia. La entrevista ha terminado "
+            "(10 preguntas respondidas). Genera un feedback estructurado y realista.\n\n"
+            "Sé honesta, específica y útil. Basa el puntaje en la calidad de las respuestas, "
+            "la alineación del CV con la vacante y la comunicación general.\n\n"
+            "Devuelve ÚNICAMENTE un JSON válido con esta estructura exacta:\n"
+            "{\n"
+            '  "puntaje_general": number (0-100),\n'
+            '  "fortalezas": [string],\n'
+            '  "areas_mejora": [string],\n'
+            '  "recomendacion": string (pasaría o no a siguiente fase y por qué),\n'
+            '  "sugerencia_practica": string\n'
+            "}\n"
+        )
     texto_preguntas = ""
     for i, par in enumerate(sesion["respuestas"], 1):
         texto_preguntas += f"\n--- Pregunta {i} ---\nQ: {par['pregunta']}\nR: {par['respuesta']}\n"
 
-    user = (
-        f"CV DEL CANDIDATO:\n{sesion['cv']}\n\n"
-        f"VACANTE OBJETIVO:\n{sesion['vacante']}\n\n"
-        f"RESPUESTAS DE LA ENTREVISTA:{texto_preguntas}"
-    )
+    if modo_libre:
+        user = f"RESPUESTAS DE LA ENTREVISTA:{texto_preguntas}"
+    else:
+        user = (
+            f"CV DEL CANDIDATO:\n{sesion['cv']}\n\n"
+            f"VACANTE OBJETIVO:\n{sesion['vacante']}\n\n"
+            f"RESPUESTAS DE LA ENTREVISTA:{texto_preguntas}"
+        )
 
     try:
         resultado = call_gemini_json(system, user, temperature=0.4, max_tokens=2500)
