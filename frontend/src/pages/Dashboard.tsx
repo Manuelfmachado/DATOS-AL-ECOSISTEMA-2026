@@ -83,10 +83,10 @@ export default function Dashboard() {
   const [loadingKpis, setLoadingKpis] = useState(true)
 
   useEffect(() => {
-    // Cargar del JSON estatico (instantaneo), fallback a API si no existe
-    fetch('/dashboard.json')
-      .then((res) => res.ok ? res.json() : Promise.reject('no static'))
-      .catch(() => api.get('/observatorio/dashboard').then((res) => res.data))
+    // Cargar datos del mapa desde la API (datos completos), fallback a JSON estatico
+    api.get('/observatorio/dashboard')
+      .then((res) => res.data)
+      .catch(() => fetch('/dashboard.json').then((res) => res.ok ? res.json() : Promise.reject('no static')))
       .then((d: any) => {
         setResumenNacional(d.resumen_nacional || null)
         const data = d.mapa?.departamentos || []
