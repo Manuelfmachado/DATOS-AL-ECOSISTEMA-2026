@@ -9,7 +9,7 @@ import pandas as pd
 
 _DB_PATH = os.environ.get(
     "ALBA_DB_PATH",
-    str(Path(__file__).resolve().parent.parent.parent.parent.parent / "data" / "alba_offline.db"),
+    str(Path(__file__).resolve().parent.parent.parent.parent / "data" / "alba_offline.db"),
 )
 
 _conn = None

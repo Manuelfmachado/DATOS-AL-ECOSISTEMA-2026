@@ -5,7 +5,7 @@ Usa Gemma 4 E4B local para evaluar ideas de negocio.
 from fastapi import APIRouter
 from pydantic import BaseModel
 from app.services.llm_local import call_llm_json
-from app.db.sqlite_db import query_sql
+from app.db.sqlite_db import query_sql, query_all
 
 router = APIRouter(prefix="/api/emprende", tags=["emprende"])
 
@@ -39,8 +39,11 @@ async def evaluar_idea(req: IdeaRequest):
 
 @router.get("/sectores-municipio/{municipio}")
 async def sectores_municipio(municipio: str):
-    rows = query_sql(
-        "SELECT * FROM rues_empresas_nuevas WHERE departamento LIKE ? LIMIT 20",
-        (f"%{municipio}%",),
-    )
+    try:
+        rows = query_sql(
+            "SELECT * FROM rues_empresas_nuevas WHERE ciiu2 LIKE ? LIMIT 20",
+            (f"%{municipio}%",),
+        )
+    except Exception:
+        rows = query_all("rues_empresas_nuevas", limit=20)
     return {"municipio": municipio, "sectores": rows}
