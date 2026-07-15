@@ -2,26 +2,20 @@
 
 Carpeta dedicada al material visual para la sustentación del concurso.
 
-## Contenido sugerido
+## Contenido
 
-- `Presentacion.pptx` — Presentación de 6-8 diapositivas (formato pitch)
-- `presentacion.pdf` — Presentación exportada a PDF
-- `portada.png` — Imagen de la diapositiva principal
+- [`alba_slides.html`](alba_slides.html) — **Presentación web interactiva** (abrir en navegador, usa ← → para navegar)
+- [`presentacion.pptx`](presentacion.pptx) — Presentación PowerPoint
+- [`presentacion.pdf`](presentacion.pdf) — Presentación exportada a PDF
+- [`portada.png`](portada.png) — Imagen de portada
+- [`DEMO DE ALBA.mp4`](DEMO%20DE%20ALBA.mp4) — Video demo de la plataforma
 
-## Estructura sugerida del pitch (10 minutos)
+## Enlaces
 
-1. **Portada** — Nombre (ALBA), ID del equipo, nivel, integrantes
-2. **Problema y objetivo** — Brecha formación-empleo en Colombia
-3. **Datos abiertos** — 11 fuentes, 44 tablas, 744K filas
-4. **Solución e IA** — 5 módulos + Gemini + Chronos + RAG
-5. **Resultados / demo** — Demostración en vivo de ALBA funcionando
-6. **Impacto** — Beneficiarios, valor público, escalabilidad
-7. **Repositorio** — Link de GitHub/GitLab para revisión técnica
-8. **Cierre** — Valor diferencial del proyecto
+- **Repositorio:** [github.com/Manuelfmachado/DATOS-AL-ECOSISTEMA-2026](https://github.com/Manuelfmachado/DATOS-AL-ECOSISTEMA-2026)
+- **Sitio web:** [albacolombia.com](https://albacolombia.com)
 
-## Notas
+## Equipo
 
-- La presentación es libre (no hay plantilla obligatoria)
-- Máximo 10 minutos de pitch + 5 minutos de setup
-- La demostración en vivo es obligatoria
-- El equipo completo debe estar presente
+- Manuel Francisco Machado — Líder · Data / IA / Frontend
+- Maria Angel Henao — Investigación / Documentación
