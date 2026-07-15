@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from 'react'
 import api from '../services/api'
 import FuentesBadge from '../components/FuentesBadge'
+import { CoachLiveClient, CoachLiveEvent } from '../services/geminiLive'
 
 interface CvResultado {
   cv_mejorado: string
@@ -57,7 +58,7 @@ interface FeedbackFinal {
 }
 
 export default function Coach() {
-  const [tab, setTab] = useState<'cv' | 'entrevista'>('cv')
+  const [tab, setTab] = useState<'cv' | 'entrevista' | 'voz'>('cv')
   const [loading, setLoading] = useState(false)
 
   // CV
@@ -82,6 +83,30 @@ export default function Coach() {
   const [sessionId, setSessionId] = useState('')
   const [errorEnt, setErrorEnt] = useState('')
   const chatEndRef = useRef<HTMLDivElement | null>(null)
+
+  // Entrevista por voz (Gemini Live API)
+  const [modoVoz, setModoVoz] = useState<'realista' | 'libre'>('realista')
+  const [cvVoz, setCvVoz] = useState(CV_EJEMPLO)
+  const [vacanteVoz, setVacanteVoz] = useState(VACANTE_EJEMPLO)
+  const [vozLive, setVozLive] = useState('Puck')
+  const [liveStatus, setLiveStatus] = useState<'idle' | 'connecting' | 'connected' | 'disconnected' | 'error'>('idle')
+  const [transcripciones, setTranscripciones] = useState<{ rol: 'user' | 'gemini'; text: string }[]>([])
+  const clientRef = useRef<CoachLiveClient | null>(null)
+
+  const VOCES = [
+    { id: 'Puck', label: 'Puck (masculina, ágil)' },
+    { id: 'Charon', label: 'Charon (masculina, grave)' },
+    { id: 'Orus', label: 'Orus (masculina, firme)' },
+    { id: 'Kore', label: 'Kore (femenina, cálida)' },
+    { id: 'Aoede', label: 'Aoede (femenina, suave)' },
+    { id: 'Leda', label: 'Leda (femenina, joven)' },
+    { id: 'Sulafat', label: 'Sulafat (femenina, madura)' },
+    { id: 'Zephyr', label: 'Zephyr (neutra, ligera)' },
+    { id: 'Fenrir', label: 'Fenrir (neutra, profunda)' },
+    { id: 'Autonoe', label: 'Autonoe (neutra, moderna)' },
+    { id: 'Laomedeia', label: 'Laomedeia (neutra, serena)' },
+    { id: 'Despina', label: 'Despina (neutra, clara)' },
+  ]
 
   useEffect(() => {
     chatEndRef.current?.scrollIntoView({ behavior: 'smooth' })
@@ -189,6 +214,67 @@ export default function Coach() {
     setErrorEnt('')
   }
 
+  // Entrevista por voz: gestion del cliente Gemini Live
+  const handleLiveEvent = (event: CoachLiveEvent) => {
+    if (event.type === 'user' && event.text) {
+      setTranscripciones((prev) => {
+        const last = prev[prev.length - 1]
+        if (last && last.rol === 'user') {
+          return [...prev.slice(0, -1), { rol: 'user', text: last.text + event.text }]
+        }
+        return [...prev, { rol: 'user', text: event.text! }]
+      })
+    } else if (event.type === 'gemini' && event.text) {
+      setTranscripciones((prev) => {
+        const last = prev[prev.length - 1]
+        if (last && last.rol === 'gemini') {
+          return [...prev.slice(0, -1), { rol: 'gemini', text: last.text + event.text }]
+        }
+        return [...prev, { rol: 'gemini', text: event.text! }]
+      })
+    } else if (event.type === 'interrupted') {
+      clientRef.current?.stopAudioPlayback()
+    } else if (event.type === 'error') {
+      console.error('[CoachLive] Error:', event.error)
+    }
+  }
+
+  const connectLive = async () => {
+    setTranscripciones([])
+    setLiveStatus('connecting')
+    const client = new CoachLiveClient({
+      onEvent: handleLiveEvent,
+      onStatus: (status) => setLiveStatus(status),
+    })
+    clientRef.current = client
+    try {
+      await client.connect({
+        modo: modoVoz,
+        cv: modoVoz === 'realista' ? cvVoz : '',
+        vacante: vacanteVoz,
+        voice: vozLive,
+      })
+      await client.startMic()
+    } catch (e) {
+      console.error('[CoachLive] No se pudo conectar:', e)
+      setLiveStatus('error')
+    }
+  }
+
+  const disconnectLive = () => {
+    clientRef.current?.disconnect()
+    clientRef.current = null
+  }
+
+  useEffect(() => {
+    return () => {
+      clientRef.current?.disconnect()
+      clientRef.current = null
+    }
+  }, [])
+
+  const connected = liveStatus === 'connected'
+
   return (
     <div className="animate-fade-in">
       <header className="topbar">
@@ -202,6 +288,7 @@ export default function Coach() {
       <div className="flex gap-2 mb-6">
         <TabButton active={tab === 'cv'} onClick={() => setTab('cv')} label="Mejorar CV" />
         <TabButton active={tab === 'entrevista'} onClick={() => setTab('entrevista')} label="Practicar entrevista" />
+        <TabButton active={tab === 'voz'} onClick={() => setTab('voz')} label="Entrevista por voz" />
       </div>
 
       {tab === 'cv' && (
@@ -552,6 +639,213 @@ export default function Coach() {
           </div>
 
           <FuentesBadge fuentes={['Gemini 2.5 Flash-Lite']} />
+        </div>
+      )}
+
+      {tab === 'voz' && (
+        <div className="space-y-6">
+          <div className="plate card">
+            <div className="panel-head">
+              <div>
+                <h2 className="panel-title text-2xl font-bold text-white">
+                  Entrevista por voz con Gemini Live
+                </h2>
+                <p className="panel-sub">Habla con ALBA en tiempo real. Escucha tus respuestas y responde con voz natural.</p>
+              </div>
+            </div>
+
+            <div style={{ position: 'relative', zIndex: 1 }}>
+              <label className="block text-sm font-semibold mb-2" style={{ color: 'var(--text-dim)' }}>Modo de entrevista</label>
+              <div className="flex gap-2 mb-4">
+                <button
+                  type="button"
+                  onClick={() => setModoVoz('realista')}
+                  disabled={connected}
+                  className="btn text-sm font-bold text-white"
+                  style={modoVoz === 'realista' ? {
+                    background: 'linear-gradient(180deg, rgba(212, 175, 55, 0.18) 0%, rgba(212, 175, 55, 0.06) 100%)',
+                    borderColor: 'rgba(212, 175, 55, 0.95)',
+                  } : {}}
+                >
+                  Reclutador real (CV + vacante)
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setModoVoz('libre')}
+                  disabled={connected}
+                  className="btn text-sm font-bold text-white"
+                  style={modoVoz === 'libre' ? {
+                    background: 'linear-gradient(180deg, rgba(212, 175, 55, 0.18) 0%, rgba(212, 175, 55, 0.06) 100%)',
+                    borderColor: 'rgba(212, 175, 55, 0.95)',
+                  } : {}}
+                >
+                  Entrevista libre
+                </button>
+              </div>
+
+              {modoVoz === 'realista' && (
+                <>
+                  <div className="mb-4">
+                    <label className="block text-sm font-semibold mb-2" style={{ color: 'var(--text-dim)' }}>CV del candidato</label>
+                    <textarea
+                      value={cvVoz}
+                      onChange={(e) => setCvVoz(e.target.value)}
+                      rows={6}
+                      disabled={connected}
+                      className="w-full px-4 py-3 rounded-lg text-sm"
+                      style={{
+                        background: 'rgba(255,255,255,0.03)',
+                        border: '1px solid rgba(255,255,255,0.10)',
+                        color: 'var(--text)',
+                        opacity: connected ? 0.6 : 1,
+                      }}
+                      placeholder="Pega el CV para que ALBA haga preguntas basadas en tu perfil real..."
+                    />
+                  </div>
+
+                  <label className="block text-sm font-semibold mb-2" style={{ color: 'var(--text-dim)' }}>Vacante objetivo</label>
+                  <textarea
+                    value={vacanteVoz}
+                    onChange={(e) => setVacanteVoz(e.target.value)}
+                    rows={3}
+                    disabled={connected}
+                    className="w-full px-4 py-3 rounded-lg text-sm"
+                    style={{
+                      background: 'rgba(255,255,255,0.03)',
+                      border: '1px solid rgba(255,255,255,0.10)',
+                      color: 'var(--text)',
+                      opacity: connected ? 0.6 : 1,
+                    }}
+                    placeholder="Pega la vacante para una entrevista adaptada..."
+                  />
+                </>
+              )}
+
+              <label className="block text-sm font-semibold mb-2 mt-4" style={{ color: 'var(--text-dim)' }}>Voz de ALBA</label>
+              <select
+                value={vozLive}
+                onChange={(e) => setVozLive(e.target.value)}
+                disabled={connected}
+                className="w-full md:w-72 px-4 py-2.5 rounded-lg text-sm"
+                style={{
+                  background: 'rgba(255,255,255,0.03)',
+                  border: '1px solid rgba(255,255,255,0.10)',
+                  color: 'var(--text)',
+                  opacity: connected ? 0.6 : 1,
+                }}
+              >
+                {VOCES.map((v) => (
+                  <option key={v.id} value={v.id} style={{ background: 'var(--metal-mid)', color: 'var(--text)' }}>{v.label}</option>
+                ))}
+              </select>
+
+              <div className="flex flex-wrap gap-3 mt-5">
+                {!connected ? (
+                  <button
+                    onClick={connectLive}
+                    disabled={liveStatus === 'connecting' || (modoVoz === 'realista' && (!cvVoz.trim() || !vacanteVoz.trim()))}
+                    className="btn btn-gold"
+                  >
+                    {liveStatus === 'connecting' ? 'Conectando...' : `Iniciar entrevista ${modoVoz === 'realista' ? 'realista' : 'libre'}`}
+                  </button>
+                ) : (
+                  <>
+                    <button
+                      onClick={disconnectLive}
+                      className="btn"
+                      style={{
+                        background: 'linear-gradient(180deg, #d63a5a 0%, #a02844 100%)',
+                        color: '#fff',
+                        borderColor: 'rgba(255, 100, 120, 0.5)',
+                        boxShadow: '0 4px 12px rgba(200, 40, 60, 0.3)',
+                      }}
+                    >
+                      Terminar entrevista
+                    </button>
+                    <button
+                      onClick={() => clientRef.current?.requestFeedback()}
+                      className="btn btn-gold"
+                    >
+                      Generar feedback final
+                    </button>
+                  </>
+                )}
+              </div>
+
+              {liveStatus === 'connecting' && (
+                <p className="text-sm mt-3 flex items-center gap-2" style={{ color: 'var(--text-dim)' }}>
+                  <span className="inline-block w-2 h-2 rounded-full animate-pulse" style={{ background: 'var(--gold-soft)' }} />
+                  Estableciendo conexión con Gemini Live...
+                </p>
+              )}
+              {liveStatus === 'connected' && (
+                <div className="mt-3 p-3 rounded-lg flex items-center gap-3" style={{ background: 'rgba(34, 197, 94, 0.08)', border: '1px solid rgba(34, 197, 94, 0.25)' }}>
+                  <span className="inline-block w-3 h-3 rounded-full animate-pulse" style={{ background: '#22c55e' }} />
+                  <span className="text-sm font-semibold" style={{ color: '#22c55e' }}>
+                    Entrevista en curso
+                  </span>
+                  <span className="text-xs" style={{ color: 'var(--text-dim)' }}>
+                    ALBA escucha lo que dices. Habla con naturalidad cuando termine su pregunta.
+                  </span>
+                </div>
+              )}
+              {liveStatus === 'disconnected' && (
+                <p className="text-sm mt-3 flex items-center gap-2" style={{ color: 'var(--text-dim)' }}>
+                  <span className="inline-block w-2 h-2 rounded-full" style={{ background: 'var(--text-dim)' }} />
+                  La sesión finalizó. Puedes iniciar otra entrevista cuando quieras.
+                </p>
+              )}
+              {liveStatus === 'error' && (
+                <p className="text-sm mt-3 flex items-center gap-2" style={{ color: '#ff6b6b' }}>
+                  <span className="inline-block w-2 h-2 rounded-full" style={{ background: '#ff6b6b' }} />
+                  Error de conexión. Verifica que el backend esté corriendo y tengas credenciales de Gemini configuradas.
+                </p>
+              )}
+            </div>
+          </div>
+
+          {/* Transcripción */}
+          {transcripciones.length > 0 && (
+            <div className="plate card">
+              <div className="panel-head">
+                <h3 className="panel-title text-2xl font-bold text-white">Transcripción de la entrevista</h3>
+              </div>
+              <div className="space-y-3 max-h-96 overflow-y-auto" style={{ position: 'relative', zIndex: 1 }}>
+                {transcripciones.map((m, i) => (
+                  <div
+                    key={i}
+                    className={`flex ${m.rol === 'user' ? 'justify-end' : 'justify-start'}`}
+                  >
+                    <div
+                      className="max-w-[80%] px-4 py-2 rounded-lg text-sm"
+                      style={
+                        m.rol === 'user'
+                          ? {
+                              background: 'linear-gradient(180deg, rgba(212, 175, 55, 0.25) 0%, rgba(212, 175, 55, 0.12) 100%)',
+                              border: '1px solid rgba(212, 175, 55, 0.50)',
+                              color: 'var(--gold-soft)',
+                              borderRadius: '12px 12px 2px 12px',
+                            }
+                          : {
+                              background: 'rgba(255,255,255,0.04)',
+                              border: '1px solid rgba(255,255,255,0.10)',
+                              color: 'var(--text)',
+                              borderRadius: '12px 12px 12px 2px',
+                            }
+                      }
+                    >
+                      <span className="block text-xs font-semibold mb-1" style={{ opacity: 0.6 }}>
+                        {m.rol === 'user' ? 'Tú' : 'ALBA'}
+                      </span>
+                      {m.text}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          <FuentesBadge fuentes={['Gemini Live API', 'Gemini 2.5 Flash-Lite']} />
         </div>
       )}
     </div>
