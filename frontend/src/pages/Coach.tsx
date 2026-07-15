@@ -1,7 +1,6 @@
 import { useState, useRef, useEffect } from 'react'
 import api from '../services/api'
 import FuentesBadge from '../components/FuentesBadge'
-import { CoachLiveClient, CoachLiveEvent } from '../services/geminiLive'
 
 interface CvResultado {
   cv_mejorado: string
@@ -44,8 +43,21 @@ function TabButton({ active, onClick, label }: { active: boolean; onClick: () =>
   )
 }
 
+interface MensajeChat {
+  rol: 'alba' | 'usuario'
+  text: string
+}
+
+interface FeedbackFinal {
+  puntaje_general: number
+  fortalezas: string[]
+  areas_mejora: string[]
+  recomendacion: string
+  sugerencia_practica: string
+}
+
 export default function Coach() {
-  const [tab, setTab] = useState<'cv' | 'live'>('cv')
+  const [tab, setTab] = useState<'cv' | 'entrevista'>('cv')
   const [loading, setLoading] = useState(false)
 
   // CV
@@ -55,29 +67,25 @@ export default function Coach() {
   const [resultadoCv, setResultadoCv] = useState<CvResultado | null>(null)
   const [copiado, setCopiado] = useState(false)
 
-  // Entrevista en vivo
-  const [modoLive, setModoLive] = useState<'realista' | 'libre'>('realista')
-  const [cvLive, setCvLive] = useState(CV_EJEMPLO)
-  const [vacanteLive, setVacanteLive] = useState(VACANTE_EJEMPLO)
-  const [vozLive, setVozLive] = useState('Puck')
-  const [liveStatus, setLiveStatus] = useState<'idle' | 'connecting' | 'connected' | 'disconnected' | 'error'>('idle')
-  const [transcripciones, setTranscripciones] = useState<{ rol: 'user' | 'gemini'; text: string }[]>([])
-  const clientRef = useRef<CoachLiveClient | null>(null)
+  // Entrevista estructurada
+  const [cvEnt, setCvEnt] = useState(CV_EJEMPLO)
+  const [vacanteEnt, setVacanteEnt] = useState(VACANTE_EJEMPLO)
+  const [entrevistaIniciada, setEntrevistaIniciada] = useState(false)
+  const [entrevistaIniciando, setEntrevistaIniciando] = useState(false)
+  const [entrevistaFinalizada, setEntrevistaFinalizada] = useState(false)
+  const [numeroPregunta, setNumeroPregunta] = useState(0)
+  const [totalPreguntas] = useState(10)
+  const [mensajes, setMensajes] = useState<MensajeChat[]>([])
+  const [respuestaInput, setRespuestaInput] = useState('')
+  const [enviandoRespuesta, setEnviandoRespuesta] = useState(false)
+  const [feedback, setFeedback] = useState<FeedbackFinal | null>(null)
+  const [sessionId, setSessionId] = useState('')
+  const [errorEnt, setErrorEnt] = useState('')
+  const chatEndRef = useRef<HTMLDivElement | null>(null)
 
-  const VOCES = [
-    { id: 'Puck', label: 'Puck (masculina, ágil)' },
-    { id: 'Charon', label: 'Charon (masculina, grave)' },
-    { id: 'Orus', label: 'Orus (masculina, firme)' },
-    { id: 'Kore', label: 'Kore (femenina, cálida)' },
-    { id: 'Aoede', label: 'Aoede (femenina, suave)' },
-    { id: 'Leda', label: 'Leda (femenina, joven)' },
-    { id: 'Sulafat', label: 'Sulafat (femenina, madura)' },
-    { id: 'Zephyr', label: 'Zephyr (neutra, ligera)' },
-    { id: 'Fenrir', label: 'Fenrir (neutra, profunda)' },
-    { id: 'Autonoe', label: 'Autonoe (neutra, moderna)' },
-    { id: 'Laomedeia', label: 'Laomedeia (neutra, serena)' },
-    { id: 'Despina', label: 'Despina (neutra, clara)' },
-  ]
+  useEffect(() => {
+    chatEndRef.current?.scrollIntoView({ behavior: 'smooth' })
+  }, [mensajes])
 
   const mejorarCv = async () => {
     setLoading(true)
@@ -113,65 +121,73 @@ export default function Coach() {
     setTimeout(() => setCopiado(false), 2000)
   }
 
-  // Entrevista en vivo: gestion del cliente
-  const handleLiveEvent = (event: CoachLiveEvent) => {
-    if (event.type === 'user' && event.text) {
-      setTranscripciones((prev) => {
-        const last = prev[prev.length - 1]
-        if (last && last.rol === 'user') {
-          return [...prev.slice(0, -1), { rol: 'user', text: last.text + event.text }]
-        }
-        return [...prev, { rol: 'user', text: event.text! }]
-      })
-    } else if (event.type === 'gemini' && event.text) {
-      setTranscripciones((prev) => {
-        const last = prev[prev.length - 1]
-        if (last && last.rol === 'gemini') {
-          return [...prev.slice(0, -1), { rol: 'gemini', text: last.text + event.text }]
-        }
-        return [...prev, { rol: 'gemini', text: event.text! }]
-      })
-    } else if (event.type === 'interrupted') {
-      clientRef.current?.stopAudioPlayback()
-    } else if (event.type === 'error') {
-      console.error('[CoachLive] Error:', event.error)
-    }
-  }
-
-  const connectLive = async () => {
-    setTranscripciones([])
-    const client = new CoachLiveClient({
-      onEvent: handleLiveEvent,
-      onStatus: (status) => setLiveStatus(status),
-    })
-    clientRef.current = client
+  // Entrevista estructurada
+  const iniciarEntrevista = async () => {
+    setEntrevistaIniciando(true)
+    setErrorEnt('')
+    setMensajes([])
+    setFeedback(null)
+    setEntrevistaFinalizada(false)
     try {
-      await client.connect({
-        modo: modoLive,
-        cv: modoLive === 'realista' ? cvLive : '',
-        vacante: vacanteLive,
-        voice: vozLive,
+      const res = await api.post('/coach/entrevista-realista/iniciar', {
+        cv: cvEnt,
+        vacante: vacanteEnt,
       })
-      await client.startMic()
-    } catch (e) {
-      console.error('[CoachLive] No se pudo conectar:', e)
-      setLiveStatus('error')
+      setSessionId(res.data.session_id)
+      const saludo = res.data.saludo || ''
+      const pregunta = res.data.pregunta_actual || ''
+      setMensajes([
+        { rol: 'alba', text: saludo },
+        { rol: 'alba', text: pregunta },
+      ])
+      setNumeroPregunta(1)
+      setEntrevistaIniciada(true)
+    } catch (e: any) {
+      setErrorEnt(e?.response?.data?.detail || 'No se pudo iniciar la entrevista. Intenta de nuevo.')
     }
+    setEntrevistaIniciando(false)
   }
 
-  const disconnectLive = () => {
-    clientRef.current?.disconnect()
-    clientRef.current = null
+  const enviarRespuesta = async () => {
+    if (!respuestaInput.trim() || enviandoRespuesta) return
+    const resp = respuestaInput.trim()
+    setMensajes((prev) => [...prev, { rol: 'usuario', text: resp }])
+    setRespuestaInput('')
+    setEnviandoRespuesta(true)
+    try {
+      const res = await api.post('/coach/entrevista-realista/avanzar', {
+        session_id: sessionId,
+        respuesta: resp,
+      })
+      if (res.data.estado === 'finalizada') {
+        setEntrevistaFinalizada(true)
+        setFeedback(res.data.feedback)
+        setMensajes((prev) => [...prev, { rol: 'alba', text: '¡Gracias por tu tiempo! Aquí está mi evaluación de tu entrevista:' }])
+      } else {
+        const reconocimiento = res.data.breve_reconocimiento || ''
+        const nuevaPregunta = res.data.pregunta_actual || ''
+        setNumeroPregunta(res.data.numero_pregunta)
+        if (reconocimiento) {
+          setMensajes((prev) => [...prev, { rol: 'alba', text: `${reconocimiento} Pasemos a la pregunta ${res.data.numero_pregunta} de 10.` }])
+        }
+        setMensajes((prev) => [...prev, { rol: 'alba', text: nuevaPregunta }])
+      }
+    } catch (e: any) {
+      setErrorEnt(e?.response?.data?.detail || 'Error al procesar tu respuesta.')
+    }
+    setEnviandoRespuesta(false)
   }
 
-  useEffect(() => {
-    return () => {
-      clientRef.current?.disconnect()
-      clientRef.current = null
-    }
-  }, [])
-
-  const connected = liveStatus === 'connected'
+  const reiniciarEntrevista = () => {
+    setEntrevistaIniciada(false)
+    setEntrevistaFinalizada(false)
+    setMensajes([])
+    setFeedback(null)
+    setRespuestaInput('')
+    setNumeroPregunta(0)
+    setSessionId('')
+    setErrorEnt('')
+  }
 
   return (
     <div className="animate-fade-in">
@@ -185,7 +201,7 @@ export default function Coach() {
       {/* Pestañas */}
       <div className="flex gap-2 mb-6">
         <TabButton active={tab === 'cv'} onClick={() => setTab('cv')} label="Mejorar CV" />
-        <TabButton active={tab === 'live'} onClick={() => setTab('live')} label="Entrevista en vivo" />
+        <TabButton active={tab === 'entrevista'} onClick={() => setTab('entrevista')} label="Practicar entrevista" />
       </div>
 
       {tab === 'cv' && (
@@ -339,210 +355,203 @@ export default function Coach() {
         </div>
       )}
 
-      {tab === 'live' && (
+      {tab === 'entrevista' && (
         <div className="space-y-6">
           <div className="plate card">
             <div className="panel-head">
               <div>
-                  <h2 className="panel-title text-2xl font-bold text-white">
-                    Entrevista en vivo con Gemini Live
+                <h2 className="panel-title text-2xl font-bold text-white">
+                  Practicar entrevista con ALBA
                 </h2>
-                <p className="panel-sub">Conecta por voz con ALBA. Al iniciar, te saludará y empezará la entrevista automáticamente.</p>
+                <p className="panel-sub">
+                  ALBA analizará tu CV y la vacante, generará 10 preguntas y te dará feedback al final.
+                </p>
               </div>
             </div>
 
-              <div style={{ position: 'relative', zIndex: 1 }}>
-                <label className="block text-sm font-semibold mb-2" style={{ color: 'var(--text-dim)' }}>Modo de entrevista</label>
-                <div className="flex gap-2 mb-4">
-                  <button
-                    type="button"
-                    onClick={() => setModoLive('realista')}
-                    disabled={connected}
-                    className="btn text-sm font-bold text-white"
-                    style={modoLive === 'realista' ? {
-                      background: 'linear-gradient(180deg, rgba(212, 175, 55, 0.18) 0%, rgba(212, 175, 55, 0.06) 100%)',
-                      borderColor: 'rgba(212, 175, 55, 0.95)',
-                    } : {}}
-                  >
-                    Reclutador real (CV + vacante)
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setModoLive('libre')}
-                    disabled={connected}
-                    className="btn text-sm font-bold text-white"
-                    style={modoLive === 'libre' ? {
-                      background: 'linear-gradient(180deg, rgba(212, 175, 55, 0.18) 0%, rgba(212, 175, 55, 0.06) 100%)',
-                      borderColor: 'rgba(212, 175, 55, 0.95)',
-                    } : {}}
-                  >
-                    Entrevista libre
-                  </button>
-                </div>
-
-                {modoLive === 'realista' && (
-                  <>
-                    <div className="mb-4">
-                      <label className="block text-sm font-semibold mb-2" style={{ color: 'var(--text-dim)' }}>CV del candidato</label>
-                      <textarea
-                        value={cvLive}
-                        onChange={(e) => setCvLive(e.target.value)}
-                        rows={6}
-                        disabled={connected}
-                        className="w-full px-4 py-3 rounded-lg text-sm"
-                        style={{
-                          background: 'rgba(255,255,255,0.03)',
-                          border: '1px solid rgba(255,255,255,0.10)',
-                          color: 'var(--text)',
-                          opacity: connected ? 0.6 : 1,
-                        }}
-                        placeholder="Pega el CV para que ALBA haga preguntas basadas en tu perfil real..."
-                      />
-                    </div>
-
+            <div style={{ position: 'relative', zIndex: 1 }}>
+              {!entrevistaIniciada ? (
+                <>
+                  <div className="mb-4">
+                    <label className="block text-sm font-semibold mb-2" style={{ color: 'var(--text-dim)' }}>Tu CV</label>
+                    <textarea
+                      value={cvEnt}
+                      onChange={(e) => setCvEnt(e.target.value)}
+                      rows={6}
+                      className="w-full px-4 py-3 rounded-lg text-sm"
+                      style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.10)', color: 'var(--text)' }}
+                      placeholder="Pega tu CV aquí..."
+                    />
+                  </div>
+                  <div className="mb-4">
                     <label className="block text-sm font-semibold mb-2" style={{ color: 'var(--text-dim)' }}>Vacante objetivo</label>
                     <textarea
-                      value={vacanteLive}
-                      onChange={(e) => setVacanteLive(e.target.value)}
+                      value={vacanteEnt}
+                      onChange={(e) => setVacanteEnt(e.target.value)}
                       rows={3}
-                      disabled={connected}
                       className="w-full px-4 py-3 rounded-lg text-sm"
-                      style={{
-                        background: 'rgba(255,255,255,0.03)',
-                        border: '1px solid rgba(255,255,255,0.10)',
-                        color: 'var(--text)',
-                        opacity: connected ? 0.6 : 1,
-                      }}
-                      placeholder="Pega la vacante para una entrevista adaptada..."
+                      style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.10)', color: 'var(--text)' }}
+                      placeholder="Pega la descripción de la vacante..."
                     />
-                  </>
-                )}
-
-                <label className="block text-sm font-semibold mb-2 mt-4" style={{ color: 'var(--text-dim)' }}>Voz de ALBA</label>
-              <select
-                value={vozLive}
-                onChange={(e) => setVozLive(e.target.value)}
-                disabled={connected}
-                className="w-full md:w-72 px-4 py-2.5 rounded-lg text-sm"
-                style={{
-                  background: 'rgba(255,255,255,0.03)',
-                  border: '1px solid rgba(255,255,255,0.10)',
-                  color: 'var(--text)',
-                  opacity: connected ? 0.6 : 1,
-                }}
-              >
-                {VOCES.map((v) => (
-                  <option key={v.id} value={v.id} style={{ background: 'var(--metal-mid)', color: 'var(--text)' }}>{v.label}</option>
-                ))}
-              </select>
-
-              <div className="flex flex-wrap gap-3 mt-5">
-                {!connected ? (
+                  </div>
+                  {errorEnt && (
+                    <p className="text-sm mb-3" style={{ color: '#ff6b6b' }}>{errorEnt}</p>
+                  )}
                   <button
-                    onClick={connectLive}
-                    disabled={liveStatus === 'connecting' || (modoLive === 'realista' && (!cvLive.trim() || !vacanteLive.trim()))}
+                    onClick={iniciarEntrevista}
+                    disabled={entrevistaIniciando || !cvEnt.trim() || !vacanteEnt.trim()}
                     className="btn btn-gold"
+                    style={{ width: '100%', justifyContent: 'center', padding: '14px' }}
                   >
-                    {liveStatus === 'connecting' ? 'Conectando...' : `Iniciar entrevista ${modoLive === 'realista' ? 'realista' : 'libre'}`}
+                    {entrevistaIniciando ? 'Analizando CV y preparando preguntas...' : 'Iniciar entrevista'}
                   </button>
-                ) : (
-                  <>
-                    <button
-                      onClick={disconnectLive}
-                      className="btn"
-                      style={{
-                        background: 'linear-gradient(180deg, #d63a5a 0%, #a02844 100%)',
-                        color: '#fff',
-                        borderColor: 'rgba(255, 100, 120, 0.5)',
-                        boxShadow: '0 4px 12px rgba(200, 40, 60, 0.3)',
-                      }}
-                    >
-                      Terminar entrevista
-                    </button>
-                    <button
-                      onClick={() => clientRef.current?.requestFeedback()}
-                      className="btn btn-gold"
-                    >
-                      Generar feedback final
-                    </button>
-                  </>
-                )}
-              </div>
+                </>
+              ) : (
+                <>
+                  {/* Barra de progreso */}
+                  <div className="flex items-center justify-between mb-4">
+                    <span className="text-sm font-semibold" style={{ color: 'var(--gold-soft)' }}>
+                      {entrevistaFinalizada ? 'Entrevista completada' : `Pregunta ${numeroPregunta} de ${totalPreguntas}`}
+                    </span>
+                    {!entrevistaFinalizada && (
+                      <button onClick={reiniciarEntrevista} className="text-xs" style={{ color: 'var(--text-dim)' }}>
+                        Reiniciar
+                      </button>
+                    )}
+                  </div>
+                  {!entrevistaFinalizada && (
+                    <div className="h-2 rounded-full mb-4 overflow-hidden" style={{ background: 'rgba(255,255,255,0.06)' }}>
+                      <div
+                        className="h-full rounded-full transition-all"
+                        style={{ width: `${(numeroPregunta / totalPreguntas) * 100}%`, background: 'linear-gradient(90deg, #d4af37, #e8c252)' }}
+                      />
+                    </div>
+                  )}
 
-              {liveStatus === 'connecting' && (
-                <p className="text-sm mt-3 flex items-center gap-2" style={{ color: 'var(--text-dim)' }}>
-                  <span className="inline-block w-2 h-2 rounded-full animate-pulse" style={{ background: 'var(--gold-soft)' }} />
-                  Estableciendo conexión con Gemini Live...
-                </p>
-              )}
-              {liveStatus === 'connected' && (
-                <div className="mt-3 p-3 rounded-lg flex items-center gap-3" style={{ background: 'rgba(34, 197, 94, 0.08)', border: '1px solid rgba(34, 197, 94, 0.25)' }}>
-                  <span className="inline-block w-3 h-3 rounded-full animate-pulse" style={{ background: '#22c55e' }} />
-                  <span className="text-sm font-semibold" style={{ color: '#22c55e' }}>
-                    Entrevista en curso
-                  </span>
-                  <span className="text-xs" style={{ color: 'var(--text-dim)' }}>
-                    ALBA escucha lo que dices. Habla con naturalidad cuando termine su pregunta.
-                  </span>
-                </div>
-              )}
-              {liveStatus === 'disconnected' && (
-                <p className="text-sm mt-3 flex items-center gap-2" style={{ color: 'var(--text-dim)' }}>
-                  <span className="inline-block w-2 h-2 rounded-full" style={{ background: 'var(--text-dim)' }} />
-                  La sesión finalizó. Puedes iniciar otra entrevista cuando quieras.
-                </p>
-              )}
-              {liveStatus === 'error' && (
-                <p className="text-sm mt-3 flex items-center gap-2" style={{ color: '#ff6b6b' }}>
-                  <span className="inline-block w-2 h-2 rounded-full" style={{ background: '#ff6b6b' }} />
-                  Error de conexión. Verifica que el backend esté corriendo y tengas credenciales de Gemini configuradas.
-                </p>
+                  {/* Chat */}
+                  <div className="space-y-3 max-h-[420px] overflow-y-auto mb-4" style={{ position: 'relative', zIndex: 1 }}>
+                    {mensajes.map((m, i) => (
+                      <div key={i} className={`flex ${m.rol === 'usuario' ? 'justify-end' : 'justify-start'}`}>
+                        <div
+                          className="max-w-[80%] px-4 py-3 rounded-lg text-sm"
+                          style={
+                            m.rol === 'usuario'
+                              ? {
+                                  background: 'linear-gradient(180deg, rgba(212, 175, 55, 0.25) 0%, rgba(212, 175, 55, 0.12) 100%)',
+                                  border: '1px solid rgba(212, 175, 55, 0.50)',
+                                  color: 'var(--gold-soft)',
+                                  borderRadius: '12px 12px 2px 12px',
+                                }
+                              : {
+                                  background: 'rgba(255,255,255,0.04)',
+                                  border: '1px solid rgba(255,255,255,0.10)',
+                                  color: 'var(--text)',
+                                  borderRadius: '12px 12px 12px 2px',
+                                }
+                          }
+                        >
+                          <span className="block text-xs font-semibold mb-1" style={{ opacity: 0.6 }}>
+                            {m.rol === 'usuario' ? 'Tú' : 'ALBA'}
+                          </span>
+                          {m.text}
+                        </div>
+                      </div>
+                    ))}
+                    {enviandoRespuesta && (
+                      <div className="flex justify-start">
+                        <div className="px-4 py-3 rounded-lg text-sm" style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.10)', color: 'var(--text-dim)' }}>
+                          <span className="inline-block w-2 h-2 rounded-full animate-pulse mr-1" style={{ background: 'var(--gold-soft)' }} />
+                          ALBA está evaluando tu respuesta...
+                        </div>
+                      </div>
+                    )}
+                    <div ref={chatEndRef} />
+                  </div>
+
+                  {/* Input de respuesta */}
+                  {!entrevistaFinalizada && (
+                    <div className="flex gap-2">
+                      <textarea
+                        value={respuestaInput}
+                        onChange={(e) => setRespuestaInput(e.target.value)}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter' && !e.shiftKey) {
+                            e.preventDefault()
+                            enviarRespuesta()
+                          }
+                        }}
+                        rows={3}
+                        disabled={enviandoRespuesta}
+                        className="flex-1 px-4 py-3 rounded-lg text-sm resize-none"
+                        style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.10)', color: 'var(--text)' }}
+                        placeholder="Escribe tu respuesta... (Enter para enviar)"
+                      />
+                      <button
+                        onClick={enviarRespuesta}
+                        disabled={!respuestaInput.trim() || enviandoRespuesta}
+                        className="btn btn-gold"
+                        style={{ alignSelf: 'flex-end' }}
+                      >
+                        Enviar
+                      </button>
+                    </div>
+                  )}
+
+                  {/* Feedback final */}
+                  {entrevistaFinalizada && feedback && (
+                    <div className="mt-4 p-5 rounded-xl" style={{ background: 'rgba(212, 175, 55, 0.06)', border: '1px solid rgba(212, 175, 55, 0.30)' }}>
+                      <div className="flex items-center gap-4 mb-4">
+                        <div className="text-center">
+                          <div className="text-4xl font-bold" style={{ color: 'var(--gold-soft)' }}>
+                            {feedback.puntaje_general}
+                          </div>
+                          <div className="text-xs" style={{ color: 'var(--text-dim)' }}>de 100</div>
+                        </div>
+                        <div className="flex-1">
+                          <h4 className="font-bold text-lg text-white mb-1">Evaluación final</h4>
+                          <p className="text-sm" style={{ color: 'var(--text)' }}>{feedback.recomendacion}</p>
+                        </div>
+                      </div>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                        <div>
+                          <h5 className="text-sm font-semibold mb-2" style={{ color: '#22c55e' }}>Fortalezas</h5>
+                          <ul className="space-y-1">
+                            {feedback.fortalezas.map((f, i) => (
+                              <li key={i} className="text-sm flex items-start gap-2" style={{ color: 'var(--text)' }}>
+                                <span style={{ color: '#22c55e' }}>+</span> {f}
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
+                        <div>
+                          <h5 className="text-sm font-semibold mb-2" style={{ color: '#f59e0b' }}>Áreas de mejora</h5>
+                          <ul className="space-y-1">
+                            {feedback.areas_mejora.map((a, i) => (
+                              <li key={i} className="text-sm flex items-start gap-2" style={{ color: 'var(--text)' }}>
+                                <span style={{ color: '#f59e0b' }}>→</span> {a}
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
+                      </div>
+                      <div className="pt-3 border-t border-white/[0.08]">
+                        <h5 className="text-sm font-semibold mb-1" style={{ color: 'var(--gold-soft)' }}>Sugerencia práctica</h5>
+                        <p className="text-sm" style={{ color: 'var(--text)' }}>{feedback.sugerencia_practica}</p>
+                      </div>
+                      <button onClick={reiniciarEntrevista} className="btn btn-gold mt-4" style={{ width: '100%', justifyContent: 'center' }}>
+                        Hacer otra entrevista
+                      </button>
+                    </div>
+                  )}
+                  {errorEnt && (
+                    <p className="text-sm mt-3" style={{ color: '#ff6b6b' }}>{errorEnt}</p>
+                  )}
+                </>
               )}
             </div>
           </div>
 
-          {/* Transcripción */}
-          {transcripciones.length > 0 && (
-            <div className="plate card">
-              <div className="panel-head">
-                <h3 className="panel-title text-2xl font-bold text-white">Transcripción de la entrevista</h3>
-              </div>
-              <div className="space-y-3 max-h-96 overflow-y-auto" style={{ position: 'relative', zIndex: 1 }}>
-                {transcripciones.map((m, i) => (
-                  <div
-                    key={i}
-                    className={`flex ${m.rol === 'user' ? 'justify-end' : 'justify-start'}`}
-                  >
-                    <div
-                      className="max-w-[80%] px-4 py-2 rounded-lg text-sm"
-                      style={
-                        m.rol === 'user'
-                          ? {
-                              background: 'linear-gradient(180deg, rgba(212, 175, 55, 0.25) 0%, rgba(212, 175, 55, 0.12) 100%)',
-                              border: '1px solid rgba(212, 175, 55, 0.50)',
-                              color: 'var(--gold-soft)',
-                              borderRadius: '12px 12px 2px 12px',
-                            }
-                          : {
-                              background: 'rgba(255,255,255,0.04)',
-                              border: '1px solid rgba(255,255,255,0.10)',
-                              color: 'var(--text)',
-                              borderRadius: '12px 12px 12px 2px',
-                            }
-                      }
-                    >
-                      <span className="block text-xs font-semibold mb-1" style={{ opacity: 0.6 }}>
-                        {m.rol === 'user' ? 'Tú' : 'ALBA'}
-                      </span>
-                      {m.text}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-
-          <FuentesBadge fuentes={['Gemini Live API', 'Gemini 2.5 Flash-Lite']} />
+          <FuentesBadge fuentes={['Gemini 2.5 Flash-Lite']} />
         </div>
       )}
     </div>

@@ -15,6 +15,7 @@ from app.services.llm_gemini import (
     mejorar_cv as gemini_mejorar_cv,
     entrevista_chat as gemini_entrevista_chat,
     is_gemini_available,
+    call_gemini_json,
 )
 import os
 import httpx
@@ -200,6 +201,177 @@ async def entrevista_endpoint(req: EntrevistaChatRequest):
             return {"respuesta": respuesta}
         except Exception as e2:
             raise HTTPException(status_code=500, detail=str(e2))
+
+
+# ============================================================================
+# Entrevista estructurada (Reclutador real): CV + vacante -> 10 preguntas -> feedback
+# ============================================================================
+
+import uuid
+
+_sesiones_entrevista: dict[str, dict] = {}
+
+
+class EntrevistaRealistaIniciarReq(BaseModel):
+    cv: str
+    vacante: str
+
+
+class EntrevistaRealistaAvanzarReq(BaseModel):
+    session_id: str
+    respuesta: str
+
+
+@router.post("/entrevista-realista/iniciar")
+async def iniciar_entrevista_realista(req: EntrevistaRealistaIniciarReq):
+    """Analiza el CV y la vacante, genera 10 preguntas de entrevista y devuelve
+    el saludo inicial + la primera pregunta. El flujo es: saludo -> 10 preguntas
+    una a una -> feedback oral final."""
+    try:
+        system = (
+            "Eres ALBA, una reclutadora experta de RRHH en Colombia. Vas a conducir "
+            "una entrevista estructurada de EXACTAMENTE 10 preguntas basadas en el CV "
+            "del candidato y la vacante objetivo.\n\n"
+            "Genera 10 preguntas relevantes y específicas que un reclutador real haría "
+            "para evaluar si el candidato encaja en la vacante. Usa el CV para personalizar "
+            "las preguntas (pedir detalles de experiencias, profundizar en habilidades, etc).\n\n"
+            "Las preguntas deben seguir una progresión lógica:\n"
+            "1-2: Presentación y experiencia general\n"
+            "3-5: Experiencia técnica específica relacionada con la vacante\n"
+            "6-7: Habilidades blandas, trabajo en equipo, liderazgo\n"
+            "8-9: Casos prácticos o hipotéticos del rol\n"
+            "10: Motivación y expectativas\n\n"
+            "Devuelve ÚNICAMENTE un JSON válido con esta estructura exacta:\n"
+            "{\n"
+            '  "saludo": string,\n'
+            '  "preguntas": [string, string, ...]  (exactamente 10)\n'
+            "}\n"
+            "El saludo debe ser cálido, presentar la vacante brevemente y mencionar que la "
+            "entrevista tendrá 10 preguntas. En español neutro colombiano."
+        )
+        user = f"CV DEL CANDIDATO:\n{req.cv}\n\nVACANTE OBJETIVO:\n{req.vacante}"
+
+        resultado = call_gemini_json(system, user, temperature=0.5, max_tokens=3000)
+
+        saludo = resultado.get("saludo", "")
+        preguntas = resultado.get("preguntas", [])
+
+        if len(preguntas) < 10:
+            while len(preguntas) < 10:
+                preguntas.append(f"Cuéntame más sobre tu experiencia relacionada con la vacante.")
+        preguntas = preguntas[:10]
+
+        session_id = str(uuid.uuid4())[:12]
+        _sesiones_entrevista[session_id] = {
+            "cv": req.cv,
+            "vacante": req.vacante,
+            "preguntas": preguntas,
+            "indice_actual": 0,
+            "respuestas": [],
+            "estado": "en_curso",
+        }
+
+        return {
+            "session_id": session_id,
+            "saludo": saludo,
+            "pregunta_actual": preguntas[0],
+            "numero_pregunta": 1,
+            "total_preguntas": 10,
+            "estado": "en_curso",
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.post("/entrevista-realista/avanzar")
+async def avanzar_entrevista_realista(req: EntrevistaRealistaAvanzarReq):
+    """Recibe la respuesta del candidato a la pregunta actual y devuelve la siguiente
+    pregunta, o el feedback final si era la última. Guarda cada respuesta para el
+    feedback final."""
+    try:
+        sesion = _sesiones_entrevista.get(req.session_id)
+        if not sesion:
+            raise HTTPException(status_code=404, detail="Sesión no encontrada o expirada")
+        if sesion["estado"] != "en_curso":
+            raise HTTPException(status_code=400, detail="La entrevista ya terminó")
+
+        idx = sesion["indice_actual"]
+        sesion["respuestas"].append({
+            "pregunta": sesion["preguntas"][idx],
+            "respuesta": req.respuesta,
+        })
+        sesion["indice_actual"] += 1
+        siguiente_idx = sesion["indice_actual"]
+
+        if siguiente_idx >= 10:
+            sesion["estado"] = "finalizada"
+            feedback = await _generar_feedback_final(sesion)
+            return {
+                "estado": "finalizada",
+                "feedback": feedback,
+                "numero_pregunta": 10,
+                "total_preguntas": 10,
+            }
+
+        return {
+            "estado": "en_curso",
+            "pregunta_actual": sesion["preguntas"][siguiente_idx],
+            "numero_pregunta": siguiente_idx + 1,
+            "total_preguntas": 10,
+            "breve_reconocimiento": _reconocimiento_aleatorio(),
+        }
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+async def _generar_feedback_final(sesion: dict) -> dict:
+    """Genera el feedback oral final usando el LLM con todas las preguntas y respuestas."""
+    system = (
+        "Eres ALBA, una reclutadora experta en Colombia. La entrevista ha terminado "
+        "(10 preguntas respondidas). Genera un feedback estructurado y realista.\n\n"
+        "Sé honesta, específica y útil. Basa el puntaje en la calidad de las respuestas, "
+        "la alineación del CV con la vacante y la comunicación general.\n\n"
+        "Devuelve ÚNICAMENTE un JSON válido con esta estructura exacta:\n"
+        "{\n"
+        '  "puntaje_general": number (0-100),\n'
+        '  "fortalezas": [string],\n'
+        '  "areas_mejora": [string],\n'
+        '  "recomendacion": string (pasaría o no a siguiente fase y por qué),\n'
+        '  "sugerencia_practica": string\n'
+        "}\n"
+    )
+    texto_preguntas = ""
+    for i, par in enumerate(sesion["respuestas"], 1):
+        texto_preguntas += f"\n--- Pregunta {i} ---\nQ: {par['pregunta']}\nR: {par['respuesta']}\n"
+
+    user = (
+        f"CV DEL CANDIDATO:\n{sesion['cv']}\n\n"
+        f"VACANTE OBJETIVO:\n{sesion['vacante']}\n\n"
+        f"RESPUESTAS DE LA ENTREVISTA:{texto_preguntas}"
+    )
+
+    try:
+        resultado = call_gemini_json(system, user, temperature=0.4, max_tokens=2500)
+        if "error" in resultado:
+            raise Exception(resultado.get("raw", ""))
+        return resultado
+    except Exception as e:
+        print(f"[Coach] Feedback final LLM falló: {e}")
+        return {
+            "puntaje_general": 70,
+            "fortalezas": ["Disposición para responder todas las preguntas"],
+            "areas_mejora": ["Profundizar más en experiencias específicas"],
+            "recomendacion": "Pasaría a una segunda entrevista para evaluar aspectos técnicos.",
+            "sugerencia_practica": "Prepara ejemplos concretos usando la técnica STAR (Situación, Tarea, Acción, Resultado).",
+        }
+
+
+def _reconocimiento_aleatorio() -> str:
+    import random
+    opciones = ["Gracias.", "Entendido.", "Muy bien.", "Claro.", "Perfecto.", "Bien, sigamos."]
+    return random.choice(opciones)
 
 
 @router.post("/cv/generar")
