@@ -75,27 +75,18 @@ export default function SidebarChat() {
 
   return (
     <div className="sidebar-chat">
-      {/* Botón flotante para cerrar desde el main */}
-      <button
-        onClick={closeChat}
-        className="fixed top-4 left-[336px] z-70 w-8 h-8 rounded-full bg-[#0a0f1f] border border-gold-500/50 text-gold-400 hover:text-white hover:border-gold-400 flex items-center justify-center shadow-lg shadow-black/50"
-        title="Cerrar consulta"
-      >
-        ×
-      </button>
-
       {/* Header */}
       <div className="sidebar-chat-header">
-        <div className="flex items-center gap-2">
-          <AlbaIcon size={36} />
-          <div>
-            <h3 className="text-base font-bold text-white font-display leading-tight">ALBA Chat IA</h3>
-            {widget && <p className="text-xs text-slate-400 truncate max-w-[160px]">{widget.widgetTitle}</p>}
+        <div className="flex items-center gap-2 min-w-0">
+          <AlbaIcon size={32} />
+          <div className="min-w-0">
+            <h3 className="text-sm font-bold text-white font-display leading-tight">ALBA Chat IA</h3>
+            {widget && <p className="text-[10px] text-slate-400 truncate">{widget.widgetTitle}</p>}
           </div>
         </div>
         <button
           onClick={closeChat}
-          className="text-slate-400 hover:text-white transition-colors text-2xl leading-none"
+          className="text-slate-400 hover:text-white transition-colors text-xl leading-none flex-shrink-0"
           title="Cerrar consulta"
         >
           ×
@@ -118,11 +109,11 @@ export default function SidebarChat() {
             <div className="sidebar-chat-bubble-content">
               {m.role === 'assistant' ? (
                 <div
-                  className="text-sm text-slate-200 leading-relaxed"
+                  className="text-slate-200"
                   dangerouslySetInnerHTML={{ __html: formatMarkdown(m.content) }}
                 />
               ) : (
-                <div className="text-sm text-white leading-relaxed">{m.content}</div>
+                <div className="text-white">{m.content}</div>
               )}
             </div>
           </div>
@@ -134,7 +125,7 @@ export default function SidebarChat() {
             <div className="sidebar-chat-bubble-content">
               <div className="flex items-center gap-2 text-slate-400">
                 <span className="animate-spin text-base">⚙️</span>
-                <span className="text-sm">Analizando datos con IA...</span>
+                <span>Analizando datos con IA...</span>
               </div>
             </div>
           </div>
