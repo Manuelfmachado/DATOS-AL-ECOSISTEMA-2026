@@ -262,6 +262,52 @@ export default function Observatorio() {
       )}
 
       {/* ================================================================ */}
+      {/* 2.5 Sectores emergentes RUES */}
+      {/* ================================================================ */}
+      {emer?.sectores && (() => {
+        const top5 = emer.sectores.slice(0, 5)
+        const anosSet = new Set<number>()
+        top5.forEach((s: any) => (s.datos || []).forEach((d: any) => anosSet.add(d.ano)))
+        const anos = Array.from(anosSet).sort((a, b) => a - b)
+        const histData = anos.map((ano) => {
+          const row: any = { ano }
+          top5.forEach((s: any) => {
+            const d = (s.datos || []).find((x: any) => x.ano === ano)
+            row[s.sector] = d ? d.empresas : null
+          })
+          return row
+        })
+        return (
+        <div className="plate card p-5">
+          <div className="flex items-center justify-between mb-4 pb-2 border-b border-gold-500/20">
+            <h2 className="text-2xl font-bold text-white font-display flex items-center gap-2">
+              Sectores emergentes
+            </h2>
+            <AnalizarIAButton
+              dashboard="observatorio"
+              widgetTitle="Sectores emergentes RUES (historico)"
+              widgetType="grafico"
+              data={top5}
+            />
+          </div>
+          <p className="text-sm text-slate-300 -mt-3 mb-3">Nuevas empresas registradas por año (2020-2025)</p>
+          <ResponsiveContainer width="100%" height={320}>
+            <LineChart data={histData} margin={{ left: 10, right: 20, top: 10, bottom: 5 }}>
+              <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.04)" />
+              <XAxis dataKey="ano" stroke="#e9ecf5" tick={{ fill: '#e9ecf5', fontSize: 12, fontWeight: 600 }} />
+              <YAxis stroke="#e9ecf5" tick={{ fill: '#e9ecf5', fontSize: 11 }} tickFormatter={(v) => compactNum(v)} />
+              <Tooltip {...chartTooltip} formatter={(v: number) => [v?.toLocaleString(), '']} />
+              <Legend wrapperStyle={{ fontSize: 11, paddingTop: 8 }} />
+              {top5.map((s: any, i: number) => (
+                <Line key={i} type="monotone" dataKey={s.sector} stroke={MACRO_COLORS[i % MACRO_COLORS.length]} strokeWidth={2} dot={{ r: 3 }} connectNulls />
+              ))}
+            </LineChart>
+          </ResponsiveContainer>
+        </div>
+        )
+      })()}
+
+      {/* ================================================================ */}
       {/* 3. Territorio laboral: empleo por departamento (ancho completo) */}
       {/* ================================================================ */}
       <div className="plate card p-5">
@@ -424,9 +470,9 @@ export default function Observatorio() {
       </div>
 
       {/* ================================================================ */}
-      {/* 4. Sectores: formales PILA + emergentes RUES */}
+      {/* 4. Sectores formales PILA */}
       {/* ================================================================ */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
+      <div className="grid grid-cols-1 gap-5">
         {/* Sectores formales PILA */}
         <div className="plate card p-5 relative">
           <div className="absolute top-4 right-4 z-10">
@@ -453,51 +499,6 @@ export default function Observatorio() {
             ))}
           </div>
         </div>
-
-        {/* Sectores emergentes RUES - grafico historico */}
-        {emer?.sectores && (() => {
-          const top5 = emer.sectores.slice(0, 5)
-          // Transformar a formato para LineChart: [{ano, Sector1: val, Sector2: val, ...}]
-          const anosSet = new Set<number>()
-          top5.forEach((s: any) => (s.datos || []).forEach((d: any) => anosSet.add(d.ano)))
-          const anos = Array.from(anosSet).sort((a, b) => a - b)
-          const histData = anos.map((ano) => {
-            const row: any = { ano }
-            top5.forEach((s: any) => {
-              const d = (s.datos || []).find((x: any) => x.ano === ano)
-              row[s.sector] = d ? d.empresas : null
-            })
-            return row
-          })
-          return (
-          <div className="plate card p-5 relative">
-            <div className="absolute top-4 right-4 z-10">
-              <AnalizarIAButton
-                dashboard="observatorio"
-                widgetTitle="Sectores emergentes RUES (historico)"
-                widgetType="grafico"
-                data={top5}
-              />
-            </div>
-          <div className="mb-3 pb-2 border-b border-gold-500/20 pr-28">
-            <h2 className="text-xl font-bold text-white font-display">Sectores emergentes</h2>
-            <p className="text-sm text-slate-300 mt-1">Nuevas empresas registradas por año (2020-2025)</p>
-          </div>
-          <ResponsiveContainer width="100%" height={260}>
-            <LineChart data={histData} margin={{ left: 10, right: 20, top: 10, bottom: 5 }}>
-              <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.04)" />
-              <XAxis dataKey="ano" stroke="#e9ecf5" tick={{ fill: '#e9ecf5', fontSize: 12, fontWeight: 600 }} />
-              <YAxis stroke="#e9ecf5" tick={{ fill: '#e9ecf5', fontSize: 11 }} tickFormatter={(v) => compactNum(v)} />
-              <Tooltip {...chartTooltip} formatter={(v: number) => [v?.toLocaleString(), '']} />
-              <Legend wrapperStyle={{ fontSize: 11, paddingTop: 8 }} />
-              {top5.map((s: any, i: number) => (
-                <Line key={i} type="monotone" dataKey={s.sector} stroke={MACRO_COLORS[i % MACRO_COLORS.length]} strokeWidth={2} dot={{ r: 3 }} connectNulls />
-              ))}
-            </LineChart>
-          </ResponsiveContainer>
-        </div>
-          )
-        })()}
       </div>
 
       {/* ================================================================ */}
