@@ -79,11 +79,11 @@ export default function SidebarChat() {
       <div className="sidebar-chat">
       {/* Header */}
       <div className="sidebar-chat-header">
-        <div className="flex items-center gap-2 min-w-0">
-          <AlbaIcon size={32} />
+        <div className="flex items-center gap-3 min-w-0">
+          <AlbaIcon size={48} />
           <div className="min-w-0">
-            <h3 className="text-sm font-bold text-white font-display leading-tight">ALBA Chat IA</h3>
-            {widget && <p className="text-[10px] text-slate-400 truncate">{widget.widgetTitle}</p>}
+            <h3 className="text-xl font-bold text-white font-display leading-tight">ALBA Chat IA</h3>
+            {widget && <p className="text-sm text-slate-400 truncate">{widget.widgetTitle}</p>}
           </div>
         </div>
         <button

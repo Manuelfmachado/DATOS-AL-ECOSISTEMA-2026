@@ -885,9 +885,9 @@ select option { background: var(--metal-mid) !important; color: var(--text) !imp
   background: rgba(255, 255, 255, 0.05);
   border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: 12px;
-  padding: 12px 14px;
-  font-size: 14px;
-  line-height: 1.5;
+  padding: 14px 16px;
+  font-size: 15px;
+  line-height: 1.6;
   color: #e2e8f0;
 }
 
