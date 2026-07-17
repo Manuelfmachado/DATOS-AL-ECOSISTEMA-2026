@@ -424,140 +424,93 @@ export default function MapaColombia({
       </div>
     </div>
 
-    {/* Panel lateral fijo con ficha técnica */}
-    <div className={`w-[220px] shrink-0 h-full border-l z-20 overflow-y-auto transition-all duration-300 ${hovered ? 'border-gold-500/30 bg-[#0a0f1f]/97 backdrop-blur shadow-2xl' : 'border-transparent'}`}>
-      {hovered && (() => {
-        const code = hovered
-        const displayName = nameMap[code] || ''
-        const d = getData(code, '')
-        const v = d ? config.getter(d) : null
-        const badgeColor = v !== null ? getBadgeColor(v)?.color : null
-        const diff = v !== null ? formatDiff(v) : null
-        const informalidad = d?.tasa_formalidad != null ? 100 - d.tasa_formalidad : null
-        const formalidadOk = (d?.tasa_formalidad ?? 0) > 0.5 ? '🟢' : (d?.tasa_formalidad ?? 0) > 0.3 ? '🟡' : '🔴'
-        const smmlv = d?.ingreso_promedio ? d.ingreso_promedio / 1750000 : 0
-        const dnpOk = (d?.dnp_desempeno ?? 0) >= 60 ? '🟢' : (d?.dnp_desempeno ?? 0) >= 45 ? '🟡' : '🔴'
-        const desemPenal = (d?.tasa_desempleo ?? 0) > 15 ? '🔴' : (d?.tasa_desempleo ?? 0) > 10 ? '🟡' : '🟢'
-
-        // Rankings
-        const rankDesempleo = [...data].filter(x => x.tasa_desempleo != null).sort((a,b) => (a.tasa_desempleo ?? 0) - (b.tasa_desempleo ?? 0))
-        const rankFormal = [...data].filter(x => x.tasa_formalidad != null).sort((a,b) => (b.tasa_formalidad ?? 0) - (a.tasa_formalidad ?? 0))
-        const posDes = rankDesempleo.findIndex(x => x.departamento === d?.departamento) + 1
-        const posFor = rankFormal.findIndex(x => x.departamento === d?.departamento) + 1
-        const total = data.length
-
-        return (
-          <div className="px-3 py-3">
-            {/* Nombre del departamento + ranking */}
-            <div className="flex items-center gap-2 mb-3 pb-2 border-b border-gold-500/20">
-              {badgeColor && <span className="w-2.5 h-2.5 rounded-full flex-shrink-0" style={{ background: badgeColor }} />}
-              <span className="font-bold text-gold-400 text-sm leading-tight">{displayName}</span>
-              {posFor > 0 && posFor <= 5 && (
-                <span className="ml-auto text-[10px] px-1.5 py-0.5 rounded bg-amber-500/15 text-amber-400 font-bold">Top {posFor}</span>
-              )}
-            </div>
-
-            {/* Métrica principal */}
-            {v !== null && (
-              <div className="mb-3">
-                <div className="flex justify-between text-[11px] mb-1">
-                  <span className="text-slate-400">{config.label}</span>
-                  <span className="text-slate-200 font-bold">{config.format(v)}</span>
-                </div>
-                <div className="h-1.5 bg-slate-800 rounded-full overflow-hidden">
-                  <div className="h-full rounded-full transition-all" style={{ width: `${max > min ? ((v - min) / (max - min)) * 100 : 50}%`, background: badgeColor || '#d4af37' }} />
-                </div>
-                {diff && diff.tipo !== 'igual' && (
-                  <div className={`text-[10px] mt-0.5 ${diff.tipo === 'mejor' ? 'text-cyan-400' : 'text-rose-400'}`}>
-                    {diff.tipo === 'mejor' ? '↓' : '↑'} {diff.text}
+    {/* Panel lateral fijo para informacion al hacer hover */}
+    <div className={`w-[170px] md:w-[200px] shrink-0 h-full border-l px-3 py-2 text-[11px] z-20 overflow-y-auto transition-colors ${hovered ? 'border-gold-500/20 bg-[#0a0f1f]/95 backdrop-blur shadow-2xl' : 'border-transparent'}`}>
+      {hovered && (
+        <div>
+            {(() => {
+              const code = hovered
+              const displayName = nameMap[code] || ''
+              const d = getData(code, '')
+              const v = d ? config.getter(d) : null
+              const badge = v !== null ? getBadgeColor(v) : null
+              const diff = v !== null ? formatDiff(v) : null
+              const informalidad = d?.tasa_formalidad != null ? 100 - d.tasa_formalidad : null
+              return (
+                <>
+                  <div className="flex items-center gap-2 mb-2">
+                    {badge && (
+                      <span
+                        className="w-3 h-3 rounded-full flex-shrink-0"
+                        style={{ background: badge.color }}
+                      />
+                    )}
+                    <span className="font-bold text-gold-400 text-base">{displayName}</span>
                   </div>
-                )}
-              </div>
-            )}
-
-            {/* Ficha técnica */}
-            <div className="space-y-2 text-[11px]">
-              {/* Desempleo */}
-              {d?.tasa_desempleo != null && (
-                <div>
-                  <div className="flex justify-between mb-0.5">
-                    <span className="text-slate-400">Desempleo {desemPenal}</span>
-                    <span className="text-slate-200 font-bold">{d.tasa_desempleo.toFixed(1)}% <span className="text-[10px] text-slate-500">#{posDes}/{total}</span></span>
+                  {v !== null && (
+                    <>
+                      <div className="text-slate-200 text-base">
+                        <span className="text-slate-400 font-medium">{config.label}:</span>{' '}
+                        <span className="font-bold text-lg">{config.format(v)}</span>
+                      </div>
+                      {/* Mini barra visual */}
+                      <div className="mt-2 mb-2 h-2 bg-slate-800 rounded-full overflow-hidden">
+                        <div
+                          className="h-full rounded-full transition-all"
+                          style={{
+                            width: `${max > min ? ((v - min) / (max - min)) * 100 : 50}%`,
+                            background: badge?.color || '#d4af37',
+                          }}
+                        />
+                      </div>
+                      {diff && diff.tipo !== 'igual' && (
+                        <div className={`text-xs mb-1 ${
+                          diff.tipo === 'mejor' ? 'text-cyan-400' : 'text-red-400'
+                        }`}>
+                          {diff.tipo === 'mejor' ? '↓' : '↑'} {diff.text}
+                        </div>
+                      )}
+                    </>
+                  )}
+                  {/* Resumen rapido de indicadores clave */}
+                  <div className="mt-2 pt-2 border-t border-white/[0.08] space-y-1.5">
+                    {d?.ingreso_promedio != null && (
+                      <div className="flex justify-between text-sm">
+                        <span className="text-slate-400 font-medium">Salario promedio</span>
+                        <span className="text-slate-200 font-bold">{formatCOP(d.ingreso_promedio)}</span>
+                      </div>
+                    )}
+                    {informalidad != null && (
+                      <div className="flex justify-between text-sm">
+                        <span className="text-slate-400 font-medium">Informalidad</span>
+                        <span className="text-slate-200 font-bold">{informalidad.toFixed(1)}%</span>
+                      </div>
+                    )}
+                    {d?.tasa_desempleo != null && metric !== 'desempleo' && (
+                      <div className="flex justify-between text-sm">
+                        <span className="text-slate-400 font-medium">Desempleo</span>
+                        <span className="text-slate-200 font-bold">{d.tasa_desempleo.toFixed(1)}%</span>
+                      </div>
+                    )}
+                    {d?.mujeres_cabeza_hogar_pct != null && (
+                      <div className="flex justify-between text-sm">
+                        <span className="text-slate-400 font-medium">Mujeres cabeza hogar</span>
+                        <span className="text-slate-200 font-bold">{d.mujeres_cabeza_hogar_pct.toFixed(1)}%</span>
+                      </div>
+                    )}
+                    {d?.pct_educacion_superior != null && (
+                      <div className="flex justify-between text-sm">
+                        <span className="text-slate-400 font-medium">Educación superior</span>
+                        <span className="text-slate-200 font-bold">{d.pct_educacion_superior.toFixed(1)}%</span>
+                      </div>
+                    )}
                   </div>
-                  <div className="h-1 bg-slate-800 rounded-full overflow-hidden">
-                    <div className="h-full rounded-full bg-cyan-400" style={{ width: `${Math.min(100, (d.tasa_desempleo / 25) * 100)}%` }} />
-                  </div>
-                </div>
-              )}
-
-              {/* Salario en SMMLV */}
-              {d?.ingreso_promedio != null && (
-                <div>
-                  <div className="flex justify-between mb-0.5">
-                    <span className="text-slate-400">Salario</span>
-                    <span className="text-slate-200 font-bold">{smmlv.toFixed(1)} SMMLV <span className="text-[10px] text-slate-500">~{formatCOP(d.ingreso_promedio)}</span></span>
-                  </div>
-                  <div className="h-1 bg-slate-800 rounded-full overflow-hidden">
-                    <div className="h-full rounded-full bg-gold-400" style={{ width: `${Math.min(100, (smmlv / 4) * 100)}%` }} />
-                  </div>
-                </div>
-              )}
-
-              {/* Formalidad */}
-              {d?.tasa_formalidad != null && (
-                <div>
-                  <div className="flex justify-between mb-0.5">
-                    <span className="text-slate-400">Formalidad {formalidadOk}</span>
-                    <span className="text-slate-200 font-bold">{(d.tasa_formalidad * 100).toFixed(0)}% <span className="text-[10px] text-slate-500">#{posFor}/{total}</span></span>
-                  </div>
-                  <div className="h-1 bg-slate-800 rounded-full overflow-hidden">
-                    <div className="h-full rounded-full bg-emerald-400" style={{ width: `${Math.min(100, d.tasa_formalidad * 100)}%` }} />
-                  </div>
-                </div>
-              )}
-
-              {/* DNP Gestión pública */}
-              {d?.dnp_desempeno != null && (
-                <div>
-                  <div className="flex justify-between mb-0.5">
-                    <span className="text-slate-400">Gestión pública {dnpOk}</span>
-                    <span className="text-slate-200 font-bold">{d.dnp_desempeno.toFixed(0)}/100</span>
-                  </div>
-                  <div className="h-1 bg-slate-800 rounded-full overflow-hidden">
-                    <div className="h-full rounded-full bg-purple-400" style={{ width: `${d.dnp_desempeno}%` }} />
-                  </div>
-                </div>
-              )}
-
-              {/* Ocupados */}
-              {d?.ocupados != null && (
-                <div className="flex justify-between pt-1 border-t border-white/[0.06]">
-                  <span className="text-slate-400">Ocupados</span>
-                  <span className="text-slate-200 font-bold">{d.ocupados >= 1000000 ? `${(d.ocupados/1000000).toFixed(1)}M` : d.ocupados.toLocaleString('es-CO')}</span>
-                </div>
-              )}
-
-              {/* Mujeres cabeza de hogar */}
-              {d?.mujeres_cabeza_hogar_pct != null && (
-                <div className="flex justify-between">
-                  <span className="text-slate-400">Mujeres cabeza hogar</span>
-                  <span className="text-slate-200 font-bold">{d.mujeres_cabeza_hogar_pct.toFixed(0)}%</span>
-                </div>
-              )}
-
-              {/* Educación superior */}
-              {d?.pct_educacion_superior != null && (
-                <div className="flex justify-between">
-                  <span className="text-slate-400">Educación superior</span>
-                  <span className="text-slate-200 font-bold">{d.pct_educacion_superior.toFixed(0)}%</span>
-                </div>
-              )}
-            </div>
+                </>
+              )
+            })()}
           </div>
-        )
-      })()}
+        )}
       </div>
-    </div>
     </div>
   )
 }
