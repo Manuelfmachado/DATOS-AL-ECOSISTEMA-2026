@@ -454,9 +454,9 @@ export default function MapaColombia({
                         style={{ background: badge.color }}
                       />
                     )}
-                    <span className="font-bold text-gold-400 text-2xl">{displayName}</span>
+                    <span className="font-bold text-gold-400 text-lg truncate">{displayName}</span>
                     {informalidad != null && posFormal > 0 && (
-                      <span className="text-2xl text-rose-400 font-bold ml-auto">#{posFormal}</span>
+                      <span className="text-lg text-rose-400 font-bold ml-auto flex-shrink-0">#{posFormal}</span>
                     )}
                   </div>
                   {v !== null && (
