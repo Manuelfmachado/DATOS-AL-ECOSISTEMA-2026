@@ -425,7 +425,7 @@ export default function MapaColombia({
     </div>
 
     {/* Panel lateral fijo para informacion al hacer hover */}
-    <div className={`w-[200px] md:w-[260px] shrink-0 h-full border-l px-4 py-3 text-sm z-20 overflow-y-auto transition-colors ${hovered ? 'border-gold-500/20 bg-[#0a0f1f]/95 backdrop-blur shadow-2xl' : 'border-transparent'}`}>
+    <div className={`w-[170px] md:w-[200px] shrink-0 h-full border-l px-3 py-2 text-[11px] z-20 overflow-y-auto transition-colors ${hovered ? 'border-gold-500/20 bg-[#0a0f1f]/95 backdrop-blur shadow-2xl' : 'border-transparent'}`}>
       {hovered && (
         <div>
             {(() => {

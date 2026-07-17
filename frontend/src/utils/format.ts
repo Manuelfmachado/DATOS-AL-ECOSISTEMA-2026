@@ -10,6 +10,16 @@ export function formatCOP(value: number | null | undefined): string {
 }
 
 /**
+ * Formatea COP en notación compacta para tablas estrechas.
+ * Ejemplo: 2_194_000 -> $2,2 M
+ */
+export function formatCOPCompact(value: number | null | undefined): string {
+  if (value == null) return 'N/D'
+  if (value >= 1_000_000) return `$${(value / 1_000_000).toFixed(1)} M`
+  return `$${Math.round(value).toLocaleString('es-CO')}`
+}
+
+/**
  * Formatea COP con el valor completo y COP explícito.
  * Ejemplo: 2_194_000 -> $2.194.000 COP
  */
