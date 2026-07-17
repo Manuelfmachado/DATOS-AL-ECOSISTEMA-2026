@@ -181,6 +181,10 @@ body::before {
   z-index: 1;
 }
 
+.app-chat-open {
+  grid-template-columns: 380px 1fr;
+}
+
 /* ===== LÁMINA METÁLICA ===== */
 .plate {
   position: relative;
