@@ -296,11 +296,6 @@ export default function Dashboard() {
                 {/* Titulo */}
                 <div className="flex items-center gap-2 pb-3 border-b border-gold-500/30">
                   <span className="text-xl font-bold text-gold-400 font-display">Panorama nacional</span>
-                  {selectedDepto && (
-                    <span className="text-sm text-slate-400 ml-auto">
-                      {selectedDepto.departamento.replace('ARCHIPIÉLAGO DE SAN ANDRÉS', 'SAN ANDRÉS')}
-                    </span>
-                  )}
                 </div>
 
 

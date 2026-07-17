@@ -375,13 +375,14 @@ export default function MapaColombia({
                     key={geo.rsmKey}
                     geography={geo}
                     fill={fill}
-                    stroke="#000000"
-                    strokeWidth={isSelected ? 2.5 : isHovered ? 2 : 1.2}
+                    stroke="#1a2040"
+                    strokeWidth={isSelected ? 3 : isHovered ? 2.5 : 1.5}
                     style={{
                       default: {
                         opacity: value !== null ? 0.95 : 0.4,
                         transition: 'all 0.2s',
                         cursor: 'pointer',
+                        strokeWidth: 1.5,
                       },
                       hover: {
                         opacity: 1,
@@ -436,6 +437,16 @@ export default function MapaColombia({
               const badge = v !== null ? getBadgeColor(v) : null
               const diff = v !== null ? formatDiff(v) : null
               const informalidad = d?.tasa_formalidad != null ? 100 - d.tasa_formalidad : null
+              const total = data.length
+
+              // Rankings: ordenar de mejor a peor
+              const rankDesempleo = [...data].filter(x => x.tasa_desempleo != null).sort((a,b) => (a.tasa_desempleo ?? 0) - (b.tasa_desempleo ?? 0))
+              const rankFormalidad = [...data].filter(x => x.tasa_formalidad != null).sort((a,b) => (b.tasa_formalidad ?? 0) - (a.tasa_formalidad ?? 0))
+              const rankIngreso = [...data].filter(x => x.ingreso_promedio != null).sort((a,b) => (b.ingreso_promedio ?? 0) - (a.ingreso_promedio ?? 0))
+              const posDes = rankDesempleo.findIndex(x => x.departamento === d?.departamento) + 1
+              const posFormal = rankFormalidad.findIndex(x => x.departamento === d?.departamento) + 1
+              const posIngreso = rankIngreso.findIndex(x => x.departamento === d?.departamento) + 1
+
               return (
                 <>
                   <div className="flex items-center gap-2 mb-2">
@@ -489,7 +500,7 @@ export default function MapaColombia({
                     {d?.ingreso_promedio != null && (
                       <div className="flex justify-between text-sm">
                         <span className="text-slate-400 font-medium">Salario promedio</span>
-                        <span className="text-slate-200 font-bold">{formatCOP(d.ingreso_promedio)}</span>
+                        <span className="text-slate-200 font-bold">{formatCOP(d.ingreso_promedio)} {posIngreso > 0 && <span className="text-[10px] text-slate-500">#{posIngreso}</span>}</span>
                       </div>
                     )}
                     {d?.mujeres_pct != null && (
@@ -501,13 +512,13 @@ export default function MapaColombia({
                     {informalidad != null && (
                       <div className="flex justify-between text-sm">
                         <span className="text-slate-400 font-medium">Informalidad</span>
-                        <span className="text-slate-200 font-bold">{informalidad.toFixed(1)}%</span>
+                        <span className="text-slate-200 font-bold">{informalidad.toFixed(1)}% {posFormal > 0 && <span className="text-[10px] text-slate-500">#{posFormal}</span>}</span>
                       </div>
                     )}
                     {d?.tasa_desempleo != null && metric !== 'desempleo' && (
                       <div className="flex justify-between text-sm">
                         <span className="text-slate-400 font-medium">Desempleo</span>
-                        <span className="text-slate-200 font-bold">{d.tasa_desempleo.toFixed(1)}%</span>
+                        <span className="text-slate-200 font-bold">{d.tasa_desempleo.toFixed(1)}% {posDes > 0 && <span className="text-[10px] text-slate-500">#{posDes}</span>}</span>
                       </div>
                     )}
                     {d?.dnp_desempeno != null && (
