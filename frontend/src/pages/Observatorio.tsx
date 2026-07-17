@@ -701,8 +701,8 @@ export default function Observatorio() {
                 <div key={d.departamento}>
                   <div
                     onClick={() => setSelectedDepto(sel ? null : d.departamento)}
-                    className={`flex items-center gap-3 bg-white/[0.02] rounded-lg px-3 py-2 border cursor-pointer transition-all ${
-                      sel ? 'border-amber-500/40 bg-amber-500/5' : 'border-white/[0.04] hover:border-white/[0.08]'
+                    className={`flex items-center gap-3 bg-white/[0.02] rounded-lg px-3 py-2 border cursor-pointer transition-colors hover:border-amber-500/60 ${
+                      sel ? 'border-amber-500/60 bg-white/[0.02]' : 'border-white/[0.04]'
                     }`}
                   >
                     <div className="flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold" style={{ backgroundColor: `${barColor}20`, color: barColor }}>
@@ -719,14 +719,14 @@ export default function Observatorio() {
                     </div>
                   </div>
                   {sel && desglose.length > 0 && (
-                    <div className="mt-1 ml-12 px-3 py-2 bg-white/[0.02] rounded-lg border border-amber-500/15 text-[11px] text-slate-400 space-y-0.5">
+                    <div className="mt-1 ml-12 px-3 py-2.5 bg-white/[0.02] rounded-lg border border-amber-500/15 text-sm text-slate-300 space-y-1">
                       {desglose.filter(Boolean).map((line: string, i: number) => (
                         <div key={i} className="flex items-center gap-1.5">
-                          <span className="w-1 h-1 rounded-full bg-amber-500/60 flex-shrink-0" />
+                          <span className="w-1.5 h-1.5 rounded-full bg-amber-500/60 flex-shrink-0" />
                           <span>{line}</span>
                         </div>
                       ))}
-                      <div className="text-[10px] text-slate-500 pt-1 border-t border-white/[0.04] mt-1">
+                      <div className="text-xs text-slate-400 pt-1.5 border-t border-white/[0.04] mt-1.5">
                         {d.tasa_desempleo != null && `Desempleo ${d.tasa_desempleo}%`}
                         {d.dnp_desempeno != null && ` · DNP ${d.dnp_desempeno}/100`}
                       </div>
