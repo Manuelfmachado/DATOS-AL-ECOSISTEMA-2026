@@ -182,8 +182,8 @@ export default function Dashboard() {
         <div className="flex items-center gap-4 w-full">
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-4">
-              <h1 className="text-5xl font-bold text-white font-display">Bienvenido a ALBA</h1>
-              <img src={albaRostroSvg} alt="Sol ALBA" className="flex-shrink-0" style={{ width: 60, height: 60 }} />
+              <h1 className="text-6xl font-bold text-white font-display">Bienvenido a ALBA</h1>
+              <img src={albaRostroSvg} alt="Sol ALBA" className="flex-shrink-0" style={{ width: 80, height: 80 }} />
             </div>
             <p className="hello-sub">
               <span className="hello-sub-acronym text-gold-400 font-bold font-display">A</span>nalítica{' '}
@@ -200,11 +200,11 @@ export default function Dashboard() {
       {/* Flujo ALBA */}
       <section className="flujo-alba">
         {[
-          { to: '/observatorio', label: 'Observar', desc: '' },
-          { to: '/observatorio', label: 'Analizar', desc: '' },
-          { to: '/prediccion', label: 'Predecir', desc: '' },
-          { to: '/emprende', label: 'Decidir', desc: '' },
-          { to: '/coach', label: 'Mejorar', desc: '' },
+          { to: '/observatorio', label: 'Observar', desc: 'Panorama laboral en Colombia' },
+          { to: '/observatorio', label: 'Analizar', desc: 'Datos' },
+          { to: '/prediccion', label: 'Predecir', desc: 'Tendencias' },
+          { to: '/emprende', label: 'Decidir', desc: 'Tomas la mejor decisión' },
+          { to: '/coach', label: 'Mejorar', desc: 'Estudiar, practicar, capacitarse' },
         ].map((paso, i, arr) => (
           <div key={paso.label} className="flujo-paso">
             <Link to={paso.to} className="flujo-card">

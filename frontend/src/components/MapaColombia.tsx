@@ -399,10 +399,11 @@ export default function MapaColombia({
             }
           </Geographies>
         </ComposableMap>
+      </div>
 
-        {/* Tooltip flotante al hacer hover */}
-        {hovered && (
-          <div className="absolute top-3 left-3 bg-[#0a0f1f]/95 backdrop-blur border border-gold-500/40 rounded-xl px-4 py-3 text-sm shadow-2xl pointer-events-none z-20 min-w-[240px]">
+      {/* Tooltip flotante al hacer hover */}
+      {hovered && (
+        <div className="absolute top-3 right-3 bg-[#0a0f1f]/95 backdrop-blur border border-gold-500/40 rounded-xl px-4 py-3 text-sm shadow-2xl pointer-events-none z-20 min-w-[240px]">
             {(() => {
               const code = hovered
               const displayName = nameMap[code] || ''
@@ -485,8 +486,6 @@ export default function MapaColombia({
             })()}
           </div>
         )}
-      </div>
-
       {/* Escala de colores tipo semaforo */}
       <div className="mt-3 px-1">
         <div className="text-base font-bold text-slate-200 mb-2">{config.label}</div>

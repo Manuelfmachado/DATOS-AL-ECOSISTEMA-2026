@@ -440,7 +440,7 @@ body::before {
   text-shadow: 0 1px 0 rgba(0,0,0,0.4);
 }
 .hello .wave { display: inline-block; transform: translateY(2px); margin-left: 4px; }
-.hello-sub { color: var(--text-dim); font-size: 14px; margin-top: 6px; }
+.hello-sub { color: var(--text-dim); font-size: 18px; margin-top: 6px; }
 .hello-sub-acronym { font-size: 0.85em; }
 
 .top-actions { display: flex; align-items: center; gap: 12px; }
@@ -554,7 +554,7 @@ body::before {
 
 .flujo-label {
   font-family: "EB Garamond", "Playfair Display", serif;
-  font-size: 1.5rem;
+  font-size: 2rem;
   font-weight: 700;
   color: var(--gold-soft);
   margin-bottom: 4px;
@@ -562,7 +562,7 @@ body::before {
 }
 
 .flujo-desc {
-  font-size: 1rem;
+  font-size: 1.15rem;
   color: #d8dee8;
   line-height: 1.4;
   font-weight: 500;

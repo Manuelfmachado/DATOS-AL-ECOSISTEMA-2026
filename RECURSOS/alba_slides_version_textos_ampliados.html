@@ -198,7 +198,7 @@ body:before{opacity:.12;background-size:88px 88px}
 .slide-1 .hero-title{font-size:clamp(4.8rem,8.4vw,8rem);letter-spacing:-.035em}
 .slide-1 .hero-subtitle{font-size:clamp(1.35rem,2vw,1.9rem);max-width:760px}
 .slide-1 .team-row{gap:14px!important;margin-top:28px!important;max-width:850px!important}
-.slide-1 .team-card{background:rgba(255,255,255,.018);box-shadow:none;border-color:var(--border);padding:18px 22px;text-align:left}
+.slide-1 .team-card{background:rgba(255,255,255,.018);box-shadow:none;border-color:var(--border);padding:18px 22px;text-align:center}
 .slide-1 .team-name{font-size:.98rem}.slide-1 .team-role{font-size:.78rem;color:var(--text-muted)}
 .slide-1 .slide-shell>div:last-child{margin-top:28px!important;gap:24px!important;opacity:.9}
 
@@ -687,12 +687,16 @@ body:before{opacity:.12;background-size:88px 88px}
  .slide-6 .tech-node span{font-size:.84rem!important}
   .slide-8 .result-card{height:320px!important;min-height:320px!important}
 }
-/* Slide 1: Logo + Stats en misma línea */
-.slide-1 .slide-shell>div:nth-child(3){display:flex!important;justify-content:space-between!important;align-items:center!important;margin-top:1.5vh!important;margin-bottom:1.5vh!important;padding:0 5vw!important}
+/* Slide 1: Centrar todo */
+.slide-1 .slide-shell{align-items:center!important}
+/* Slide 1: Logo centrado */
+.slide-1 .slide-shell>div:nth-child(3){justify-content:center!important;margin-top:1.5vh!important;margin-bottom:1.5vh!important}
 .slide-1 .slide-shell>div:nth-child(3)>img{width:clamp(200px,14vw,300px)!important;height:auto;filter:drop-shadow(0 0 28px rgba(197,164,74,.25))}
 /* Slide 1: ALBA ROSTRO junto al subtítulo */
 .slide-1 .hero-subtitle img{width:3rem!important;height:auto;display:inline-block;vertical-align:middle;filter:drop-shadow(0 0 8px rgba(197,164,74,.35))}
 .slide-1 .hero-subtitle{margin-top:1vh!important}
+/* Slide 1: Team centrado */
+.slide-1 .team-row{justify-content:center!important;margin-top:0.3vh!important}
 </style></head>
 <body>
 <div class="container">
@@ -701,9 +705,16 @@ body:before{opacity:.12;background-size:88px 88px}
 <div class="slide-shell centered">
 <div class="gold-line"></div>
 <div class="eyebrow">DATOS AL ECOSISTEMA 2026</div>
-<div style="display:flex;justify-content:space-between;align-items:center"><img src="../frontend/SVG/LOGO FINAL.svg" alt="ALBA"><div style="display:flex;gap:1.5vw;align-items:center"><div style="text-align:center"><div style="font-family:'Playfair Display',serif;font-size:2rem;font-weight:700;color:var(--gold)">5</div><div style="font-size:.82rem;color:var(--text-muted)">Reto: Economía y Empleo</div></div><div style="width:1px;background:var(--border);height:32px"></div><div style="text-align:center"><div style="font-family:'Playfair Display',serif;font-size:2rem;font-weight:700;color:var(--gold)">Avanzado</div><div style="font-size:.82rem;color:var(--text-muted)">Nivel</div></div><div style="width:1px;background:var(--border);height:32px"></div><div style="text-align:center"><div style="font-family:'Playfair Display',serif;font-size:2rem;font-weight:700;color:var(--gold)">11</div><div style="font-size:.82rem;color:var(--text-muted)">Fuentes oficiales</div></div></div></div>
-<div class="hero-subtitle gold-subtitle" style="margin-top:.2vh;margin-bottom:2vh;display:flex;align-items:center;gap:.6vw"><span style="color:#fff"><span style="color:var(--gold)">A</span>nalítica <span style="color:var(--gold)">l</span>aboral <span style="color:var(--gold)">b</span>asada <span style="color:var(--gold)">e</span>n <span style="color:#fff">I</span><span style="color:var(--gold)">A</span></span><img src="../frontend/SVG/ALBA ROSTRO.svg" alt="ALBA"></div>
+<div style="display:flex;justify-content:center;align-items:center"><img src="../frontend/SVG/LOGO FINAL.svg" alt="ALBA"></div>
+<div class="hero-subtitle gold-subtitle" style="margin-top:.2vh;margin-bottom:2vh;display:flex;align-items:center;gap:.6vw"><span style="color:#fff"><span style="color:var(--gold)">A</span>nalítica <span style="color:var(--gold)">l</span>aboral <span style="color:var(--gold)">b</span>asada en <span style="color:#fff">I</span><span style="color:var(--gold)">A</span></span><img src="../frontend/SVG/ALBA ROSTRO.svg" alt="ALBA"></div>
 <div class="lead" style="margin-bottom:2vh;max-width:760px">Transformando datos abiertos en decisiones inteligentes para Colombia.</div>
+<div style="display:flex;gap:2vw;margin-top:2vh;margin-bottom:0.5vh;align-items:center;justify-content:center">
+<div style="text-align:center"><div style="font-family:'Playfair Display',serif;font-size:2rem;font-weight:700;color:var(--gold)">5</div><div style="font-size:.82rem;color:var(--text-muted)">Reto: Economía y Empleo</div></div>
+<div style="width:1px;background:var(--border);height:32px"></div>
+<div style="text-align:center"><div style="font-family:'Playfair Display',serif;font-size:2rem;font-weight:700;color:var(--gold)">Avanzado</div><div style="font-size:.82rem;color:var(--text-muted)">Nivel</div></div>
+<div style="width:1px;background:var(--border);height:32px"></div>
+<div style="text-align:center"><div style="font-family:'Playfair Display',serif;font-size:2rem;font-weight:700;color:var(--gold)">11</div><div style="font-size:.82rem;color:var(--text-muted)">Fuentes oficiales</div></div>
+</div>
 <div class="team-row" style="max-width:90%;width:100%">
 <div class="team-card team-card-refined"><div class="team-name">Manuel Francisco Machado</div><div class="team-role">Líder · Magíster en Inteligencia Artificial</div></div>
 <div class="team-card team-card-refined"><div class="team-name">Maria Angel Henao</div><div class="team-role">Estudiante de Licenciatura · Investigación</div></div>
@@ -759,7 +770,7 @@ body:before{opacity:.12;background-size:88px 88px}
 <div class="slide-shell centered">
 <div class="gold-line"></div>
 <div class="eyebrow">CONJUNTO DE DATOS</div>
-<div class="section-title gold-subtitle" style="font-size:clamp(2rem,2.5vw,2.35rem);max-width:100%">10+ fuentes oficiales integradas en una única base de conocimiento para ia</div>
+<div class="section-title gold-subtitle" style="font-size:clamp(2rem,2.5vw,2.35rem);max-width:100%">10+ fuentes oficiales integradas en una única base de conocimiento para IA</div>
 <div style="display:flex;gap:3vw;margin-bottom:4vh">
 <div style="flex:1"><div style="font-size:.85rem;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:var(--gold);margin-bottom:1.5vh">Colombia · datos.gov.co</div>
 <div class="source-line" style="display:flex;flex-wrap:wrap;gap:1vh"><span class="badge">DANE</span><span class="badge">MinTrabajo</span><span class="badge">MEN</span><span class="badge">SENA</span><span class="badge">RUES</span><span class="badge">DNP</span></div>
@@ -789,7 +800,7 @@ body:before{opacity:.12;background-size:88px 88px}
 <div class="slide-shell centered">
 <div class="gold-line"></div>
 <div class="eyebrow">PROPUESTA DE VALOR</div>
-<div class="section-title gold-subtitle" style="font-size:clamp(2rem,2.5vw,2.35rem);max-width:100%">Una plataforma de inteligencia laboral basada en ia que funciona también sin internet</div>
+<div class="section-title gold-subtitle" style="font-size:clamp(2rem,2.5vw,2.35rem);max-width:100%">Una plataforma de inteligencia laboral basada en IA que funciona también sin internet</div>
 <div style="font-size:1.05rem;color:var(--text-dim);line-height:1.55;max-width:80%;margin-bottom:3vh">Transforma datos públicos en análisis, predicciones y recomendaciones para ciudadanos, instituciones y gobiernos.</div>
 <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:1.5vh 1.5vw;max-width:75%;margin-bottom:3vh">
 <div class="card module-card" style="text-align:center"><div style="font-size:1.8rem;margin-bottom:.3vh"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" fill="currentColor" style="width:1em;height:1em"><path fill="currentColor" d="M220.324 73.05c-5.148.102-10.244.408-15.28.925 38.583 92.843 40.53 149.816 41.948 194.722 13.665-.22 27.327-.79 40.985-1.726-.867-86.935-37.327-165.248-67.653-193.92zm40.545 3.663c27.632 13.237 52.446 35.57 72.437 60.955l18.207-12.98c-24.553-23.846-55.78-40.86-90.645-47.975zm-74.163.09C105.784 93.517 44.517 163.548 41.16 248.64c62.735 12.36 125.33 19.76 187.834 20.13-1.395-45.53-3.087-99.25-42.287-191.967zm244.068 14.543c-1.904-.045-3.733.247-5.462.853-5.536 1.94-10 7.087-12.463 15.51-2.464 8.425-2.434 19.664 1.22 30.987 3.655 11.323 10.147 20.295 16.994 25.455 6.848 5.16 13.388 6.453 18.924 4.512 5.536-1.94 9.998-7.087 12.46-15.512 2.464-8.424 2.437-19.663-1.218-30.986-1.744-5.406-4.14-10.268-6.91-14.443a15.318 9.72 76.94 0 0-6.146-7.575c-1.288-1.282-2.607-2.435-3.94-3.44-4.707-3.547-9.268-5.265-13.46-5.362zm5.805 8.857a28.954 18.568 76.585 0 1 3.45.305 15.318 9.72 76.94 0 0-2.934 17.04 15.318 9.72 76.94 0 0 13.416 11.14 15.318 9.72 76.94 0 0 5.744-12.774 28.954 18.568 76.585 0 1 2.34 6.106 28.954 18.568 76.585 0 1-9.225 34.36 28.954 18.568 76.585 0 1-25.64-21.05 28.954 18.568 76.585 0 1 9.223-34.357 28.954 18.568 76.585 0 1 3.627-.77zm-43.223 16.762l-13.67 9.744c-.292 19.73 3.38 31.84 8.604 41.048 5.153 9.08 12.31 15.71 20.147 23.537l16.1-9.61c-1.477-.884-2.917-1.846-4.305-2.892-10.227-7.708-18.465-19.618-23.152-34.14-3.023-9.367-4.227-18.796-3.723-27.688zm-31.265 22.29l-64.63 46.073c5.126 19.47 9.352 43.4 10.077 66.193l84.907-50.68c-6.756-6.63-14-13.953-19.812-24.2-5.47-9.64-9.332-21.66-10.543-37.386zm40.457 76.516l-22.27 13.292c2.23 8.957 3.495 17.38 3.683 24.963 7.63-1.557 15.26-3.232 22.89-5.056-.43-11.366-1.9-22.46-4.304-33.2zM41 266.794v30.127c122.077 29.426 243.923 29.426 366 0v-29.6c-122.274 28.494-244.39 23.097-366-.527zm0 48.646v157.04c17.678 3.434 35.344 6.476 53 9.106V426c4.292-6.5 12.224-9.7 20.72-9.865 12.42-.244 26.045 5.99 31.28 17.865v54.055c87.183 8.608 174.138 5.576 261-15.207v-157.41c-121.928 28.724-244.072 28.724-366 0zm329.984 87.73c6.89.014 13.016 3.185 13.016 10.185v32l-32 4v-32c0-9 10.125-14.203 18.984-14.185zm-81.486 11.783C296.968 414.955 304 418.5 304 426v32l-32 2v-32c0-8.5 9.03-13.05 17.498-13.047zM208 420c8 0 16 4 16 12v32h-32v-32c0-8 8-12 16-12z"/></svg></div><div class="card-title" style="font-size:.95rem">Observatorio</div><div class="card-desc" style="font-size:.82rem">Señales del mercado</div></div>
@@ -803,8 +814,8 @@ body:before{opacity:.12;background-size:88px 88px}
 </div>
 <!-- SLIDE 6: ARQUITECTURA --><!-- SLIDE 6: ARQUITECTURA -->
 <div class="slide slide-6" style="padding-left:6vw;padding-right:6vw"><div class="slide-shell centered">
-<div class="gold-line"></div><div class="eyebrow">METODOLOGÍA Y ARQUITECTURA</div>
-<div class="section-title gold-subtitle" style="font-size:clamp(1.9rem,2.2vw,2.2rem);max-width:100%">Un pipeline de ia para transformar datos públicos en inteligencia laboral</div>
+<div class="gold-line"></div><div class="eyebrow">METODOLOGÍA Y ARQUITECTURA</div>
+<div class="section-title gold-subtitle" style="font-size:clamp(1.9rem,2.2vw,2.2rem);max-width:100%">Un pipeline de IA para transformar datos públicos en inteligencia laboral</div>
 <div class="architecture-horizontal">
 <div class="horizontal-panel"><div class="arch-panel-title">Flujo principal</div>
 <div class="flow-row">
@@ -818,11 +829,11 @@ body:before{opacity:.12;background-size:88px 88px}
 <div class="horizontal-panel"><div class="arch-panel-title">Arquitectura técnica</div>
 <div class="tech-row"><div class="tech-node"><strong>Backend</strong><span>Python · FastAPI</span></div><div class="tech-node"><strong>Datos</strong><span>PostgreSQL · SQLite</span></div><div class="tech-node"><strong>Frontend</strong><span>React responsivo</span></div><div class="tech-node"><strong>IA</strong><span>Gemini · Chronos · RAG</span></div></div>
 </div></div></div></div>
-<!-- SLIDE 7: DEMOSTRACIÍ“N -->
+<!-- SLIDE 7: DEMOSTRACIÓN -->
 <div class="slide slide-7">
-<div class="slide-shell centered">
+<div class="slide-shell">
 <div class="gold-line"></div>
-<div class="eyebrow">DEMOSTRACIÍ“N</div>
+<div class="eyebrow">DEMOSTRACIÓN</div>
 <div class="section-title gold-subtitle" style="font-size:clamp(2rem,2.5vw,2.35rem);margin-bottom:1.5vh;max-width:100%">Alba ya es una plataforma funcional lista para ser implementada</div>
 <div style="font-size:1rem;color:var(--text-dim);line-height:1.55;max-width:80%;margin-bottom:2vh">Integra datos oficiales e Inteligencia Artificial para transformar información en decisiones útiles para ciudadanos, instituciones y gobiernos. Disponible en línea y sin conexión a internet.</div>
 <div class="check-row">
@@ -847,8 +858,7 @@ body:before{opacity:.12;background-size:88px 88px}
 <div class="gold-line"></div><div class="eyebrow">RESULTADOS</div>
 <div class="results-head"><div><div class="section-title results-title gold-subtitle">De los datos a decisiones concretas</div><div class="results-lead">Sectores en alza, brechas de formación y prioridad territorial.</div></div></div>
 <div class="results-grid">
-<section class="result-card"><div class="result-card-head"><div class="result-index">01</div><div><div class="result-kicker">GEIH 2022–2025</div><h3>Sectores en alza</h3></div></div>
-<div class="compact-list"><div class="compact-row"><span>Auxiliares financieros</span><strong>+89%</strong></div><div class="compact-row"><span>Inmobiliarias</span><strong>+43%</strong></div><div class="compact-row"><span>Servicios información</span><strong>+42%</strong></div></div></section>
+<section class="result-card" style="display:flex;align-items:center;justify-content:center;overflow:hidden"><img src="../grafica.png" alt="Sectores en alza" style="width:100%;height:auto;max-height:100%;object-fit:contain"></section>
 <section class="result-card"><div class="result-card-head"><div class="result-index">02</div><div><div class="result-kicker">Oferta vs demanda</div><h3>Brecha: oferta vs demanda</h3></div></div>
 <div class="gap-scale"><span>▲ Sobreformación</span></div><div class="compact-list">
 <div class="compact-row"><span>Educación</span><small>17%</small><strong>+11,3%</strong></div>
@@ -865,7 +875,7 @@ body:before{opacity:.12;background-size:88px 88px}
 <div class="slide slide-9">
 <div class="slide-shell centered">
 <div class="gold-line"></div>
-<div class="eyebrow">IMPACTO Y PROYECCIÍ“N</div>
+<div class="eyebrow">IMPACTO Y PROYECCIÓN</div>
 <div class="section-title gold-subtitle" style="font-size:clamp(2rem,2.5vw,2.35rem);max-width:100%">Una plataforma para transformar datos públicos en decisiones con impacto social</div>
 <div class="impact-row" style="margin-bottom:3vh">
 <div class="impact-card impact-primary"><div class="impact-ico"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" fill="currentColor" style="width:1em;height:1em"><path d="M54.1,24.4C60.7,24.4,66,19,66,12.5S60.7,0.7,54.1,0.7S42.3,6,42.3,12.5S47.6,24.4,54.1,24.4z M68.2,26.8H41.7 c-8.5,0-13.7,6.9-13.7,15.4V70c0,7,9.4,7,9.4,0V43.2h3v70.5c0,3.6,3,6.6,6.6,6.6s6.6-3,6.6-6.6V74.9h3v38.7c0,3.6,3,6.6,6.6,6.6 c3.6,0,6.6-3,6.6-6.6V43.1h3v26.8c0,7.2,9.4,7.2,9.2,0V42.3C82,34.5,77.4,26.8,68.2,26.8z M124.9,24.4c6.5,0,11.8-5.3,11.8-11.8 s-5.3-11.8-11.8-11.8S113,6,113,12.5S118.4,24.4,124.9,24.4z M108,70V43.2h3v70.5c0,3.6,3,6.6,6.6,6.6c3.6,0,6.6-3,6.6-6.6V74.9h3 v38.7c0,3.6,3,6.6,6.6,6.6s6.6-3,6.6-6.6V43.1h3v26.8c0,7.2,9.4,7.2,9.2,0V42.3c0-7.9-4.6-15.6-13.8-15.6h-26.5 c-8.5,0-13.7,6.9-13.7,15.4v27.8C98.6,77,108,77,108,70z M195.6,24.4c6.5,0,11.8-5.3,11.8-11.8s-5.3-11.8-11.8-11.8 S183.8,6,183.8,12.5S189,24.4,195.6,24.4z M178.6,70V43.2h3v70.5c0,3.6,3,6.6,6.6,6.6c3.6,0,6.6-3,6.6-6.6V74.9h3v38.7 c0,3.6,3,6.6,6.6,6.6s6.6-3,6.6-6.6V43.1h3v26.8c0,7.2,9.4,7.2,9.2,0V42.3c0-7.9-4.6-15.6-13.8-15.6H183c-8.5,0-13.7,6.9-13.7,15.4 v27.8C169.3,77,178.6,77,178.6,70z M66.1,144.7c0-6.5-5.3-11.8-11.8-11.8s-11.8,5.3-11.8,11.8c0,6.5,5.3,11.8,11.8,11.8 S66.1,151.3,66.1,144.7z M68.2,159H41.7c-8.5,0-13.7,6.9-13.7,15.4v27.8c0,7,9.4,7,9.4,0v-26.8h3v70.5c0,3.6,3,6.6,6.6,6.6 s6.6-3,6.6-6.6v-38.7h3v38.7c0,3.6,3,6.6,6.6,6.6c3.6,0,6.6-3,6.6-6.6v-70.6h3V202c0,7.2,9.4,7.2,9.2,0v-27.6 C82,166.8,77.4,159,68.2,159z M154.2,174.6v27.6c0,2.6-1.2,4.8-3.1,6c-1.8,1-4,1-5.9,0c-2-1.2-3.1-3.3-3.1-6l-0.1-25.3v69.1 c0,4.4-3.6,8.1-8.1,8.1s-8.1-3.6-8.1-8.1v-37.3h-0.1v37.3c0,4.4-3.6,8.1-8.1,8.1c-4.4,0-8.1-3.6-8.1-8.1v-69.1h-0.1v25.3 c0,8.8-12.1,8.8-12.1,0v-27.8c0-9.8,6.4-16.8,15.1-16.8h9.6c-5.9-1.3-10.3-6.6-10.3-12.9c0-7.3,6-13.3,13.3-13.3 c7.3,0,13.3,6,13.3,13.3c0,6.2-4.4,11.6-10.3,12.9h11.1C149.3,157.5,154.2,166.4,154.2,174.6z M124.9,155.2 c5.7,0,10.4-4.7,10.4-10.4s-4.7-10.4-10.4-10.4c-5.7,0-10.4,4.7-10.4,10.4S119.2,155.2,124.9,155.2z M151.3,174.6 c0-6.8-3.9-14.2-12.5-14.2h-26.5c-7.2,0-12.2,5.7-12.2,13.9v27.8c0,2.7,1.7,3.9,3.3,3.9c1.6,0,3.3-1.2,3.3-3.9v-28.2h5.9v71.9 c0,2.9,2.3,5.2,5.2,5.2s5.2-2.3,5.2-5.2v-40.2h5.7v40.2c0,2.9,2.3,5.2,5.2,5.2c2.9,0,5.2-2.3,5.2-5.2v-71.9h5.7v28.2 c0,1.7,0.7,2.9,1.7,3.5c0.9,0.5,2.1,0.5,3.1,0c1-0.7,1.7-1.8,1.7-3.5v-27.6H151.3z M224.8,174.6v27.6c0,2.6-1.2,4.8-3.1,6 c-1.8,1-4,1-5.9,0c-2-1.2-3.1-3.3-3.1-6l-0.1-25.3v69.1c0,4.4-3.6,8.1-8.1,8.1s-8.1-3.6-8.1-8.1v-37.3h-0.1v37.3 c0,4.4-3.6,8.1-8.1,8.1c-4.4,0-8.1-3.6-8.1-8.1v-69.1H180v25.3c0,8.8-12.1,8.8-12.1,0v-27.8c0-9.8,6.4-16.8,15.1-16.8h9.6 c-5.9-1.3-10.3-6.6-10.3-12.9c0-7.3,6-13.3,13.3-13.3c7.3,0,13.3,6,13.3,13.3c0,6.2-4.4,11.6-10.3,12.9h11.1 C219.9,157.5,224.8,166.4,224.8,174.6z M195.6,155.2c5.7,0,10.4-4.7,10.4-10.4s-4.7-10.4-10.4-10.4s-10.4,4.7-10.4,10.4 C185.1,150.5,189.8,155.2,195.6,155.2z M221.9,174.6c0-6.8-3.9-14.2-12.5-14.2h-26.5c-7.2,0-12.2,5.7-12.2,13.9v27.8 c0,2.7,1.7,3.9,3.3,3.9s3.3-1.2,3.3-3.9v-28.2h5.9v71.9c0,2.9,2.3,5.2,5.2,5.2s5.2-2.3,5.2-5.2v-40.2h5.7v40.2 c0,2.9,2.3,5.2,5.2,5.2s5.2-2.3,5.2-5.2v-71.9h5.7v28.2c0,1.7,0.7,2.9,1.7,3.5c0.9,0.5,2.1,0.5,3.1,0c1-0.7,1.7-1.8,1.7-3.5v-27.6 H221.9z"/></svg></div><div class="impact-name">Ciudadanos</div><div class="impact-desc">Mejores decisiones sobre educación, empleo y emprendimiento.</div></div>
@@ -891,14 +901,15 @@ body:before{opacity:.12;background-size:88px 88px}
 <div style="font-family:'Playfair Display',serif;font-size:clamp(3rem,5.5vw,4.2rem);font-weight:900;color:var(--gold);line-height:1.05;max-width:80%;text-shadow:0 0 22px rgba(197,164,74,.14)">ALBA los transforma en decisiones.</div>
 <div class="closing-sub" style="font-size:.85rem;color:var(--text-muted);font-style:italic;margin-bottom:3vh">Porque mejores decisiones generan mejores oportunidades.</div>
 <div class="closing-links" style="display:flex;gap:2vw;margin-bottom:3vh">
-<a href="https://albacolombia.com" style="font-size:.85rem;color:var(--gold);text-decoration:none" target="_blank"> albacolombia.com</a>
+<a href="https://albacolombia.com" style="font-size:.85rem;color:var(--gold);text-decoration:none" target="_blank">albacolombia.com</a>
+<a href="https://github.com/Manuelfmachado/DATOS-AL-ECOSISTEMA-2026" style="font-size:.85rem;color:var(--gold);text-decoration:none" target="_blank">Ver demo en GitHub</a>
 </div>
 <div class="closing-credits" style="font-size:.82rem;color:var(--text-muted);line-height:1.6">Manuel Francisco Machado · María Ángel Henao<br/>Reto: Economía y Empleo · Nivel Avanzado</div>
 </div>
 </div>
 </div>
 <div class="dots"></div>
-<div class="nav"><button class="nav-btn" id="prevBtn">â†</button><div class="counter"><span id="cur">1</span> / <span id="tot">10</span></div><button class="nav-btn" id="nextBtn">â†’</button></div>
+<div class="nav"><button class="nav-btn" id="prevBtn">←</button><div class="counter"><span id="cur">1</span> / <span id="tot">10</span></div><button class="nav-btn" id="nextBtn">→</button></div>
 <script>
 (function(){var s=document.querySelectorAll('.slide'),d=document.querySelector('.dots'),c=document.getElementById('cur'),t=document.getElementById('tot'),p=document.getElementById('prevBtn'),n=document.getElementById('nextBtn'),cur=0;s.forEach((_,i)=>{var o=document.createElement('div');o.className='dot'+(i===0?' active':'');o.addEventListener('click',()=>g(i));d.appendChild(o)});t.textContent=s.length;function u(){s.forEach((x,i)=>x.classList.toggle('active',i===cur));document.querySelectorAll('.dot').forEach((x,i)=>x.classList.toggle('active',i===cur));c.textContent=cur+1;p.disabled=cur===0;n.disabled=cur===s.length-1;var v=s[6]&&s[6].querySelector('video');if(v&&cur!==6)v.pause()}function g(i){cur=i;u()}function nx(){if(cur<s.length-1)g(cur+1)}function pv(){if(cur>0)g(cur-1)}n.addEventListener('click',nx);p.addEventListener('click',pv);document.addEventListener('keydown',e=>{if(e.key==='ArrowRight'||e.key===' ')nx();if(e.key==='ArrowLeft')pv()});u()})();
 </script>
