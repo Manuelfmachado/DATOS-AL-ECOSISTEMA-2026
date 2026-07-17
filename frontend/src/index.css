@@ -408,13 +408,13 @@ body::before {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 14px;
+  gap: 10px;
   width: 100%;
   padding: 12px 14px;
   border-radius: 10px;
   text-decoration: none;
   color: #0a0f1f;
-  font-size: 17px;
+  font-size: 14px;
   font-weight: 700;
   letter-spacing: 0.01em;
   background: linear-gradient(180deg, #f0c75a 0%, #d4af37 45%, #a07a18 100%);
