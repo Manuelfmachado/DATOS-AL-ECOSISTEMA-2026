@@ -29,7 +29,7 @@ os.chdir(APP_DIR)
 
 # Variables de entorno para el backend
 os.environ.setdefault("ALBA_DB_PATH", os.path.join(APP_DIR, "data", "alba_offline.db"))
-os.environ.setdefault("GEMMA_MODEL_PATH", os.path.join(APP_DIR, "models", "gemma-4-E4B-it-qat-GGUF.gguf"))
+os.environ.setdefault("GEMMA_MODEL_PATH", os.path.join(APP_DIR, "models", "Qwen3.5-2B-Q4_K_M.gguf"))
 os.environ.setdefault("MMPROJ_PATH", os.path.join(APP_DIR, "models", "mmproj-F16.gguf"))
 os.environ.setdefault("N_THREADS", "4")
 os.environ.setdefault("N_CTX", "8192")

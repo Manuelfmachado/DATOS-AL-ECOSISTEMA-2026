@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import api from '../services/api'
-import FuentesBadge from '../components/FuentesBadge'
+import { useAppMode } from '../hooks/useAppMode'
 
 interface IdeaResultado {
   score_potencial: number
@@ -51,6 +51,8 @@ function ScoreGauge({ score, label }: { score: number; label: string }) {
 
 export default function EmprendeIA() {
   const [loading, setLoading] = useState(false)
+  const { isOffline } = useAppMode()
+  const iaLabel = isOffline ? 'IA local' : 'Gemma 4 vía DeepInfra'
 
   // Idea
   const [idea, setIdea] = useState(IDEA_EJEMPLO)
@@ -247,7 +249,6 @@ export default function EmprendeIA() {
         )}
       </div>
 
-      <FuentesBadge fuentes={['RUES', 'PILA', 'GEIH/DANE', 'Gemma 4 vía DeepInfra']} />
     </div>
   )
 }

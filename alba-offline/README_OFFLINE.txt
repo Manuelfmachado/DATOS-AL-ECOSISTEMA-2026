@@ -5,14 +5,14 @@ QUE ES ALBA OFFLINE?
 --------------------
 ALBA Offline es la version 100% local de la plataforma de inteligencia
 laboral ALBA. Funciona sin internet despues de la primera descarga de
-modelos. Usa Gemma 4 E4B como motor de IA en lugar de Gemini cloud.
+modelos. Usa Qwen3.5-2B como motor de IA en lugar de Gemini cloud.
 
 REQUISITOS DEL SISTEMA
 ----------------------
 - Windows 10/11 (64-bit)
 - Python 3.11+ (descarga: https://www.python.org/downloads/)
-- 8 GB RAM minimo (16 GB recomendado)
-- 10 GB espacio en disco
+- 8 GB RAM minimo (cierra otras aplicaciones antes de usar)
+- 6 GB espacio en disco
 - GPU opcional (acelera la IA significativamente)
 
 COMO USAR
@@ -39,7 +39,7 @@ QUE INCLUYE
 - Backend: FastAPI con todos los endpoints
 - Base de datos: SQLite local con 44 tablas del DANE
 - Modelos de IA (TODOS incluidos en el paquete, no se descarga nada):
-  * Gemma 4 E4B IT (LLM + audio nativo) ~5 GB
+  * Qwen3.5-2B (LLM) ~1.2 GB (rapido, optimizado para CPU)
   * Pocket TTS (TTS en espanol, voz "lola") ~450 MB
   * NO requiere internet en ningun momento
 
@@ -47,9 +47,9 @@ DIFERENCIAS CON ALBA ONLINE
 ---------------------------
 | Aspecto          | Online              | Offline               |
 |------------------|---------------------|-----------------------|
-| Modelo IA        | Gemini 2.5 (nube)  | Gemma 4 E4B (local)   |
+| Modelo IA        | Gemini 2.5 (nube)  | Qwen3.5-2B (local)   |
 | Base de datos    | Supabase (nube)     | SQLite (local)        |
-| Coach voz        | Gemini Live (nube)  | Gemma 4 E4B + Pocket TTS  |
+| Coach voz        | Gemini Live (nube)  | Qwen3.5-2B + Pocket TTS  |
 | Internet         | Siempre requerido   | NUNCA (todo incluido)     |
 | Velocidad        | Instantaneo         | Depende de tu PC      |
 

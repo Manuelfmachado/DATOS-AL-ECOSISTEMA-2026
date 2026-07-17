@@ -1,6 +1,6 @@
 """
 Router IA para ALBA Offline - Analizar con IA en widgets.
-Usa Gemma 4 E4B local.
+Usa Qwen3.5-2B local.
 """
 import json
 from fastapi import APIRouter
@@ -15,9 +15,10 @@ class WidgetRequest(BaseModel):
     dashboard: str = ""
     widget_title: str = ""
     widget_type: str = ""
-    filters: dict = {}
+    filters: Any = None
     data: Any = None
     question: str = ""
+    historial: Any = None
 
 
 @router.post("/analizar-widget")
@@ -37,7 +38,7 @@ async def analizar_widget(req: WidgetRequest):
         f"Pregunta: {req.question}"
     )
     try:
-        result = call_llm_text(system, user, temperature=0.4, max_tokens=500)
+        result = call_llm_text(system, user, temperature=0.4, max_tokens=300)
         if result is None:
             return {"error": "IA no disponible", "respuesta": "La IA local no esta disponible. Instala llama-cpp-python para activar el analisis con IA.", "widget_title": req.widget_title, "dashboard": req.dashboard}
         return {

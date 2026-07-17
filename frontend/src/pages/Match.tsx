@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import api from '../services/api'
-import FuentesBadge from '../components/FuentesBadge'
+import { useAppMode } from '../hooks/useAppMode'
 
 interface Recurso {
   tipo: 'SENA' | 'online' | 'certificacion' | 'libre'
@@ -106,6 +106,8 @@ Semestres 7-8: Electivas, práctica profesional, trabajo de grado.`
 export default function Match() {
   const [activeTab, setActiveTab] = useState<'cv' | 'pensum'>('cv')
   const [loading, setLoading] = useState(false)
+  const { isOffline } = useAppMode()
+  const iaLabel = isOffline ? 'IA local' : 'Gemini 2.5 Flash-Lite'
 
   // CV vs Vacante
   const [cv, setCv] = useState(CV_EJEMPLO)
@@ -194,7 +196,7 @@ export default function Match() {
           <div>
             <p className="text-lg text-white font-bold mb-2">¿Cómo funciona este análisis?</p>
             <p className="text-base text-slate-300 leading-relaxed">
-              La IA (Gemini 2.5 Flash-Lite) analiza tu perfil o pensum comparándolo con los requisitos de la vacante o las tendencias del mercado laboral.
+              La IA ({iaLabel}) analiza tu perfil o pensum comparándolo con los requisitos de la vacante o las tendencias del mercado laboral.
               El score es una estimación basada en el conocimiento del modelo sobre el mercado colombiano. Las brechas muestran qué te falta y cómo cubrirlo,
               con recursos clasificados por tipo: SENA (gratuito), online (plataformas como Coursera), certificaciones y recursos libres.
             </p>
@@ -485,7 +487,6 @@ export default function Match() {
         </div>
       )}
 
-      <FuentesBadge fuentes={['Gemini 2.5 Flash-Lite', 'O*NET', 'ESCO', 'SNIES', 'SENA']} />
     </div>
   )
 }

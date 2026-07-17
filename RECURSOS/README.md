@@ -17,5 +17,5 @@ Carpeta dedicada al material visual para la sustentación del concurso.
 
 ## Equipo
 
-- Manuel Francisco Machado — Líder · Data / IA / Frontend
-- Maria Angel Henao — Investigación / Documentación
+- Manuel Francisco Machado — Líder · Magíster en Inteligencia Artificial
+- Maria Angel Henao — Estudiante de Licenciatura · Investigación

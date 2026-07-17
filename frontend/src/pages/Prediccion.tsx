@@ -5,7 +5,6 @@ import {
   ReferenceLine, Legend
 } from 'recharts'
 import api from '../services/api'
-import FuentesBadge from '../components/FuentesBadge'
 import { formatCOP } from '../utils/format'
 import AnalizarIAButton from '../components/AnalizarIAButton'
 
@@ -263,10 +262,7 @@ export default function Prediccion() {
                         <div>
                           <p className="text-sm text-slate-200 font-semibold mb-1">¿Qué muestran estas cifras?</p>
                           <p className="text-xs text-slate-400 leading-relaxed">
-                            {periodoNota} Los números son el empleo promedio mensual por macrosector según la GEIH del DANE,
-                            agrupado en 10 grandes categorías (89 ramas CIIU). El porcentaje es una proyección conservadora a 10 años
-                            desde {anioBase}: 80% crecimiento base del empleo en Colombia (~{todosSectoresMeta?.baselineEmpleoPct ?? 1.8}% anual) más
-                            20% de la tendencia sectorial reciente. No es una predicción exacta, es una estimación de dirección y magnitud.
+                            Empleo por macrosector según la GEIH del DANE. La proyección a 10 años combina el crecimiento base del empleo y la tendencia sectorial reciente.
                           </p>
                         </div>
                       </div>
@@ -412,9 +408,7 @@ export default function Prediccion() {
                   <div>
                     <p className="text-sm text-slate-200 font-semibold mb-1">¿Qué muestran estas cifras?</p>
                     <p className="text-xs text-slate-400 leading-relaxed">
-                      Las 21 profesiones con mayor proyección de demanda laboral en Colombia. El crecimiento es de demanda (no salarial).
-                      Los salarios son estimaciones mensuales promedio en pesos colombianos para 2025, proyectados con inflación del 3.5% anual.
-                      Fuente: O*NET, ESCO y WEF Future of Jobs, adaptado al contexto colombiano.
+                      Profesiones con mayor proyección de demanda laboral. El crecimiento es de demanda, no salarial. Fuentes: O*NET, ESCO y WEF Future of Jobs.
                     </p>
                   </div>
                 </div>
@@ -562,9 +556,7 @@ export default function Prediccion() {
                   <div>
                     <p className="text-sm text-slate-200 font-semibold mb-1">¿Qué muestran estas cifras?</p>
                     <p className="text-xs text-slate-400 leading-relaxed">
-                      Las 20 habilidades más demandadas para el futuro laboral en Colombia. La puntuación va de 0 a 100,
-                      donde valores más altos indican mayor importancia. Fuente: Future of Jobs Report del Foro Económico Mundial (WEF),
-                      adaptado al contexto colombiano mediante análisis de ofertas laborales locales.
+                      Habilidades más demandadas para el futuro laboral. Puntuación de 0 a 100 según el WEF Future of Jobs Report, adaptado al contexto colombiano.
                     </p>
                   </div>
                 </div>
@@ -714,9 +706,7 @@ export default function Prediccion() {
                   <div>
                     <p className="text-sm text-slate-200 font-semibold mb-1">¿Qué muestran estas cifras?</p>
                     <p className="text-xs text-slate-400 leading-relaxed">
-                      Proyección salarial mensual por profesión en pesos colombianos. Los salarios de 2025 son estimaciones
-                      basadas en GEIH del DANE y fuentes de mercado laboral. Las proyecciones a 2030 y 2035 aplican un
-                      crecimiento real del 3.5% anual, consistente con las tendencias históricas de Colombia.
+                      Proyección salarial mensual por profesión en pesos colombianos. Basada en GEIH del DANE con crecimiento real anual del 3.5%.
                     </p>
                   </div>
                 </div>
@@ -766,19 +756,19 @@ export default function Prediccion() {
                   const crecSalarial10 = ((p.salario_10a_cop / p.salario_mensual_cop) - 1) * 100
                   return (
                     <div key={i} className="plate card p-4 text-center">
-                      <p className="text-lg font-bold text-white mb-2">{p.profesion}</p>
+                      <p className="text-sm font-bold text-white mb-2">{p.profesion}</p>
                       <div className="space-y-2">
                         <div>
                           <p className="text-xs text-slate-500 mb-1">Salario 2025</p>
-                          <p className="text-lg font-bold text-gold-400 font-display">${Math.round(p.salario_mensual_cop).toLocaleString("es-CO")}</p>
+                          <p className="text-base font-bold text-gold-400 font-display">${Math.round(p.salario_mensual_cop).toLocaleString("es-CO")}</p>
                         </div>
                         <div>
                           <p className="text-xs text-slate-500 mb-1">Salario 2035</p>
-                          <p className="text-lg font-bold text-white font-display">${Math.round(p.salario_10a_cop).toLocaleString("es-CO")}</p>
+                          <p className="text-base font-bold text-white font-display">${Math.round(p.salario_10a_cop).toLocaleString("es-CO")}</p>
                         </div>
                         <div className="pt-2 border-t border-gold-500/20">
                           <p className="text-xs text-slate-500 mb-1">Crecimiento</p>
-                          <p className="text-lg font-bold text-green-400">
+                          <p className="text-base font-bold text-green-400">
                             +{crecSalarial10.toFixed(1)}%
                           </p>
                         </div>
@@ -894,7 +884,6 @@ export default function Prediccion() {
         </>
       )}
 
-      <FuentesBadge fuentes={['World Bank Open Data', 'Chronos T5 Small', 'O*NET', 'ESCO', 'WEF Future of Jobs', 'DANE GEIH']} />
     </div>
   )
 }

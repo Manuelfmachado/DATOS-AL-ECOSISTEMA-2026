@@ -4,7 +4,7 @@ Ligero: ~100MB, corre en CPU, soporta espanol.
 Modelo incluido en el paquete (no requiere descarga).
 
 Solo 2 modelos en ALBA Offline:
-  1. Gemma 4 E4B (LLM + audio nativo) — models/gemma-4-E4B-it-qat-GGUF.gguf
+  1. Qwen3.5-2B (LLM) — models/Qwen3.5-2B-Q4_K_M.gguf
   2. Pocket TTS (TTS) — models/pocket-tts/ (incluido, no se descarga)
 """
 import os

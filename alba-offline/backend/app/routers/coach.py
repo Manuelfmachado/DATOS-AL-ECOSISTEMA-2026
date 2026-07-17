@@ -1,6 +1,6 @@
 """
 Router Coach IA para ALBA Offline.
-Usa Gemma 4 E4B local para mejorar CV y entrevistas estructuradas.
+Usa Qwen3.5-2B local para mejorar CV y entrevistas estructuradas.
 """
 import base64
 import json
@@ -14,7 +14,7 @@ router = APIRouter(prefix="/api/coach", tags=["coach"])
 
 _sesiones_entrevista: dict[str, dict] = {}
 
-_LLM_NO_DISPONIBLE = "La IA local no esta disponible. Instala llama-cpp-python para activar las funciones del Coach."
+_LLM_NO_DISPONIBLE = "La IA local no esta disponible. Verifica que el modelo .gguf este en la carpeta models/."
 
 
 class CVRequest(BaseModel):
@@ -25,18 +25,15 @@ class CVRequest(BaseModel):
 @router.post("/mejorar-cv")
 async def mejorar_cv(req: CVRequest):
     system = (
-        "Eres un reclutador y redactor de CV experto en Colombia. Mejora el siguiente CV para que sea "
-        "atractivo para reclutadores y filtros ATS, pero MANTENLO REALISTA: NO inventes experiencias, "
-        "titulos, empresas ni habilidades que no esten en el CV original. Puedes reformular, enfatizar "
-        "logros cuantificables y usar palabras clave relevantes. "
-        "Devuelve UNICAMENTE un JSON valido con esta estructura exacta:\n"
-        "{\n"
-        '  "cv_mejorado": string,\n'
-        '  "por_que_es_bueno": string,\n'
-        '  "palabras_clave_ats": [string],\n'
-        '  "cambios_realizados": [string]\n'
-        "}\n"
-        "El cv_mejorado debe estar formateado con secciones claras y listo para copiar y pegar."
+        "Eres un reclutador experto en Colombia. Mejora el siguiente CV para que sea "
+        "atractivo para reclutadores y filtros ATS. NO inventes experiencias, titulos, "
+        "empresas ni habilidades. Reformula, enfatiza logros y usa palabras clave. "
+        "El CV mejorado debe estar listo para copiar y pegar, con secciones claras. "
+        "Devuelve SOLO un JSON valido:\n"
+        '{"cv_mejorado": "CV completo formateado", '
+        '"por_que_es_bueno": "explicacion de 2-3 frases", '
+        '"palabras_clave_ats": ["6-10 palabras"], '
+        '"cambios_realizados": ["4-6 cambios"]}'
     )
     user = f"CV ORIGINAL:\n{req.cv}\n"
     if req.vacante:
@@ -46,7 +43,7 @@ async def mejorar_cv(req: CVRequest):
         if result is None or "error" in result:
             return {
                 "cv_mejorado": _LLM_NO_DISPONIBLE,
-                "por_que_es_bueno": "",
+                "por_que_es_bueno": "El modelo de IA local no pudo procesar la solicitud. Intenta con un CV mas corto.",
                 "palabras_clave_ats": [],
                 "cambios_realizados": [],
             }

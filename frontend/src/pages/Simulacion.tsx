@@ -5,7 +5,6 @@ import {
   ReferenceLine, Legend, ComposedChart,
 } from 'recharts'
 import api from '../services/api'
-import FuentesBadge from '../components/FuentesBadge'
 import { formatCOP, formatCOPFull, formatNumber } from '../utils/format'
 
 // ===========================================================================
@@ -233,11 +232,6 @@ export default function Simulacion() {
       {tab === 'que-pasa-si' && <SimQuePasaSi />}
       {tab === 'demanda-sectorial' && <SimDemanda />}
 
-      <FuentesBadge fuentes={
-        tab === 'que-pasa-si'
-          ? ['OLE/MEN', 'Saber Pro', 'GEIH', 'Chronos T5', 'SPE/APE', 'RUES']
-          : ['GEIH mensual', 'Chronos T5', 'RUES']
-      } />
     </div>
   )
 }

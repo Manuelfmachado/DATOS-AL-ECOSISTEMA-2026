@@ -451,7 +451,7 @@ export default function MapaColombia({
                   <div className="mt-2 pt-2 border-t border-white/[0.08] space-y-1.5">
                     {d?.ingreso_promedio != null && (
                       <div className="flex justify-between text-sm">
-                        <span className="text-slate-400 font-medium">Salario prom.</span>
+                        <span className="text-slate-400 font-medium">Salario promedio</span>
                         <span className="text-slate-200 font-bold">{formatCOP(d.ingreso_promedio)}</span>
                       </div>
                     )}

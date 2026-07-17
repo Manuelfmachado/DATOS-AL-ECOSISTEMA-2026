@@ -27,6 +27,31 @@ const chartTooltip = {
 
 const MACRO_COLORS = ['#d4af37', '#3b82f6', '#22c55e', '#a855f7', '#f97316', '#ec4899', '#06b6d4', '#84cc16']
 
+// Limpiar nombres bureaucraticos de PILA a algo entendible
+function cleanPilaName(desc: string): string {
+  const d = desc.toUpperCase()
+  if (d.includes('PROFESIONAL') || d.includes('CIENTIF')) return 'Servicios profesionales'
+  if (d.includes('REGULADOR') || d.includes('FACILITAD')) return 'Administracion publica'
+  if (d.includes('APOYO A LAS EMPRES')) return 'Servicios empresariales'
+  if (d.includes('PRACTICA MEDICA') || d.includes('SALUD')) return 'Salud'
+  if (d.includes('SERVICIOS PERSONALES')) return 'Servicios personales'
+  if (d.includes('DETECTIVE') || d.includes('SEGURIDAD')) return 'Seguridad privada'
+  if (d.includes('ASOCIACIO')) return 'Asociaciones'
+  if (d.includes('ADMINISTRACION EMPRES')) return 'Gestion empresarial'
+  if (d.includes('JURIDIC')) return 'Servicios juridicos'
+  if (d.includes('COMBINADAS DE SERVICIOS ADMIN')) return 'Servicios administrativos'
+  if (d.includes('EDUCAC')) return 'Educacion'
+  if (d.includes('CONSTRUCC')) return 'Construccion'
+  if (d.includes('COMERCIO')) return 'Comercio'
+  if (d.includes('TRANSPORTE')) return 'Transporte'
+  if (d.includes('ALOJAMIENTO') || d.includes('COMIDA')) return 'Hosteleria'
+  if (d.includes('FINANCI') || d.includes('SEGURO')) return 'Finanzas'
+  if (d.includes('AGRICULT') || d.includes('GANADER') || d.includes('AGRO')) return 'Agricultura'
+  if (d.includes('INDUSTRIA') || d.includes('MANUFACTUR')) return 'Industria'
+  if (d.includes('TELECOM') || d.includes('INFORMAT')) return 'Tecnologia'
+  return desc.length > 35 ? desc.slice(0, 33) + '...' : desc
+}
+
 export default function Observatorio() {
   const [data, setData] = useState<any>(null)
   const [loading, setLoading] = useState(true)
@@ -49,6 +74,15 @@ export default function Observatorio() {
       .then((res) => res.ok ? res.json() : Promise.reject('no static'))
       .catch(() => api.get('/observatorio/dashboard').then((res) => res.data))
       .then((d: any) => {
+        // Deduplicar SPE por nombre de ocupacion (la tabla SENA tiene filas repetidas)
+        const speRaw = d.spe?.ocupaciones_demanda_creciente || []
+        const speVistos = new Set<string>()
+        const speDedup = speRaw.filter((o: any) => {
+          const nombre = o?.ocupacion || ''
+          if (speVistos.has(nombre)) return false
+          speVistos.add(nombre)
+          return true
+        })
         setData({
           kpi: d.resumen_nacional,
           tendencia: d.tendencia,
@@ -56,7 +90,7 @@ export default function Observatorio() {
           prioridad: d.prioridad,
           brecha: d.brecha,
           sectores_formales: d.sectores_formales?.sectores || [],
-          spe: d.spe?.ocupaciones_demanda_creciente || [],
+          spe: speDedup,
           mapa: d.mapa?.departamentos || [],
         })
       })
@@ -120,10 +154,10 @@ export default function Observatorio() {
   const spe = data.spe
   const mapa = data.mapa
 
-  // Procesar sectores formales PILA
+  // Procesar sectores formales PILA (nombres limpios + deduplicar)
   const formalList = [...formales]
     .reduce((acc: { sector: string; cotizantes: number }[], s: any) => {
-      const name = String(s.actividadeconomicadesc || '').replace(/^\d+\s*-\s*/, '').trim()
+      const name = cleanPilaName(String(s.actividadeconomicadesc || '').replace(/^\d+\s*-\s*/, '').trim())
       if (!name) return acc
       const existing = acc.find((a) => a.sector === name)
       if (existing) { existing.cotizantes += s.total_cotizantes || 0 }
@@ -136,15 +170,17 @@ export default function Observatorio() {
   // Procesar mapa: empleo + salarios
   const deptosEmpleo = [...mapa]
     .filter((d: any) => d.ocupados > 0)
-    .sort((a: any, b: any) => b.ocupados - a.ocupados)
-    .slice(0, 10)
 
-  const topSalarios = [...mapa]
+  // Salarios: solo departamentos con muestra suficiente (>50K ocupados)
+  const deptosSalarioConfiable = [...mapa]
+    .filter((d: any) => d.ingreso_promedio > 0 && d.ocupados >= 50000)
+
+  const topSalarios = [...deptosSalarioConfiable]
     .filter((d: any) => d.ingreso_promedio > 0)
     .sort((a: any, b: any) => b.ingreso_promedio - a.ingreso_promedio)
     .slice(0, 6)
 
-  const bottomSalarios = [...mapa]
+  const bottomSalarios = [...deptosSalarioConfiable]
     .filter((d: any) => d.ingreso_promedio > 0)
     .sort((a: any, b: any) => a.ingreso_promedio - b.ingreso_promedio)
     .slice(0, 6)
@@ -162,7 +198,7 @@ export default function Observatorio() {
       {/* ================================================================ */}
       {/* 1. KPIs nacionales */}
       {/* ================================================================ */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+      <div className="grid grid-cols-3 gap-3">
         <div className="plate card p-4 text-center">
           <p className="text-xl font-bold text-white mb-1">Ocupados</p>
           <p className="text-3xl font-bold text-white font-display mt-1">
@@ -173,12 +209,6 @@ export default function Observatorio() {
           <p className="text-xl font-bold text-white mb-1">Desempleo</p>
           <p className="text-3xl font-bold text-rose-400 font-display mt-1">
             {kpi.tasa_desempleo_nacional?.toFixed(1)}%
-          </p>
-        </div>
-        <div className="plate card p-4 text-center">
-          <p className="text-xl font-bold text-white mb-1">Salario</p>
-          <p className="text-3xl font-bold text-white font-display mt-1">
-            {formatCOP(kpi.ingreso_promedio_nacional || kpi.salario_promedio_nacional || 0)}
           </p>
         </div>
         <div className="plate card p-4 text-center">
@@ -277,15 +307,16 @@ export default function Observatorio() {
         <div className="plate card p-5">
           <div className="flex items-center justify-between mb-3 pb-2 border-b border-gold-500/20">
             <h2 className="text-xl font-bold text-white font-display flex items-center gap-2">
-              <span className="w-3 h-3 rounded-full bg-green-400" /> Salarios más altos
+              <span className="w-3 h-3 rounded-full bg-green-400" /> Salarios prom. más altos
             </h2>
             <AnalizarIAButton
               dashboard="observatorio"
-              widgetTitle="Salarios más altos"
+              widgetTitle="Salarios promedio más altos"
               widgetType="tabla"
               data={topSalarios}
             />
           </div>
+          <p className="text-xs text-slate-500 mb-2">Salario promedio mensual (GEIH) · solo deptos con +50 mil ocupados</p>
           <div className="space-y-1">
             {topSalarios.map((d: any, i: number) => (
               <div key={i} className="flex justify-between items-center py-1.5 border-b border-white/[0.04] text-sm">
@@ -300,15 +331,16 @@ export default function Observatorio() {
         <div className="plate card p-5">
           <div className="flex items-center justify-between mb-3 pb-2 border-b border-gold-500/20">
             <h2 className="text-xl font-bold text-white font-display flex items-center gap-2">
-              <span className="w-3 h-3 rounded-full bg-rose-400" /> Salarios más bajos
+              <span className="w-3 h-3 rounded-full bg-rose-400" /> Salarios prom. más bajos
             </h2>
             <AnalizarIAButton
               dashboard="observatorio"
-              widgetTitle="Salarios más bajos"
+              widgetTitle="Salarios promedio más bajos"
               widgetType="tabla"
               data={bottomSalarios}
             />
           </div>
+          <p className="text-xs text-slate-500 mb-2">Salario promedio mensual (GEIH) · solo deptos con +50 mil ocupados</p>
           <div className="space-y-1">
             {bottomSalarios.map((d: any, i: number) => (
               <div key={i} className="flex justify-between items-center py-1.5 border-b border-white/[0.04] text-sm">
@@ -407,7 +439,7 @@ export default function Observatorio() {
           </div>
           <div className="mb-3 pb-2 border-b border-gold-500/20 pr-28">
             <h2 className="text-xl font-bold text-white font-display">Sectores formales</h2>
-            <p className="text-sm text-slate-300 mt-1">Trabajadores cotizantes por actividad económica</p>
+            <p className="text-sm text-slate-300 mt-1">Personas cotizantes por actividad económica (PILA)</p>
           </div>
           <div className="space-y-0 max-h-64 overflow-y-auto">
             {formalList.map((s: any, i: number) => (
@@ -422,36 +454,50 @@ export default function Observatorio() {
           </div>
         </div>
 
-        {/* Sectores emergentes RUES */}
-        {emer?.sectores && (
+        {/* Sectores emergentes RUES - grafico historico */}
+        {emer?.sectores && (() => {
+          const top5 = emer.sectores.slice(0, 5)
+          // Transformar a formato para LineChart: [{ano, Sector1: val, Sector2: val, ...}]
+          const anosSet = new Set<number>()
+          top5.forEach((s: any) => (s.datos || []).forEach((d: any) => anosSet.add(d.ano)))
+          const anos = Array.from(anosSet).sort((a, b) => a - b)
+          const histData = anos.map((ano) => {
+            const row: any = { ano }
+            top5.forEach((s: any) => {
+              const d = (s.datos || []).find((x: any) => x.ano === ano)
+              row[s.sector] = d ? d.empresas : null
+            })
+            return row
+          })
+          return (
           <div className="plate card p-5 relative">
             <div className="absolute top-4 right-4 z-10">
               <AnalizarIAButton
                 dashboard="observatorio"
-                widgetTitle="Sectores emergentes RUES"
+                widgetTitle="Sectores emergentes RUES (historico)"
                 widgetType="grafico"
-                data={emer.sectores.slice(0, 8)}
+                data={top5}
               />
             </div>
           <div className="mb-3 pb-2 border-b border-gold-500/20 pr-28">
             <h2 className="text-xl font-bold text-white font-display">Sectores emergentes</h2>
-            <p className="text-sm text-slate-300 mt-1">Nuevas empresas registradas (último año)</p>
+            <p className="text-sm text-slate-300 mt-1">Nuevas empresas registradas por año (2020-2025)</p>
           </div>
           <ResponsiveContainer width="100%" height={260}>
-            <BarChart data={emer.sectores.slice(0, 8)} layout="vertical" margin={{ left: 10, right: 40 }}>
-              <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.04)" horizontal={false} />
-              <XAxis type="number" stroke="#e9ecf5" tick={{ fill: '#e9ecf5', fontSize: 12, fontWeight: 600 }} tickFormatter={(v) => compactNum(v)} />
-              <YAxis type="category" dataKey="sector" stroke="#e9ecf5" tick={{ fill: '#e9ecf5', fontSize: 12, fontWeight: 600 }} width={120} />
-              <Tooltip {...chartTooltip} formatter={(v: number) => [v.toLocaleString(), 'Nuevas empresas']} />
-              <Bar dataKey="empresas_nuevas_ultimo_ano" radius={[0, 3, 3, 0]}>
-                {emer.sectores.slice(0, 8).map((_: any, i: number) => (
-                  <Cell key={i} fill={i < 3 ? '#22c55e' : '#d4af37'} />
-                ))}
-              </Bar>
-            </BarChart>
+            <LineChart data={histData} margin={{ left: 10, right: 20, top: 10, bottom: 5 }}>
+              <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.04)" />
+              <XAxis dataKey="ano" stroke="#e9ecf5" tick={{ fill: '#e9ecf5', fontSize: 12, fontWeight: 600 }} />
+              <YAxis stroke="#e9ecf5" tick={{ fill: '#e9ecf5', fontSize: 11 }} tickFormatter={(v) => compactNum(v)} />
+              <Tooltip {...chartTooltip} formatter={(v: number) => [v?.toLocaleString(), '']} />
+              <Legend wrapperStyle={{ fontSize: 11, paddingTop: 8 }} />
+              {top5.map((s: any, i: number) => (
+                <Line key={i} type="monotone" dataKey={s.sector} stroke={MACRO_COLORS[i % MACRO_COLORS.length]} strokeWidth={2} dot={{ r: 3 }} connectNulls />
+              ))}
+            </LineChart>
           </ResponsiveContainer>
         </div>
-        )}
+          )
+        })()}
       </div>
 
       {/* ================================================================ */}
@@ -461,14 +507,14 @@ export default function Observatorio() {
         <div className="absolute top-4 right-4 z-10">
           <AnalizarIAButton
             dashboard="observatorio"
-            widgetTitle="Ocupaciones en alza SENA"
+            widgetTitle="Sectores en alza"
             widgetType="tabla"
             data={spe.slice(0, 8)}
           />
         </div>
         <div className="mb-3 pb-2 border-b border-gold-500/20 pr-28">
-          <h2 className="text-xl font-bold text-white font-display">Ocupaciones en alza</h2>
-          <p className="text-sm text-slate-300 mt-1">Crecimiento de demanda laboral por ocupación</p>
+          <h2 className="text-xl font-bold text-white font-display">Sectores en alza</h2>
+          <p className="text-sm text-slate-300 mt-1">Crecimiento real de empleo por sector (GEIH 2022-2025)</p>
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
           {spe.slice(0, 8).map((o: any, i: number) => (

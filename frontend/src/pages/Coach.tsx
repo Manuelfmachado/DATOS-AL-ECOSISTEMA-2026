@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from 'react'
 import api from '../services/api'
-import FuentesBadge from '../components/FuentesBadge'
 import { CoachLiveClient, CoachLiveEvent } from '../services/geminiLive'
+import { useAppMode } from '../hooks/useAppMode'
 
 interface CvResultado {
   cv_mejorado: string
@@ -58,6 +58,7 @@ interface FeedbackFinal {
 }
 
 export default function Coach() {
+  const { isOffline } = useAppMode()
   const [tab, setTab] = useState<'cv' | 'entrevista' | 'voz'>('cv')
   const [loading, setLoading] = useState(false)
 
@@ -288,7 +289,7 @@ export default function Coach() {
       <div className="flex gap-2 mb-6">
         <TabButton active={tab === 'cv'} onClick={() => setTab('cv')} label="Mejorar CV" />
         <TabButton active={tab === 'entrevista'} onClick={() => setTab('entrevista')} label="Practicar entrevista" />
-        <TabButton active={tab === 'voz'} onClick={() => setTab('voz')} label="Entrevista por voz" />
+        {!isOffline && <TabButton active={tab === 'voz'} onClick={() => setTab('voz')} label="Entrevista por voz" />}
       </div>
 
       {tab === 'cv' && (
@@ -316,6 +317,7 @@ export default function Coach() {
                   }}
                   placeholder="Pega aquí el texto de tu CV..."
                 />
+                {!isOffline && (
                 <div className="mt-3">
                   <label
                     className="flex items-center gap-2 px-4 py-2 rounded-lg cursor-pointer text-sm w-fit"
@@ -334,6 +336,7 @@ export default function Coach() {
                     />
                   </label>
                 </div>
+                )}
               </div>
 
               <div>
@@ -438,7 +441,6 @@ export default function Coach() {
             </div>
           )}
 
-          <FuentesBadge fuentes={['Gemini 2.5 Flash-Lite', 'O*NET', 'ESCO']} />
         </div>
       )}
 
@@ -638,7 +640,6 @@ export default function Coach() {
             </div>
           </div>
 
-          <FuentesBadge fuentes={['Gemini 2.5 Flash-Lite']} />
         </div>
       )}
 
@@ -648,7 +649,7 @@ export default function Coach() {
             <div className="panel-head">
               <div>
                 <h2 className="panel-title text-2xl font-bold text-white">
-                  Entrevista por voz con Gemini Live
+                  Entrevista por voz{isOffline ? '' : ' con Gemini Live'}
                 </h2>
                 <p className="panel-sub">Habla con ALBA en tiempo real. Escucha tus respuestas y responde con voz natural.</p>
               </div>
@@ -775,7 +776,7 @@ export default function Coach() {
               {liveStatus === 'connecting' && (
                 <p className="text-sm mt-3 flex items-center gap-2" style={{ color: 'var(--text-dim)' }}>
                   <span className="inline-block w-2 h-2 rounded-full animate-pulse" style={{ background: 'var(--gold-soft)' }} />
-                  Estableciendo conexión con Gemini Live...
+                  Estableciendo conexión{isOffline ? ' con IA local' : ' con Gemini Live'}...
                 </p>
               )}
               {liveStatus === 'connected' && (
@@ -798,7 +799,7 @@ export default function Coach() {
               {liveStatus === 'error' && (
                 <p className="text-sm mt-3 flex items-center gap-2" style={{ color: '#ff6b6b' }}>
                   <span className="inline-block w-2 h-2 rounded-full" style={{ background: '#ff6b6b' }} />
-                  Error de conexión. Verifica que el backend esté corriendo y tengas credenciales de Gemini configuradas.
+                  Error de conexión. Verifica que el backend esté corriendo{isOffline ? '.' : ' y tengas credenciales de Gemini configuradas.'}
                 </p>
               )}
             </div>
@@ -845,7 +846,6 @@ export default function Coach() {
             </div>
           )}
 
-          <FuentesBadge fuentes={['Gemini Live API', 'Gemini 2.5 Flash-Lite']} />
         </div>
       )}
     </div>

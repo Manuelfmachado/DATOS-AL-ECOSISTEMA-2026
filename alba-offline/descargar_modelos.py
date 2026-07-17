@@ -1,6 +1,6 @@
 """
 Descarga los modelos necesarios para ALBA Offline:
-1. Gemma 4 E4B IT (GGUF QAT 4-bit) - desde HuggingFace
+1. Qwen3.5-2B GGUF (Q4_K_M) - desde HuggingFace (~1.2 GB)
 2. OmniVoice (TTS) - se descarga automaticamente al primer uso
 
 Ejecutar una sola vez: python descargar_modelos.py
@@ -14,14 +14,9 @@ ROOT = Path(__file__).resolve().parent
 MODELS_DIR = ROOT / "models"
 MODELS_DIR.mkdir(exist_ok=True)
 
-GEMMA_REPO = "unsloth/gemma-4-E4B-it-qat-GGUF"
-GEMMA_FILENAME_PATTERNS = [
-    "gemma-4-E4B-it-qat-UD-Q4_K_XL.gguf",
-    "gemma-4-E4B-it-qat-UD-Q2_K_XL.gguf",
-]
-MMPROJ_FILE = "mmproj-F16.gguf"
-GEMMA_PATH = MODELS_DIR / "gemma-4-E4B-it-qat-GGUF.gguf"
-MMPROJ_PATH = MODELS_DIR / "mmproj-F16.gguf"
+GEMMA_REPO = "unsloth/Qwen3.5-2B-GGUF"
+GEMMA_FILENAME = "Qwen3.5-2B-Q4_K_M.gguf"
+GEMMA_PATH = MODELS_DIR / GEMMA_FILENAME
 
 
 def verificar_dependencias():
@@ -78,73 +73,36 @@ def verificar_dependencias():
 def descargar_gemma():
     if GEMMA_PATH.exists() and GEMMA_PATH.stat().st_size > 1_000_000_000:
         size_gb = GEMMA_PATH.stat().st_size / 1e9
-        print(f"  [OK] Gemma 4 E4B ya descargado ({size_gb:.1f} GB)")
+        print(f"  [OK] Qwen3.5-2B ya descargado ({size_gb:.1f} GB)")
         return True
 
-    print("\n  Descargando Gemma 4 E4B IT (QAT 4-bit)...")
+    print("\n  Descargando Qwen3.5-2B (Q4_K_M)...")
     print(f"  Repo: https://huggingface.co/{GEMMA_REPO}")
-    print(f"  Tamano estimado: ~5-6 GB")
-    print(f"  Esto puede tardar 10-30 minutos segun tu conexion...\n")
+    print(f"  Tamano estimado: ~1.2 GB")
+    print(f"  Esto puede tardar 3-8 minutos segun tu conexion...\n")
 
     try:
-        from huggingface_hub import hf_hub_download, list_repo_files
-
-        # Listar archivos del repo para encontrar el GGUF correcto
-        try:
-            files = list_repo_files(GEMMA_REPO)
-            print(f"  Archivos disponibles en el repo: {files[:10]}")
-        except Exception:
-            files = GEMMA_FILENAME_PATTERNS
-
-        # Buscar el primer archivo .gguf que coincida
-        gguf_file = None
-        for pattern in GEMMA_FILENAME_PATTERNS:
-            if pattern in files:
-                gguf_file = pattern
-                break
-
-        # Si no encontro por patron, buscar cualquier .gguf
-        if not gguf_file:
-            gguf_files = [f for f in files if f.endswith(".gguf")]
-            if gguf_files:
-                # Preferir el de 4-bit
-                for f in gguf_files:
-                    if "4" in f.lower() and "bit" in f.lower():
-                        gguf_file = f
-                        break
-                if not gguf_file:
-                    gguf_file = gguf_files[0]
-
-        if not gguf_file:
-            print(f"  [ERROR] No se encontro archivo .gguf en el repo {GEMMA_REPO}")
-            print(f"  Descarga manual desde: https://huggingface.co/{GEMMA_REPO}")
-            print(f"  Coloca el archivo .gguf en: {MODELS_DIR}/")
-            print(f"  Y renombralo a: gemma-4-E4B-it-qat-GGUF.gguf")
-            return False
-
-        print(f"  Descargando: {gguf_file}")
+        from huggingface_hub import hf_hub_download
+        print(f"  Descargando: {GEMMA_FILENAME}")
         downloaded_path = hf_hub_download(
             repo_id=GEMMA_REPO,
-            filename=gguf_file,
+            filename=GEMMA_FILENAME,
             local_dir=str(MODELS_DIR),
         )
-
-        # Mover/renombrar al nombre esperado
         downloaded = Path(downloaded_path)
         if downloaded.exists():
             if GEMMA_PATH.exists():
                 GEMMA_PATH.unlink()
             shutil_move(downloaded, GEMMA_PATH)
             size_gb = GEMMA_PATH.stat().st_size / 1e9
-            print(f"  [OK] Gemma descargado: {GEMMA_PATH.name} ({size_gb:.1f} GB)")
+            print(f"  [OK] Modelo descargado: {GEMMA_PATH.name} ({size_gb:.1f} GB)")
             return True
     except Exception as e:
-        print(f"  [ERROR] No se pudo descargar Gemma: {e}")
+        print(f"  [ERROR] No se pudo descargar: {e}")
         print(f"\n  Descarga manual:")
         print(f"  1. Ve a: https://huggingface.co/{GEMMA_REPO}")
-        print(f"  2. Descarga el archivo .gguf (version 4-bit, ~5-6 GB)")
+        print(f"  2. Descarga: {GEMMA_FILENAME} (~2.6 GB)")
         print(f"  3. Colocalo en: {MODELS_DIR}/")
-        print(f"  4. Renombralo a: gemma-4-E4B-it-qat-GGUF.gguf")
         return False
 
 
@@ -173,8 +131,22 @@ def verificar_gpu():
             print("  Gemma correra en CPU (mas lento pero funcional)")
             return False
     except Exception:
-        print("  [INFO] No se detecto GPU")
-        print("  Gemma correra en CPU (mas lento pero funcional)")
+            print("  [INFO] No se detecto GPU")
+            print("  El modelo correra en CPU (funcional)")
+        else:
+            print("  [INFO] GPU detectada")
+    except Exception:
+        print("  El modelo correra en CPU (funcional)")
+
+    print("\n" + "-" * 55)
+    print("1/2 - Modelo LLM: Qwen3.5-2B")
+    print("-" * 55)
+
+    if not descargar_gemma():
+        print("\n  [ADVERTENCIA] No se pudo descargar el modelo LLM.")
+        print("  ALBA funcionara pero las funciones de IA no estaran disponibles.")
+        print("  Puedes descargar el modelo manualmente desde:")
+        print(f"  https://huggingface.co/{GEMMA_REPO}")
         return False
 
 
@@ -187,7 +159,7 @@ def main():
     verificar_gpu()
 
     print("\n" + "-" * 55)
-    print("1/2 - Modelo LLM: Gemma 4 E4B")
+    print("1/2 - Modelo LLM: Qwen3.5-2B")
     print("-" * 55)
     ok_gemma = descargar_gemma()
 

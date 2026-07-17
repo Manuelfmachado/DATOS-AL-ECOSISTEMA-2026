@@ -1,56 +1,72 @@
 """
-Cliente LLM local usando llama-server + Gemma 4 E4B con mmproj (audio nativo).
-Reemplaza a Gemini/DeepInfra en la version offline.
+Cliente LLM local usando llama-cpp-python con Qwen3.5-2B.
+Funciona 100% offline, sin servidor externo, sin internet.
 
 Arquitectura:
-  - llama-server se ejecuta como subprocess con --model + --mmproj
-  - El backend FastAPI se comunica con llama-server via HTTP (API OpenAI-compatible)
-  - Gemma 4 E4B procesa texto, imagenes y audio nativamente
-
-Solo 2 modelos en todo el sistema:
-  1. Gemma 4 E4B (LLM + audio + multimodal) — incluido en el ZIP
-  2. Pocket TTS (TTS) — incluido en el ZIP
+  - Llama el modelo GGUF directamente en memoria (in-process)
+  - Lazy init: se carga solo al primer uso
+  - Cache: se mantiene en memoria mientras el backend este vivo
+  - Timeout: 300s max por llamada (configurable con LLM_TIMEOUT)
 """
 import os
-import sys
 import json
 import time
-import subprocess
-import requests
+import re
 from pathlib import Path
 from typing import Any
+from concurrent.futures import ThreadPoolExecutor, TimeoutError as FutureTimeoutError
 
 _MODELS_DIR = Path(__file__).resolve().parent.parent.parent.parent / "models"
 
 GEMMA_MODEL_PATH = os.environ.get(
     "GEMMA_MODEL_PATH",
-    str(_MODELS_DIR / "gemma-4-E4B-it-qat-GGUF.gguf"),
-)
-MMPROJ_PATH = os.environ.get(
-    "MMPROJ_PATH",
-    str(_MODELS_DIR / "mmproj-F16.gguf"),
+    str(_MODELS_DIR / "Qwen3.5-2B-Q4_K_M.gguf"),
 )
 
-LLAMA_SERVER_URL = os.environ.get("LLAMA_SERVER_URL", "http://127.0.0.1:8081")
-LLAMA_SERVER_PORT = int(os.environ.get("LLAMA_SERVER_PORT", "8081"))
+LLM_TIMEOUT = int(os.environ.get("LLM_TIMEOUT", "300"))
+LLM_N_THREADS = int(os.environ.get("LLM_N_THREADS", "2"))
 
-_server_process = None
-_server_ready = False
+_llm = None
 
 
-def _detect_gpu():
-    """Detecta si hay GPU NVIDIA disponible."""
+def _get_llm():
+    """Lazy init: carga el modelo GGUF en memoria solo cuando se necesita."""
+    global _llm
+    if _llm is not None:
+        return _llm
+    if not _is_available():
+        return None
     try:
-        result = subprocess.run(["nvidia-smi"], capture_output=True, text=True)
-        if result.returncode == 0:
-            return True
-    except Exception:
-        pass
-    return False
+        from llama_cpp import Llama
+        path = GEMMA_MODEL_PATH
+        if not Path(path).exists():
+            # Fallback: cualquier .gguf en models/
+            ggufs = sorted(_MODELS_DIR.glob("*.gguf"))
+            if ggufs:
+                path = str(ggufs[0])
+                print(f"[LLM] Qwen3.5-2B no encontrado, usando: {Path(path).name}")
+            else:
+                print(f"[LLM] No se encontro ningun .gguf en {_MODELS_DIR}")
+                print(f"[LLM] Ejecuta: python descargar_modelos.py")
+                return None
+
+        print(f"[LLM] Cargando modelo: {Path(path).name}...")
+        t0 = time.time()
+        _llm = Llama(
+            model_path=path,
+            n_ctx=4096,
+            n_threads=LLM_N_THREADS,
+            n_threads_batch=LLM_N_THREADS,
+            verbose=False,
+        )
+        print(f"[LLM] Modelo cargado en {time.time() - t0:.0f}s")
+        return _llm
+    except Exception as e:
+        print(f"[LLM] Error cargando modelo: {e}")
+        return None
 
 
-def _llama_available() -> bool:
-    """Verifica si llama-cpp-python está instalado."""
+def _is_available() -> bool:
     try:
         import llama_cpp  # noqa: F401
         return True
@@ -58,184 +74,93 @@ def _llama_available() -> bool:
         return False
 
 
-def _start_server():
-    """Inicia llama-server como subprocess con modelo + mmproj."""
-    global _server_process, _server_ready
-
-    if _server_ready:
-        return True
-
-    if not _llama_available():
-        print("[LLM] llama-cpp-python NO esta instalado. Instala con: pip install llama-cpp-python")
-        print("[LLM] Las funciones de IA (match, emprende, coach) no estaran disponibles.")
-        print("[LLM] Los datos del Observatorio y Prediccion si funcionan (no requieren LLM).")
-        return False
-
-    if not Path(GEMMA_MODEL_PATH).exists():
-        print(f"[LLM] Modelo no encontrado en {GEMMA_MODEL_PATH}")
-        print("[LLM] Las funciones de IA no estaran disponibles.")
-        return False
-
-    has_gpu = _detect_gpu()
-    ngl = "999" if has_gpu else "0"
-    n_threads = int(os.environ.get("N_THREADS", "4"))
-
-    print(f"[LLM] Iniciando llama-server...")
-    print(f"[LLM] Modelo: {GEMMA_MODEL_PATH}")
-    print(f"[LLM] MMProj: {MMPROJ_PATH}")
-    print(f"[LLM] GPU: {'SI' if has_gpu else 'NO (CPU)'}")
-    print(f"[LLM] Puerto: {LLAMA_SERVER_PORT}")
-
-    cmd = [
-        sys.executable, "-m", "llama_cpp.server",
-        "--model", GEMMA_MODEL_PATH,
-        "--mmproj", MMPROJ_PATH,
-        "--host", "127.0.0.1",
-        "--port", str(LLAMA_SERVER_PORT),
-        "--n-gpu-layers", ngl,
-        "--n-threads", str(n_threads),
-        "--ctx-size", "8192",
-        "--chat-format", "gemma",
-    ]
-
-    try:
-        _server_process = subprocess.Popen(
-            cmd,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.STDOUT,
-            text=True,
-        )
-    except Exception as e:
-        print(f"[LLM] No se pudo iniciar llama-server: {e}")
-        return False
-
-    # Esperar a que el servidor este listo
-    print("[LLM] Esperando a que el servidor este listo...")
-    for _ in range(60):
-        try:
-            r = requests.get(f"{LLAMA_SERVER_URL}/health", timeout=2)
-            if r.status_code == 200:
-                _server_ready = True
-                print("[LLM] Servidor listo!")
-                return True
-        except Exception:
-            pass
-        time.sleep(1)
-
-    print("[LLM] ERROR: El servidor no respondio en 60 segundos")
-    return False
-
-
-def _stop_server():
-    """Detiene llama-server."""
-    global _server_process, _server_ready
-    if _server_process:
-        _server_process.terminate()
-        _server_process.wait(timeout=10)
-        _server_process = None
-    _server_ready = False
-
-
-def _call_api(messages: list, temperature: float = 0.4, max_tokens: int = 2048) -> str:
-    """Llama a la API de llama-server (compatible con OpenAI)."""
-    if not _server_ready:
-        _start_server()
-
-    payload = {
-        "messages": messages,
-        "temperature": temperature,
-        "top_p": 0.95,
-        "top_k": 64,
-        "max_tokens": max_tokens,
-    }
-
-    r = requests.post(
-        f"{LLAMA_SERVER_URL}/v1/chat/completions",
-        json=payload,
-        timeout=120,
-    )
-    r.raise_for_status()
-    data = r.json()
-    return data["choices"][0]["message"]["content"] or ""
-
-
 def _extract_json(text: str) -> dict[str, Any]:
-    import re
-    match = re.search(r"```json\s*(.*?)\s*```", text, re.DOTALL)
+    match = re.search(r"```(?:json)?\s*(.*?)\s*```", text, re.DOTALL)
     if match:
-        return json.loads(match.group(1))
+        try:
+            return json.loads(match.group(1))
+        except json.JSONDecodeError:
+            pass
     match = re.search(r"(\{.*\})", text, re.DOTALL)
     if match:
-        return json.loads(match.group(1))
-    raise ValueError("No se encontro JSON valido en la respuesta del modelo")
+        try:
+            return json.loads(match.group(1))
+        except json.JSONDecodeError:
+            pass
+    # Intentar reparar JSON truncado: cerrar llaves y comillas pendientes
+    stripped = text.strip()
+    if stripped.startswith("{"):
+        # Contar llaves abiertas vs cerradas
+        opens = stripped.count("{") - stripped.count("}")
+        if opens > 0:
+            stripped += "}" * opens
+        # Contar corchetes
+        opens = stripped.count("[") - stripped.count("]")
+        if opens > 0:
+            stripped += "]" * opens
+        # Cerrar strings truncados
+        if stripped.rstrip().endswith('"'):
+            pass  # ya termina bien
+        elif '"' in stripped:
+            stripped += '"'
+        try:
+            return json.loads(stripped)
+        except json.JSONDecodeError:
+            pass
+    return {"error": "No se encontro JSON valido", "raw": text[:200]}
 
 
-def call_llm_json(system_prompt: str, user_prompt: str, temperature: float = 0.3) -> dict[str, Any]:
-    """Llama al LLM y devuelve el contenido como JSON."""
-    text = call_llm_text(system_prompt, user_prompt, temperature, 1500)
-    if text is None:
-        return {"error": "LLM no disponible. Instala llama-cpp-python para activar las funciones de IA."}
-    return _extract_json(text)
-
-
-def call_llm_text(system_prompt: str, user_prompt: str, temperature: float = 0.4, max_tokens: int = 2048) -> str:
-    """Llama al LLM y devuelve texto plano."""
-    if not _llama_available():
-        return None
-    if not _start_server():
+def call_llm_text(system_prompt: str, user_prompt: str, temperature: float = 0.4, max_tokens: int = 600) -> str | None:
+    """Llama al LLM y devuelve texto plano. Timeout controlado por LLM_TIMEOUT (default 120s)."""
+    llm = _get_llm()
+    if llm is None:
         return None
     messages = [
         {"role": "system", "content": system_prompt},
         {"role": "user", "content": user_prompt},
     ]
     try:
-        return _call_api(messages, temperature, max_tokens)
+        t0 = time.time()
+        with ThreadPoolExecutor(max_workers=1) as executor:
+            future = executor.submit(
+                llm.create_chat_completion,
+                messages=messages,
+                max_tokens=max_tokens,
+                temperature=temperature,
+                repeat_penalty=1.1,
+            )
+            r = future.result(timeout=LLM_TIMEOUT)
+        elapsed = time.time() - t0
+        tokens = r.get("usage", {}).get("completion_tokens", 0)
+        tps = tokens / elapsed if elapsed > 0 else 0
+        content = r["choices"][0]["message"]["content"] or ""
+        # Limpiar think tags si el modelo los genero
+        content = re.sub(r"<\s*think\s*>.*?<\s*/\s*think\s*>", "", content, flags=re.DOTALL).strip()
+        print(f"[LLM] {tokens} tokens en {elapsed:.1f}s ({tps:.1f} tok/s)")
+        return content
+    except FutureTimeoutError:
+        print(f"[LLM] Timeout: el modelo no respondio en {LLM_TIMEOUT}s")
+        return None
     except Exception as e:
-        print(f"[LLM] Error llamando al modelo: {e}")
+        print(f"[LLM] Error: {e}")
         return None
 
 
-def call_llm_audio(system_prompt: str, audio_path: str, temperature: float = 0.4) -> str:
-    """
-    Procesa audio nativamente con Gemma 4 E4B via mmproj.
-    Gemma 4 E4B tiene codificador de audio nativo (~300M params).
-    El archivo mmproj-F16.gguf habilita esta capacidad en llama-server.
-
-    El audio se envia como input multimodal al modelo, que lo transcribe
-    y genera una respuesta en un solo paso.
-    """
-    import base64
-
-    if not Path(audio_path).exists():
-        raise FileNotFoundError(f"Archivo de audio no encontrado: {audio_path}")
-
-    if not _server_ready:
-        _start_server()
-
-    # Leer audio y convertir a base64
-    with open(audio_path, "rb") as f:
-        audio_b64 = base64.b64encode(f.read()).decode()
-
-    messages = [
-        {"role": "system", "content": system_prompt},
-        {"role": "user", "content": [
-            {"type": "text", "text": "Transcribe y responde el siguiente audio:"},
-            {"type": "audio_url", "audio_url": {"url": f"data:audio/wav;base64,{audio_b64}"}},
-        ]},
-    ]
-
+def call_llm_json(system_prompt: str, user_prompt: str, temperature: float = 0.3, max_tokens: int = 1000) -> dict[str, Any]:
+    """Llama al LLM y devuelve el contenido como JSON."""
+    text = call_llm_text(system_prompt, user_prompt, temperature, max_tokens)
+    if text is None:
+        return {"error": "LLM no disponible"}
     try:
-        return _call_api(messages, temperature, 2048)
-    except Exception as e:
-        # Si el servidor no soporta audio nativo, informar
-        print(f"[LLM] Error procesando audio nativo: {e}")
-        raise
+        return _extract_json(text)
+    except Exception:
+        return {"error": "No se pudo parsear JSON", "raw": text[:500], "last_chars": text[-200:]}
+
+
+def call_llm_audio(system_prompt: str, audio_path: str, temperature: float = 0.4) -> str | None:
+    """Procesa audio. Requiere mmproj (no implementado sin llama-server)."""
+    return None
 
 
 def is_model_loaded() -> bool:
-    return _server_ready
-
-
-def shutdown():
-    """Detiene el servidor. Llamar al cerrar la aplicacion."""
-    _stop_server()
+    return _get_llm() is not None

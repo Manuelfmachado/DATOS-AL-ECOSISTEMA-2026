@@ -20,7 +20,7 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
         <Routes>
           <Route path="/" element={<Layout />}>
             <Route index element={<Dashboard />} />
-            <Route path="observatorio" element={<Observatorio />} />
+            <Route path="observatorio" element={<ErrorBoundary><Observatorio /></ErrorBoundary>} />
             <Route path="prediccion" element={<ErrorBoundary><Prediccion /></ErrorBoundary>} />
             <Route path="match" element={<Match />} />
             <Route path="emprende" element={<EmprendeIA />} />

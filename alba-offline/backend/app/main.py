@@ -1,6 +1,6 @@
 """
 ALBA Offline - Backend FastAPI principal.
-Usa Gemma 4 E4B local en lugar de Gemini cloud.
+Usa Qwen3.5-2B local en lugar de Gemini cloud.
 Sirve el frontend React compilado (mismo que ALBA Online).
 """
 import os
@@ -14,7 +14,7 @@ from app.routers import observatorio, prediccion, match, emprende, coach, simula
 
 app = FastAPI(
     title="ALBA Offline - Analitica Laboral Basada en IA",
-    description="Version offline 100% local con Gemma 4 E4B",
+    description="Version offline 100% local con Qwen3.5-2B",
     version="1.0.0-offline",
 )
 
@@ -54,7 +54,7 @@ if (_FRONTEND_DIR / "colombia.geo.json").exists():
 if (_FRONTEND_DIR / "dashboard.json").exists():
     @app.get("/dashboard.json")
     async def dashboard():
-        return FileResponse(str(_FRONTEND_DIR / "dashboard.json"))
+        return FileResponse(str(_FRONTEND_DIR / "dashboard.json"), headers={"Cache-Control": "no-cache, no-store, must-revalidate"})
 
 if (_FRONTEND_DIR / "logo-alba.png").exists():
     @app.get("/logo-alba.png")
@@ -75,14 +75,27 @@ async def root():
     return {"proyecto": "ALBA Offline", "docs": "/docs"}
 
 
-@app.get("/health")
-async def health():
+def _health_payload():
     from app.db.sqlite_db import list_tables
+    from app.services.llm_local import GEMMA_MODEL_PATH
+    import os
+    model_name = os.path.basename(GEMMA_MODEL_PATH).replace(".gguf", "").replace("-GGUF", "")
     return {
         "status": "ok",
         "mode": "offline",
+        "llm": model_name or "Qwen3.5-2B",
         "db_tables": len(list_tables()),
     }
+
+
+@app.get("/health")
+async def health():
+    return _health_payload()
+
+
+@app.get("/api/health")
+async def api_health():
+    return _health_payload()
 
 
 # Catch-all para SPA routing (React Router)

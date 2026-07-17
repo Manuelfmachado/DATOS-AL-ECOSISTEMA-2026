@@ -1,5 +1,5 @@
 import { useChat } from '../context/ChatContext'
-import albaChatBotSvg from '../../SVG/ALBA CHAT BOT_2.svg?raw'
+import albaChatBotSvg from '../../SVG/ALBA ROSTRO.svg?raw'
 
 interface AnalizarIAButtonProps {
   dashboard: string

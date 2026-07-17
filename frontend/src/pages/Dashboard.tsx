@@ -3,6 +3,8 @@ import { Link } from 'react-router-dom'
 import api from '../services/api'
 import MapaColombia, { type DeptoData } from '../components/MapaColombia'
 import { formatCOP, formatCOPFull } from '../utils/format'
+import logoAlbaSvg from '../../SVG/LOGO FINAL.svg?raw'
+import albaRostroSvg from '../../SVG/ALBA ROSTRO.svg?raw'
 
 interface ProfesionDesempleo {
   profesion: string
@@ -178,11 +180,19 @@ export default function Dashboard() {
     <>
       {/* Top bar */}
       <header className="topbar">
-        <div className="flex items-center gap-4">
-          <img src="/logo-alba.png" alt="ALBA" className="h-14 w-auto" />
-          <div>
-            <h1 className="text-5xl font-bold text-white font-display">Bienvenido a ALBA</h1>
-            <p className="hello-sub">Tu plataforma de inteligencia laboral de Colombia.</p>
+        <div className="flex items-center gap-4 w-full">
+          <span className="nav-svg-icon flex-shrink-0" dangerouslySetInnerHTML={{ __html: logoAlbaSvg }} style={{ width: 80, height: 80 }} />
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center gap-4">
+              <h1 className="text-5xl font-bold text-white font-display">Bienvenido a ALBA</h1>
+              <span className="nav-svg-icon flex-shrink-0" dangerouslySetInnerHTML={{ __html: albaRostroSvg }} style={{ width: 60, height: 60 }} />
+            </div>
+            <p className="hello-sub">
+              <span className="text-2xl text-gold-400 font-bold font-display">A</span>nalítica{' '}
+              <span className="text-gold-400 font-bold font-display">L</span>aboral{' '}
+              <span className="text-gold-400 font-bold font-display">B</span>asada en{' '}
+              <span className="text-gold-400 font-bold font-display">IA</span>
+            </p>
           </div>
         </div>
 
@@ -191,11 +201,11 @@ export default function Dashboard() {
       {/* Flujo ALBA */}
       <section className="flujo-alba">
         {[
-          { to: '/observatorio', label: 'Observo', desc: '¿Qué pasa en el mercado?' },
-          { to: '/prediccion', label: 'Predigo', desc: '¿Qué viene a 5 y 10 años?' },
-          { to: '/match', label: 'Encajo', desc: '¿Dónde encaja mi perfil?' },
-          { to: '/emprende', label: 'Decido', desc: '¿Trabajo o emprendo?' },
-          { to: '/coach', label: 'Me preparo', desc: 'CV, entrevista, ruta.' },
+          { to: '/observatorio', label: 'Observar', desc: '' },
+          { to: '/observatorio', label: 'Analizar', desc: '' },
+          { to: '/prediccion', label: 'Predecir', desc: '' },
+          { to: '/emprende', label: 'Decidir', desc: '' },
+          { to: '/coach', label: 'Mejorar', desc: '' },
         ].map((paso, i, arr) => (
           <div key={paso.label} className="flujo-paso">
             <Link to={paso.to} className="flujo-card">
@@ -208,7 +218,7 @@ export default function Dashboard() {
       </section>
 
       {/* KPIs nacionales: todos en una misma línea */}
-      <section className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-3">
+      <section className="grid grid-cols-2 lg:grid-cols-3 gap-3 mb-3">
         <div className="plate card py-3 px-4 flex items-center gap-3">
           <div>
             <div className="kpi-label leading-none">Ocupados Colombia</div>
@@ -227,14 +237,6 @@ export default function Dashboard() {
           ) : (
             resumenNacional ? (resumenNacional.tasa_desempleo_nacional ?? 0).toFixed(1) : '—'
           )}%</p>
-        </div>
-        <div className="plate card p-3 text-center flex flex-col justify-center min-h-[64px]">
-          <p className="kpi-label">Salario</p>
-          <p className="text-base lg:text-lg font-bold text-white font-display leading-none whitespace-nowrap overflow-hidden text-ellipsis px-1">{loadingKpis ? (
-            <span className="inline-block w-20 h-5 bg-slate-700/40 rounded animate-pulse" />
-          ) : (
-            resumenNacional ? formatCOP(resumenNacional.ingreso_promedio_nacional || resumenNacional.salario_promedio_nacional || 0) : '—'
-          )} COP</p>
         </div>
         <div className="plate card p-3 text-center flex flex-col justify-center min-h-[64px]">
           <p className="kpi-label">Informalidad</p>

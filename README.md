@@ -193,8 +193,8 @@ Ver [`alba-offline/`](alba-offline/) y [`alba-offline/README_OFFLINE.txt`](alba-
 
 ## Equipo
 
-- **Manuel Francisco Machado** — Líder · Data / IA / Frontend
-- **Maria Angel Henao** — Investigación / Documentación
+- **Manuel Francisco Machado** — Líder · Magíster en Inteligencia Artificial
+- **Maria Angel Henao** — Estudiante de Licenciatura · Investigación
 
 ---
 
