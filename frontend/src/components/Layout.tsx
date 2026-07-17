@@ -30,9 +30,7 @@ export default function Layout() {
   return (
     <div className="app">
       <aside className="sidebar">
-        {open ? (
-          <SidebarChat />
-        ) : (
+        {!open && (
           <>
             <span className="screw tl" />
             <span className="screw tr" />
@@ -87,6 +85,8 @@ export default function Layout() {
       <main className="main">
         <Outlet />
       </main>
+
+      {open && <SidebarChat />}
     </div>
   )
 }
