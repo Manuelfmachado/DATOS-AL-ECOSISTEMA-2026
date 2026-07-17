@@ -442,10 +442,8 @@ export default function MapaColombia({
               // Rankings: ordenar de mejor a peor
               const rankDesempleo = [...data].filter(x => x.tasa_desempleo != null).sort((a,b) => (a.tasa_desempleo ?? 0) - (b.tasa_desempleo ?? 0))
               const rankFormalidad = [...data].filter(x => x.tasa_formalidad != null).sort((a,b) => (b.tasa_formalidad ?? 0) - (a.tasa_formalidad ?? 0))
-              const rankIngreso = [...data].filter(x => x.ingreso_promedio != null).sort((a,b) => (b.ingreso_promedio ?? 0) - (a.ingreso_promedio ?? 0))
               const posDes = rankDesempleo.findIndex(x => x.departamento === d?.departamento) + 1
               const posFormal = rankFormalidad.findIndex(x => x.departamento === d?.departamento) + 1
-              const posIngreso = rankIngreso.findIndex(x => x.departamento === d?.departamento) + 1
 
               return (
                 <>
@@ -457,6 +455,9 @@ export default function MapaColombia({
                       />
                     )}
                     <span className="font-bold text-gold-400 text-base">{displayName}</span>
+                    {informalidad != null && posFormal > 0 && (
+                      <span className="text-[10px] text-rose-400 font-bold ml-auto">#{posFormal}</span>
+                    )}
                   </div>
                   {v !== null && (
                     <>
@@ -494,13 +495,13 @@ export default function MapaColombia({
                     {d?.no_ocupados != null && (
                       <div className="flex justify-between text-sm">
                         <span className="text-slate-400 font-medium">Sin empleo</span>
-                        <span className="text-slate-200 font-bold">{d.no_ocupados >= 1000000 ? `${(d.no_ocupados/1000000).toFixed(1)}M` : d.no_ocupados.toLocaleString('es-CO')}</span>
+                        <span className="text-slate-200 font-bold">{d.no_ocupados >= 1000000 ? `${(d.no_ocupados/1000000).toFixed(1)}M` : Math.round(d.no_ocupados).toLocaleString('es-CO')}</span>
                       </div>
                     )}
                     {d?.ingreso_promedio != null && (
                       <div className="flex justify-between text-sm">
                         <span className="text-slate-400 font-medium">Salario promedio</span>
-                        <span className="text-slate-200 font-bold">{formatCOP(d.ingreso_promedio)} {posIngreso > 0 && <span className="text-[10px] text-slate-500">#{posIngreso}</span>}</span>
+                        <span className="text-slate-200 font-bold">{formatCOP(d.ingreso_promedio)}</span>
                       </div>
                     )}
                     {d?.mujeres_pct != null && (
@@ -512,7 +513,7 @@ export default function MapaColombia({
                     {informalidad != null && (
                       <div className="flex justify-between text-sm">
                         <span className="text-slate-400 font-medium">Informalidad</span>
-                        <span className="text-slate-200 font-bold">{informalidad.toFixed(1)}% {posFormal > 0 && <span className="text-[10px] text-slate-500">#{posFormal}</span>}</span>
+                        <span className="text-slate-200 font-bold">{informalidad.toFixed(1)}%</span>
                       </div>
                     )}
                     {d?.tasa_desempleo != null && metric !== 'desempleo' && (
