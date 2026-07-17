@@ -28,7 +28,7 @@ export default function Layout() {
   const { open } = useChat()
 
   return (
-    <div className={`app ${open ? 'app-chat-open' : ''}`}>
+    <div className="app">
       <aside className="sidebar">
         {open ? (
           <SidebarChat />
