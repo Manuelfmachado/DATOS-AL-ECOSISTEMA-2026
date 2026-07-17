@@ -66,6 +66,20 @@ export default function Layout() {
                 </NavLink>
               ))}
             </nav>
+
+            <div className="mt-auto pb-4 px-3">
+              <a
+                href="https://github.com/Manuelfmachado/DATOS-AL-ECOSISTEMA-2026/releases/latest"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-2 px-3 py-2.5 rounded-lg border border-amber-500/30 bg-amber-500/10 hover:bg-amber-500/20 transition-all text-amber-400 hover:text-amber-300 text-sm font-medium"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-4 h-4 flex-shrink-0">
+                  <path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"/>
+                </svg>
+                <span className="text-xs">Descargar ALBA Offline</span>
+              </a>
+            </div>
           </>
         )}
       </aside>
