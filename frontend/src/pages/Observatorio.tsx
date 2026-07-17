@@ -60,6 +60,7 @@ export default function Observatorio() {
   const deptoDefault = departamentosLista.find((d) => d.nombre === 'Bogotá')?.nombre || (departamentosLista[0]?.nombre ?? null)
 
   const [deptoSeleccionado, setDeptoSeleccionado] = useState<string | null>(deptoDefault)
+  const [selectedDepto, setSelectedDepto] = useState<string | null>(null)
   const [sectoresDepto, setSectoresDepto] = useState<any[] | null>(null)
 
   useEffect(() => {
@@ -677,20 +678,43 @@ export default function Observatorio() {
               const isUrgente = d.indice_prioridad >= 70
               const isAtencion = d.indice_prioridad >= 50
               const barColor = isUrgente ? '#ef4444' : isAtencion ? '#f59e0b' : '#22c55e'
+              const sel = selectedDepto === d.departamento
+              const desglose = d.desglose || []
               return (
-                <div key={d.departamento} className="flex items-center gap-3 bg-white/[0.02] rounded-lg px-3 py-2 border border-white/[0.04]">
-                  <div className="flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold" style={{ backgroundColor: `${barColor}20`, color: barColor }}>
-                    {d.indice_prioridad}
-                  </div>
-                  <div className="min-w-0 flex-1">
-                    <p className="text-sm text-slate-200 font-medium truncate">{cleanDepto(d.departamento)}</p>
-                    <div className="flex items-center gap-2 mt-0.5">
-                      <div className="flex-1 h-1.5 bg-white/5 rounded-full overflow-hidden">
-                        <div className="h-full rounded-full transition-all" style={{ width: `${d.indice_prioridad}%`, backgroundColor: barColor }} />
+                <div key={d.departamento}>
+                  <div
+                    onClick={() => setSelectedDepto(sel ? null : d.departamento)}
+                    className={`flex items-center gap-3 bg-white/[0.02] rounded-lg px-3 py-2 border cursor-pointer transition-all ${
+                      sel ? 'border-amber-500/40 bg-amber-500/5' : 'border-white/[0.04] hover:border-white/[0.08]'
+                    }`}
+                  >
+                    <div className="flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold" style={{ backgroundColor: `${barColor}20`, color: barColor }}>
+                      {d.indice_prioridad}
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <p className="text-sm text-slate-200 font-medium truncate">{cleanDepto(d.departamento)}</p>
+                      <div className="flex items-center gap-2 mt-0.5">
+                        <div className="flex-1 h-1.5 bg-white/5 rounded-full overflow-hidden">
+                          <div className="h-full rounded-full transition-all" style={{ width: `${d.indice_prioridad}%`, backgroundColor: barColor }} />
+                        </div>
+                        <span className="text-[10px] uppercase font-bold" style={{ color: barColor }}>{d.nivel}</span>
                       </div>
-                      <span className="text-[10px] uppercase font-bold" style={{ color: barColor }}>{d.nivel}</span>
                     </div>
                   </div>
+                  {sel && desglose.length > 0 && (
+                    <div className="mt-1 ml-12 px-3 py-2 bg-white/[0.02] rounded-lg border border-amber-500/15 text-[11px] text-slate-400 space-y-0.5">
+                      {desglose.filter(Boolean).map((line: string, i: number) => (
+                        <div key={i} className="flex items-center gap-1.5">
+                          <span className="w-1 h-1 rounded-full bg-amber-500/60 flex-shrink-0" />
+                          <span>{line}</span>
+                        </div>
+                      ))}
+                      <div className="text-[10px] text-slate-500 pt-1 border-t border-white/[0.04] mt-1">
+                        {d.tasa_desempleo != null && `Desempleo ${d.tasa_desempleo}%`}
+                        {d.dnp_desempeno != null && ` · DNP ${d.dnp_desempeno}/100`}
+                      </div>
+                    </div>
+                  )}
                 </div>
               )
             })}

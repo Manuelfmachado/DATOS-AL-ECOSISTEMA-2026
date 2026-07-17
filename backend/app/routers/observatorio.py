@@ -1329,25 +1329,56 @@ def _calcular_sectores_emergentes():
 def _calcular_indice_prioridad():
     try:
         geih = pd.read_csv(DATA_PROCESSED / "geih_resumen_departamento.csv")
+        desempleo = pd.read_csv(DATA_PROCESSED / "geih_desempleo_departamento.csv")
+        dnp = pd.read_csv(DATA_PROCESSED / "dnp_desempeno_departamento.csv")
         rues = pd.read_csv(DATA_PROCESSED / "rues_empresas_nuevas.csv")
         ultimo_anio = int(rues["anio_matricula"].max())
         nuevas_total_ultimo = rues[rues["anio_matricula"] == ultimo_anio]["empresas_nuevas"].sum()
+
+        # Mapas para cruce
+        dnp_map = {}
+        for _, r in dnp.iterrows():
+            dnp_map[_norm_depto(r["departamento"])] = r.get("promedio_desempeno", 50)
+
+        des_map = {}
+        for _, r in desempleo.iterrows():
+            deps_key = _norm_depto(r["departamento"])
+            ocup = r.get("ocupados", r.get("no_ocupados", 0))
+            if isinstance(ocup, (int, float)) and ocup:
+                des_map[deps_key] = float(ocup)
+
         resultados = []
         for _, row in geih.iterrows():
             depto = row["departamento"]
+            key = _norm_depto(depto)
             ocupados = row.get("ocupados", 0) or 0
             ingreso = row.get("ingreso_promedio", 0) or 0
-            formalidad = (row.get("tasa_formalidad", 0) or 0) * 100 if row.get("tasa_formalidad", 0) < 1 else row.get("tasa_formalidad", 0)
-            educacion = (row.get("pct_educacion_superior", 0) or 0) * 100 if row.get("pct_educacion_superior", 0) < 1 else row.get("pct_educacion_superior", 0)
+            formalidad = (row.get("tasa_formalidad", 0) or 0) * 100 if float(row.get("tasa_formalidad", 0) or 0) < 1 else row.get("tasa_formalidad", 0)
+            educacion = (row.get("pct_educacion_superior", 0) or 0) * 100 if float(row.get("pct_educacion_superior", 0) or 0) < 1 else row.get("pct_educacion_superior", 0)
+
+            # Tasa desempleo
+            no_ocu = des_map.get(key, 0)
+            tasa_des = round(no_ocu / (ocupados + no_ocu) * 100, 1) if (ocupados + no_ocu) > 0 else 0
+
+            # DNP desempeño (0-100, invertido: bajo = peor = más urgente)
+            dnp_val = float(dnp_map.get(key, 50))
+            dnp_penal = max(0, 100 - dnp_val)
+
+            # Score compuesto con DNP y desempleo
+            informalidad = max(0, 100 - (formalidad or 0))
             ingreso_norm = max(0, min(100, ingreso / 3_000_000 * 100)) if ingreso > 0 else 0
-            score = (
-                (100 - min(100, formalidad or 0)) * 0.35 +
-                (100 - min(100, educacion or 0)) * 0.25 +
-                (100 - ingreso_norm) * 0.25 +
-                (0 if ocupados > 500_000 else 15)
-            )
+            pen_tamano = 0 if ocupados > 500_000 else 10
+
+            contrib_informalidad = round(informalidad * 0.25, 1)
+            contrib_desempleo = round(tasa_des * 0.25, 1)
+            contrib_dnp = round(dnp_penal * 0.20, 1)
+            contrib_educacion = round(max(0, 100 - educacion) * 0.15, 1)
+            contrib_ingreso = round(max(0, 100 - ingreso_norm) * 0.05, 1)
+
+            score = contrib_informalidad + contrib_desempleo + contrib_dnp + contrib_educacion + contrib_ingreso + pen_tamano
             score = round(max(20, min(85, score)))
             tag = "urgente" if score >= 70 else ("atencion" if score >= 50 else "estable")
+
             resultados.append({
                 "departamento": depto,
                 "indice_prioridad": score,
@@ -1356,6 +1387,16 @@ def _calcular_indice_prioridad():
                 "ingreso_promedio": round(ingreso),
                 "tasa_formalidad": round(formalidad, 1),
                 "pct_educacion_superior": round(educacion, 1),
+                "tasa_desempleo": round(tasa_des, 1),
+                "dnp_desempeno": round(dnp_val, 1),
+                "desglose": [
+                    f"Informalidad {round(informalidad)}% → {contrib_informalidad} pts" if informalidad > 0 else "",
+                    f"Desempleo {tasa_des}% → {contrib_desempleo} pts" if tasa_des > 0 else "",
+                    f"Gestión pública {round(dnp_val)}/100 → {contrib_dnp} pts" if dnp_val > 0 else "",
+                    f"Educación superior {round(educacion)}% → {contrib_educacion} pts",
+                    f"Ingreso promedio ${ingreso:,.0f} → {contrib_ingreso} pts" if ingreso > 0 else "",
+                    f"Territorio pequeño (+{pen_tamano} pts)" if pen_tamano > 0 else "",
+                ],
             })
         return {
             "departamentos": sorted(resultados, key=lambda d: -d["indice_prioridad"]),
@@ -1650,33 +1691,54 @@ async def get_sectores_emergentes_tendencia():
 @router.get("/indice-prioridad")
 async def get_indice_prioridad():
     """Indice compuesto 0-100 de prioridad de intervencion por departamento.
-    Combina: desempleo, informalidad, educacion, nuevas empresas y desempeno DNP."""
+    Combina: informalidad (25%), desempleo (25%), DNP desempeno (20%), educacion (15%), ingreso (5%), tamano (10%)."""
     geih = pd.read_csv(DATA_PROCESSED / "geih_resumen_departamento.csv")
+    desempleo = pd.read_csv(DATA_PROCESSED / "geih_desempleo_departamento.csv")
+    dnp = pd.read_csv(DATA_PROCESSED / "dnp_desempeno_departamento.csv")
     rues = pd.read_csv(DATA_PROCESSED / "rues_empresas_nuevas.csv")
 
-    # Empresas nuevas por depto (RUES no tiene depto. Usar geih como proxy territorial)
+    dnp_map = {}
+    for _, r in dnp.iterrows():
+        dnp_map[_norm_depto(r["departamento"])] = r.get("promedio_desempeno", 50)
+
+    des_map = {}
+    for _, r in desempleo.iterrows():
+        dk = _norm_depto(r["departamento"])
+        n = r.get("no_ocupados", 0) or 0
+        if n:
+            des_map[dk] = float(n)
+
     ultimo_anio = int(rues["anio_matricula"].max())
     nuevas_total_ultimo = rues[rues["anio_matricula"] == ultimo_anio]["empresas_nuevas"].sum()
 
     resultados = []
     for _, row in geih.iterrows():
         depto = row["departamento"]
+        key = _norm_depto(depto)
         ocupados = row.get("ocupados", 0) or 0
         ingreso = row.get("ingreso_promedio", 0) or 0
-        formalidad = (row.get("tasa_formalidad", 0) or 0) * 100 if row.get("tasa_formalidad", 0) < 1 else row.get("tasa_formalidad", 0)
-        educacion = (row.get("pct_educacion_superior", 0) or 0) * 100 if row.get("pct_educacion_superior", 0) < 1 else row.get("pct_educacion_superior", 0)
+        formalidad = (row.get("tasa_formalidad", 0) or 0) * 100 if float(row.get("tasa_formalidad", 0) or 0) < 1 else row.get("tasa_formalidad", 0)
+        educacion = (row.get("pct_educacion_superior", 0) or 0) * 100 if float(row.get("pct_educacion_superior", 0) or 0) < 1 else row.get("pct_educacion_superior", 0)
 
-        # Score: a menor formalidad/ingreso/educacion, mayor urgencia
+        no_ocu = des_map.get(key, 0)
+        tasa_des = round(no_ocu / (ocupados + no_ocu) * 100, 1) if (ocupados + no_ocu) > 0 else 0
+        dnp_val = float(dnp_map.get(key, 50))
+        dnp_penal = max(0, 100 - dnp_val)
+
+        informalidad = max(0, 100 - (formalidad or 0))
         ingreso_norm = max(0, min(100, ingreso / 3_000_000 * 100)) if ingreso > 0 else 0
-        score = (
-            (100 - min(100, formalidad or 0)) * 0.35 +
-            (100 - min(100, educacion or 0)) * 0.25 +
-            (100 - ingreso_norm) * 0.25 +
-            (0 if ocupados > 500_000 else 15)  # penalizar deptos pequeños
-        )
-        score = round(max(20, min(85, score)))
+        pen_tamano = 0 if ocupados > 500_000 else 10
 
+        contrib_informalidad = round(informalidad * 0.25, 1)
+        contrib_desempleo = round(tasa_des * 0.25, 1)
+        contrib_dnp = round(dnp_penal * 0.20, 1)
+        contrib_educacion = round(max(0, 100 - educacion) * 0.15, 1)
+        contrib_ingreso = round(max(0, 100 - ingreso_norm) * 0.05, 1)
+
+        score = contrib_informalidad + contrib_desempleo + contrib_dnp + contrib_educacion + contrib_ingreso + pen_tamano
+        score = round(max(20, min(85, score)))
         tag = "urgente" if score >= 70 else ("atencion" if score >= 50 else "estable")
+
         resultados.append({
             "departamento": depto,
             "indice_prioridad": score,
@@ -1685,6 +1747,16 @@ async def get_indice_prioridad():
             "ingreso_promedio": round(ingreso),
             "tasa_formalidad": round(formalidad, 1),
             "pct_educacion_superior": round(educacion, 1),
+            "tasa_desempleo": round(tasa_des, 1),
+            "dnp_desempeno": round(dnp_val, 1),
+            "desglose": [
+                f"Informalidad {round(informalidad)}% → {contrib_informalidad} pts" if informalidad > 0 else "",
+                f"Desempleo {tasa_des}% → {contrib_desempleo} pts" if tasa_des > 0 else "",
+                f"Gestión pública {round(dnp_val)}/100 → {contrib_dnp} pts" if dnp_val > 0 else "",
+                f"Educación superior {round(educacion)}% → {contrib_educacion} pts",
+                f"Ingreso promedio ${ingreso:,.0f} → {contrib_ingreso} pts" if ingreso > 0 else "",
+                f"Territorio pequeño (+{pen_tamano} pts)" if pen_tamano > 0 else "",
+            ],
         })
 
     return {
