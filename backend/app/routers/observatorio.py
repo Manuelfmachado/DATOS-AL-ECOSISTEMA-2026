@@ -1457,6 +1457,7 @@ def _calcular_mapa_metricas_sync():
             "sum_edu_superior": 0.0,
             "n": 0,
             "no_ocupados": 0,
+            "nivel_educativo_etiqueta": None,
         })
         for row in _dedup_filas(r_ocu.data or []):
             d = row["departamento"]
@@ -1469,6 +1470,8 @@ def _calcular_mapa_metricas_sync():
             agg[d]["sum_mujeres_cabeza"] += row.get("mujeres_cabeza_hogar_pct") or 0
             agg[d]["sum_edu_superior"] += row.get("pct_educacion_superior") or 0
             agg[d]["n"] += 1
+            if row.get("nivel_educativo_etiqueta") and not agg[d]["nivel_educativo_etiqueta"]:
+                agg[d]["nivel_educativo_etiqueta"] = row["nivel_educativo_etiqueta"]
         for row in _dedup_filas(r_des.data or []):
             d = row["departamento"]
             if d in agg:
@@ -1493,6 +1496,7 @@ def _calcular_mapa_metricas_sync():
                 "tasa_ocupacion": round(a["ocupados"] / (a["ocupados"] + a["no_ocupados"]) * 100, 2) if (a["ocupados"] + a["no_ocupados"]) > 0 else None,
                 "mujeres_cabeza_hogar_pct": round(a["sum_mujeres_cabeza"] / a["n"], 2) if a["n"] and a["sum_mujeres_cabeza"] > 0 else None,
                 "pct_educacion_superior": round(a["sum_edu_superior"] / a["n"], 2) if a["n"] and a["sum_edu_superior"] > 0 else None,
+                "nivel_educativo_etiqueta": a.get("nivel_educativo_etiqueta"),
             })
 
         snies_map = {}

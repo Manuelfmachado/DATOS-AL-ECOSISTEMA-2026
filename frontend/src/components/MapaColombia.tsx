@@ -474,10 +474,28 @@ export default function MapaColombia({
                   )}
                   {/* Resumen rapido de indicadores clave */}
                   <div className="mt-2 pt-2 border-t border-white/[0.08] space-y-1.5">
+                    {d?.ocupados != null && (
+                      <div className="flex justify-between text-sm">
+                        <span className="text-slate-400 font-medium">Ocupados</span>
+                        <span className="text-slate-200 font-bold">{d.ocupados >= 1000000 ? `${(d.ocupados/1000000).toFixed(1)}M` : d.ocupados.toLocaleString('es-CO')}</span>
+                      </div>
+                    )}
+                    {d?.no_ocupados != null && (
+                      <div className="flex justify-between text-sm">
+                        <span className="text-slate-400 font-medium">Sin empleo</span>
+                        <span className="text-slate-200 font-bold">{d.no_ocupados >= 1000000 ? `${(d.no_ocupados/1000000).toFixed(1)}M` : d.no_ocupados.toLocaleString('es-CO')}</span>
+                      </div>
+                    )}
                     {d?.ingreso_promedio != null && (
                       <div className="flex justify-between text-sm">
                         <span className="text-slate-400 font-medium">Salario promedio</span>
                         <span className="text-slate-200 font-bold">{formatCOP(d.ingreso_promedio)}</span>
+                      </div>
+                    )}
+                    {d?.mujeres_pct != null && (
+                      <div className="flex justify-between text-sm">
+                        <span className="text-slate-400 font-medium">Mujeres ocupadas</span>
+                        <span className="text-slate-200 font-bold">{d.mujeres_pct.toFixed(0)}%</span>
                       </div>
                     )}
                     {informalidad != null && (
@@ -490,6 +508,24 @@ export default function MapaColombia({
                       <div className="flex justify-between text-sm">
                         <span className="text-slate-400 font-medium">Desempleo</span>
                         <span className="text-slate-200 font-bold">{d.tasa_desempleo.toFixed(1)}%</span>
+                      </div>
+                    )}
+                    {d?.dnp_desempeno != null && (
+                      <div className="flex justify-between text-sm">
+                        <span className="text-slate-400 font-medium">Gestión pública</span>
+                        <span className="text-slate-200 font-bold">{d.dnp_desempeno.toFixed(0)}/100</span>
+                      </div>
+                    )}
+                    {d?.matriculados_snies != null && (
+                      <div className="flex justify-between text-sm">
+                        <span className="text-slate-400 font-medium">Universitarios</span>
+                        <span className="text-slate-200 font-bold">{d.matriculados_snies >= 1000 ? `${(d.matriculados_snies/1000).toFixed(0)}K` : d.matriculados_snies.toLocaleString('es-CO')}</span>
+                      </div>
+                    )}
+                    {d?.nivel_educativo_etiqueta != null && (
+                      <div className="flex justify-between text-sm">
+                        <span className="text-slate-400 font-medium">Nivel educativo</span>
+                        <span className="text-slate-200 font-bold text-xs">{d.nivel_educativo_etiqueta}</span>
                       </div>
                     )}
                     {d?.mujeres_cabeza_hogar_pct != null && (
