@@ -243,7 +243,7 @@ export default function Observatorio() {
               <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" />
               <XAxis dataKey="ano" stroke="#e9ecf5" tick={{ fill: '#e9ecf5', fontSize: 13, fontWeight: 600 }} allowDuplicatedCategory={false} />
               <YAxis stroke="#e9ecf5" tick={{ fill: '#e9ecf5', fontSize: 13, fontWeight: 600 }} tickFormatter={(v) => Math.round(v).toLocaleString("es-CO")} />
-              <Tooltip {...chartTooltip} formatter={(v: number) => [compactNum(v), 'Empleados']} />
+              <Tooltip {...chartTooltip} formatter={(v: number, name: string) => [compactNum(v), name || 'Empleados']} />
               <Legend formatter={(v: string) => <span style={{ color: '#e9ecf5', fontSize: 12 }}>{v}</span>} />
               {tend.sectores.map((s: any, i: number) => (
                 <Line
@@ -276,7 +276,7 @@ export default function Observatorio() {
             data={deptosEmpleo}
           />
         </div>
-        <ResponsiveContainer width="100%" height={300}>
+        <ResponsiveContainer width="100%" height={Math.max(300, deptosEmpleo.length * 22)}>
           <BarChart
             data={deptosEmpleo.map((d: any, i: number) => ({
               name: cleanDepto(d.departamento),
