@@ -326,6 +326,42 @@ body::before {
     0 0 0 1px rgba(0, 0, 0, 0.25);
 }
 
+.brand-logo-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+}
+
+.brand-logo-svg {
+  width: 100%;
+  max-width: 220px;
+  height: auto;
+  display: block;
+}
+
+.brand-logo-svg svg {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
+.brand-subtext {
+  font-size: 14px;
+  font-weight: 600;
+  color: #e6ebf2;
+  text-align: center;
+  letter-spacing: 0.04em;
+  line-height: 1.2;
+}
+
+.brand-subtext-small {
+  font-size: 0.75em;
+  color: #d4af37;
+  font-weight: 700;
+}
+
 .nav { display: flex; flex-direction: column; gap: 6px; margin-top: 6px; position: relative; z-index: 1; }
 
 .nav-item {
@@ -367,7 +403,7 @@ body::before {
 .nav-left { display: flex; align-items: center; gap: 14px; }
 .nav-icon { width: 22px; height: 22px; color: currentColor; }
 .nav-svg-icon { width: 32px; height: 32px; display: inline-flex; align-items: center; justify-content: center; color: #d4af37 !important; flex-shrink: 0; }
-.nav-svg-icon svg { width: 100%; height: 100%; fill: currentColor !important; }
+.nav-svg-icon svg { width: 100%; height: 100%; }
 .nav-item:hover .nav-svg-icon { color: #d4af37 !important; }
 .nav-item.active .nav-svg-icon { color: #d4af37 !important; }
 .nav-label { font-size: 17px; font-weight: 600; }

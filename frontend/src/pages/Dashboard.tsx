@@ -3,7 +3,6 @@ import { Link } from 'react-router-dom'
 import api from '../services/api'
 import MapaColombia, { type DeptoData } from '../components/MapaColombia'
 import { formatCOP, formatCOPFull } from '../utils/format'
-import logoAlbaSvg from '../../SVG/LOGO FINAL.svg?raw'
 import albaRostroSvg from '../../SVG/ALBA ROSTRO.svg?raw'
 
 interface ProfesionDesempleo {
@@ -181,7 +180,6 @@ export default function Dashboard() {
       {/* Top bar */}
       <header className="topbar">
         <div className="flex items-center gap-4 w-full">
-          <span className="nav-svg-icon flex-shrink-0" dangerouslySetInnerHTML={{ __html: logoAlbaSvg }} style={{ width: 80, height: 80 }} />
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-4">
               <h1 className="text-5xl font-bold text-white font-display">Bienvenido a ALBA</h1>
