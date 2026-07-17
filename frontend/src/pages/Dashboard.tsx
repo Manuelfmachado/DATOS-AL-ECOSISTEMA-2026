@@ -182,7 +182,7 @@ export default function Dashboard() {
         <div className="flex items-center gap-4 w-full">
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-4">
-              <h1 className="text-6xl font-bold text-white font-display">Bienvenido a ALBA</h1>
+              <h1 className="text-7xl font-bold text-gold-400 font-display">Bienvenido a ALBA</h1>
               <img src={albaRostroSvg} alt="Sol ALBA" className="flex-shrink-0" style={{ width: 80, height: 80 }} />
             </div>
             <p className="hello-sub">
