@@ -1,12 +1,13 @@
 import { useState, useRef, useEffect } from 'react'
 import api from '../services/api'
 import { useChat, type ChatMessage } from '../context/ChatContext'
-import albaChatBotSvg from '../../SVG/ALBA ROSTRO.svg?raw'
+import albaChatBotSvg from '../../SVG/ALBA ROSTRO.svg'
 
-const SvgIcon = ({ raw, className = '', size = 28 }: { raw: string; className?: string; size?: number }) => (
-  <span
-    className={`nav-svg-icon flex items-center justify-center ${className}`}
-    dangerouslySetInnerHTML={{ __html: raw }}
+const AlbaIcon = ({ className = '', size = 28 }: { className?: string; size?: number }) => (
+  <img
+    src={albaChatBotSvg}
+    alt="ALBA"
+    className={`inline-block ${className}`}
     style={{ width: size, height: size }}
   />
 )
@@ -86,7 +87,7 @@ export default function SidebarChat() {
       {/* Header */}
       <div className="sidebar-chat-header">
         <div className="flex items-center gap-2">
-          <SvgIcon raw={albaChatBotSvg} size={36} />
+          <AlbaIcon size={36} />
           <div>
             <h3 className="text-base font-bold text-white font-display leading-tight">ALBA Chat IA</h3>
             {widget && <p className="text-xs text-slate-400 truncate max-w-[160px]">{widget.widgetTitle}</p>}
@@ -113,7 +114,7 @@ export default function SidebarChat() {
 
         {messages.map((m, i) => (
           <div key={i} className={`sidebar-chat-bubble ${m.role}`}>
-            {m.role === 'assistant' && <SvgIcon raw={albaChatBotSvg} size={20} />}
+            {m.role === 'assistant' && <AlbaIcon size={20} />}
             <div className="sidebar-chat-bubble-content">
               {m.role === 'assistant' ? (
                 <div
@@ -129,7 +130,7 @@ export default function SidebarChat() {
 
         {loading && (
           <div className="sidebar-chat-bubble assistant">
-            <SvgIcon raw={albaChatBotSvg} size={20} />
+            <AlbaIcon size={20} />
             <div className="sidebar-chat-bubble-content">
               <div className="flex items-center gap-2 text-slate-400">
                 <span className="animate-spin text-base">⚙️</span>

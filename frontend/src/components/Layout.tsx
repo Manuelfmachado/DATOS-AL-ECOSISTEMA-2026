@@ -8,7 +8,7 @@ import emprendeSvg from '../../SVG/nav_EMPRENDER_2.svg?raw'
 import coachSvg from '../../SVG/nav_COACH.svg?raw'
 import inicioSvg from '../../SVG/nav_INICIO.svg?raw'
 import simulacionSvg from '../../SVG/nav_SIMULACION_2.svg?raw'
-import logoFinalSvg from '../../SVG/LOGO FINAL.svg?raw'
+import logoFinalSvg from '../../SVG/LOGO FINAL.svg'
 
 const SvgIcon = ({ raw }: { raw: string }) => (
   <span className="nav-svg-icon" dangerouslySetInnerHTML={{ __html: raw }} />
@@ -41,7 +41,7 @@ export default function Layout() {
 
             <div className="brand">
               <div className="brand-logo-wrap">
-                <span className="brand-logo-svg" aria-hidden="true" dangerouslySetInnerHTML={{ __html: logoFinalSvg }} />
+                <img src={logoFinalSvg} alt="ALBA" className="brand-logo-svg" />
                 <div className="brand-subtext">
                   <span className="brand-subtext-small">A</span>nalítica{' '}
                   <span className="brand-subtext-small">L</span>aboral{' '}

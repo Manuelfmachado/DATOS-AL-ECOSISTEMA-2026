@@ -1,5 +1,5 @@
 import { useChat } from '../context/ChatContext'
-import albaChatBotSvg from '../../SVG/ALBA ROSTRO.svg?raw'
+import albaChatBotSvg from '../../SVG/ALBA ROSTRO.svg'
 
 interface AnalizarIAButtonProps {
   dashboard: string
@@ -26,7 +26,7 @@ export default function AnalizarIAButton({
       className={`inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-gold-400 bg-gold-500/10 border border-gold-500/30 rounded-lg hover:bg-gold-500/20 hover:border-gold-500/50 transition-all ${className}`}
       title="Analizar con IA"
     >
-      <span className="nav-svg-icon flex items-center justify-center" dangerouslySetInnerHTML={{ __html: albaChatBotSvg }} style={{ width: 32, height: 32 }} />
+      <img src={albaChatBotSvg} alt="ALBA IA" className="inline-block" style={{ width: 32, height: 32 }} />
       <span>Analizar con IA</span>
     </button>
   )

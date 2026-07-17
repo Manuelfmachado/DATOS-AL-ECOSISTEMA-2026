@@ -341,12 +341,6 @@ body::before {
   display: block;
 }
 
-.brand-logo-svg svg {
-  width: 100%;
-  height: auto;
-  display: block;
-}
-
 .brand-subtext {
   font-size: 14px;
   font-weight: 600;
