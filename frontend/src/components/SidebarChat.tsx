@@ -74,7 +74,9 @@ export default function SidebarChat() {
   if (!open) return null
 
   return (
-    <div className="sidebar-chat">
+    <>
+      <div className="sidebar-chat-backdrop" onClick={closeChat} />
+      <div className="sidebar-chat">
       {/* Header */}
       <div className="sidebar-chat-header">
         <div className="flex items-center gap-2 min-w-0">
@@ -159,6 +161,7 @@ export default function SidebarChat() {
           {loading ? 'Analizando...' : 'Enviar'}
         </button>
       </div>
-    </div>
+      </div>
+    </>
   )
 }
