@@ -186,10 +186,11 @@ export default function Dashboard() {
               <img src={albaRostroSvg} alt="Sol ALBA" className="flex-shrink-0" style={{ width: 60, height: 60 }} />
             </div>
             <p className="hello-sub">
-              <span className="text-2xl text-gold-400 font-bold font-display">A</span>nalítica{' '}
-              <span className="text-gold-400 font-bold font-display">L</span>aboral{' '}
-              <span className="text-gold-400 font-bold font-display">B</span>asada en{' '}
-              <span className="text-gold-400 font-bold font-display">IA</span>
+              <span className="hello-sub-acronym text-gold-400 font-bold font-display">A</span>nalítica{' '}
+              <span className="hello-sub-acronym text-gold-400 font-bold font-display">L</span>aboral{' '}
+              <span className="hello-sub-acronym text-gold-400 font-bold font-display">B</span>asada en{' '}
+              <span className="hello-sub-acronym text-white font-bold font-display">I</span>
+              <span className="hello-sub-acronym text-gold-400 font-bold font-display">A</span>
             </p>
           </div>
         </div>

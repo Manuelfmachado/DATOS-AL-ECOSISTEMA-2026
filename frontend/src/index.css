@@ -441,6 +441,7 @@ body::before {
 }
 .hello .wave { display: inline-block; transform: translateY(2px); margin-left: 4px; }
 .hello-sub { color: var(--text-dim); font-size: 14px; margin-top: 6px; }
+.hello-sub-acronym { font-size: 0.85em; }
 
 .top-actions { display: flex; align-items: center; gap: 12px; }
 
