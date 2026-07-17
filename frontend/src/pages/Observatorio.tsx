@@ -503,7 +503,7 @@ export default function Observatorio() {
       {/* 4. Sectores formales PILA */}
       {/* ================================================================ */}
       <div className="grid grid-cols-1 gap-5">
-        {/* Sectores formales PILA */}
+        {/* Sectores formales PILA — ahora con gráfico de barras */}
         <div className="plate card p-5 relative">
           <div className="absolute top-4 right-4 z-10">
             <AnalizarIAButton
@@ -515,19 +515,30 @@ export default function Observatorio() {
           </div>
           <div className="mb-3 pb-2 border-b border-gold-500/20 pr-28">
             <h2 className="text-xl font-bold text-white font-display">Sectores formales</h2>
-            <p className="text-sm text-slate-300 mt-1">Personas cotizantes por actividad económica (PILA)</p>
+            <p className="text-sm text-slate-300 mt-1">
+              {formalList.length > 0 ? `${compactNum(formalList.reduce((a: number, s: any) => a + (s.cotizantes || 0), 0))} cotizantes activos en PILA` : 'Personas cotizantes por actividad económica (PILA)'}
+            </p>
           </div>
-          <div className="space-y-0 max-h-64 overflow-y-auto">
-            {formalList.map((s: any, i: number) => (
-              <div key={i} className="flex justify-between items-center py-2 border-b border-white/[0.04] text-sm">
-                <div className="flex items-center gap-2 min-w-0 flex-1">
-                  <span className="w-5 h-5 rounded-full bg-dark-800 border border-gold-500/20 flex items-center justify-center text-[10px] text-gold-400 flex-shrink-0">{i + 1}</span>
-                  <span className="text-slate-300 truncate">{s.sector}</span>
-                </div>
-                <span className="text-gold-400 font-bold ml-2">{compactNum(s.cotizantes)}</span>
-              </div>
-            ))}
-          </div>
+          <ResponsiveContainer width="100%" height={Math.max(280, (formalList.slice(0, 8).length) * 40)}>
+            <BarChart
+              data={formalList.slice(0, 8).map((s: any) => ({
+                name: s.sector,
+                cotizantes: s.cotizantes,
+              }))}
+              layout="vertical"
+              margin={{ left: 10, right: 40 }}
+            >
+              <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.04)" horizontal={false} />
+              <XAxis type="number" stroke="#cbd5e1" tick={{ fill: '#cbd5e1', fontSize: 12, fontWeight: 600 }} tickFormatter={(v) => compactNum(v)} />
+              <YAxis type="category" dataKey="name" stroke="#e2e8f0" tick={{ fill: '#e2e8f0', fontSize: 11, fontWeight: 600 }} width={150} interval={0} />
+              <Tooltip {...chartTooltip} formatter={(v: number) => [v.toLocaleString(), 'Cotizantes']} />
+              <Bar dataKey="cotizantes" radius={[0, 4, 4, 0]}>
+                {formalList.slice(0, 8).map((_: any, i: number) => (
+                  <Cell key={i} fill={i < 3 ? '#d4af37' : i < 5 ? '#3b82f6' : '#64748b'} />
+                ))}
+              </Bar>
+            </BarChart>
+          </ResponsiveContainer>
         </div>
       </div>
 
@@ -679,7 +690,13 @@ export default function Observatorio() {
               const isAtencion = d.indice_prioridad >= 50
               const barColor = isUrgente ? '#ef4444' : isAtencion ? '#f59e0b' : '#22c55e'
               const sel = selectedDepto === d.departamento
-              const desglose = d.desglose || []
+              const desglose = d.desglose && d.desglose.length > 0 ? d.desglose : [
+                d.tasa_informalidad != null ? `Informalidad ${Math.round(100 - (d.tasa_formalidad || 0))}%` : '',
+                d.tasa_desempleo != null ? `Desempleo ${d.tasa_desempleo}%` : '',
+                d.dnp_desempeno != null ? `Gestión pública ${d.dnp_desempeno}/100` : '',
+                d.pct_educacion_superior != null ? `Educación superior ${d.pct_educacion_superior}%` : '',
+                d.ingreso_promedio != null ? `Ingreso promedio ${formatCOP(d.ingreso_promedio)}` : '',
+              ].filter(Boolean)
               return (
                 <div key={d.departamento}>
                   <div
