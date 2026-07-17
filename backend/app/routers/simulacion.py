@@ -1319,6 +1319,8 @@ class EscenarioResult(BaseModel):
     delta_vs_base_cop: float
     descripcion: str
     profesion_chronos: str = ""
+    costo_educacion_cop: float = 0.0
+    anos_recuperacion: int = 0
 
 
 class QuePasaSiResponse(BaseModel):
@@ -1329,6 +1331,7 @@ class QuePasaSiResponse(BaseModel):
     escenarios: list[EscenarioResult]
     mejor_opcion: str
     veredicto: str
+    alerta_saturacion: dict | None = None
 
 
 _COLORES = {
@@ -1446,13 +1449,32 @@ async def sim_que_pasa_si(req: QuePasaSiRequest):
             continue
 
         delta_base = tray["acumulado"] - base_acum
-        # Crecimiento efectivo: desde el fin de la inversión (o año 0) hasta año 10
+        # Crecimiento efectivo
         inv = _ANOS_POSGRADO.get(esc.nivel, 0) if esc.tipo == "posgrado" else (1 if esc.tipo == "reskilling" else 0)
         start_idx = inv + 1 if inv > 0 else 0
         end_val = tray["mediana"][-1]
         start_val = tray["mediana"][start_idx] if start_idx < 10 else end_val
         years_grow = 10 - start_idx
         crec_disp = ((end_val / start_val) ** (1 / years_grow) - 1) * 100 if start_val > 0 and years_grow > 0 else 0
+
+        # Costo educación y recuperación
+        costo_edu = 0.0
+        anos_rec = 0
+        if esc.tipo == "posgrado":
+            niv = esc.nivel or "Maestria"
+            # Costo estimado por año: 8-22 SMMLV según nivel
+            costo_anual = {"Especializacion": 8, "Maestria": 12, "Doctorado": 16}.get(niv, 10)
+            costo_edu = costo_anual * SMMLV_2026 * _ANOS_POSGRADO.get(niv, 2)
+            # Recuperación: delta anual post-grado
+            delta_anual = tray["mediana"][-1] - (sal_ole * f_calidad * _ajuste_territorial(depto_norm))
+            if delta_anual > 0:
+                anos_rec = math.ceil(costo_edu / delta_anual)
+        elif esc.tipo == "reskilling":
+            costo_edu = 4 * SMMLV_2026  # ~4 SMMLV por bootcamp/certificación
+            delta_anual = tray["mediana"][-1] - (sal_ole * f_calidad * _ajuste_territorial(depto_norm))
+            if delta_anual > 0:
+                anos_rec = math.ceil(costo_edu / delta_anual)
+
         resultados.append(EscenarioResult(
             tipo=esc.tipo,
             label=label,
@@ -1468,6 +1490,8 @@ async def sim_que_pasa_si(req: QuePasaSiRequest):
             delta_vs_base_cop=round(delta_base),
             descripcion=desc,
             profesion_chronos=prof_chronos if esc.tipo in ("base", "migracion", "posgrado") else "",
+            costo_educacion_cop=round(costo_edu),
+            anos_recuperacion=anos_rec,
         ))
 
     # Veredicto: mejor opción por ingreso acumulado
@@ -1484,6 +1508,50 @@ async def sim_que_pasa_si(req: QuePasaSiRequest):
             f"({signo}{format(round(abs(delta)), ',').replace(',', '.')} COP vs base)."
         )
 
+    # Alerta de saturación oferta/demanda
+    alerta = None
+    try:
+        snies = _load_csv("snies_programas_matriculados.csv")
+        spe = _load_csv("spe_ape_inscritos_ocupacion.csv")
+        snies.columns = [_norm(str(c)) for c in snies.columns]
+
+        if "DEPARTAMENTO" in snies.columns and "MATRICULADOS" in snies.columns:
+            depto_mask = snies["DEPARTAMENTO"].apply(
+                lambda x: depto_norm in _norm(str(x)) if pd.notna(x) else False
+            )
+            depto_data = snies[depto_mask]
+            matriculados = 0
+            if len(depto_data) > 0 and "PROGRAMA" in snies.columns:
+                prog_mask = depto_data["PROGRAMA"].apply(
+                    lambda x: any(w in _norm(str(x)) for w in programa_norm.split()[:3])
+                    if pd.notna(x) else False
+                )
+                matriculados = int(depto_data[prog_mask]["MATRICULADOS"].sum())
+
+            demanda_total = 0
+            if "OCUPACION" in spe.columns and "INSCRITOS" in spe.columns:
+                for _, row in spe.iterrows():
+                    ocup = _norm(str(row["OCUPACION"]))
+                    if programa_norm[:6] in ocup:
+                        demanda_total += int(row.get("INSCRITOS", 0) or 0)
+
+            if matriculados > 0 and demanda_total > 0:
+                ratio = matriculados / max(demanda_total, 1)
+                if ratio > 2:
+                    alerta = {
+                        "riesgo": "alto",
+                        "mensaje": f"Alta saturación en {req.departamento}",
+                        "detalle": f"Se gradúan ~{matriculados:,} estudiantes al año en programas similares, pero solo hay ~{demanda_total:,} vacantes registradas.",
+                    }
+                elif ratio > 1:
+                    alerta = {
+                        "riesgo": "medio",
+                        "mensaje": f"Competencia moderada en {req.departamento}",
+                        "detalle": f"~{matriculados:,} graduados vs ~{demanda_total:,} vacantes. Considera especializarte para diferenciarte.",
+                    }
+    except Exception:
+        pass
+
     return QuePasaSiResponse(
         programa=req.programa,
         departamento=req.departamento,
@@ -1492,6 +1560,7 @@ async def sim_que_pasa_si(req: QuePasaSiRequest):
         escenarios=resultados,
         mejor_opcion=mejor.tipo,
         veredicto=veredicto,
+        alerta_saturacion=alerta,
     )
 
 

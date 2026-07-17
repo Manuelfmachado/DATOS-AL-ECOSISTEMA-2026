@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState, type ReactNode } from 'react'
+import { useEffect, useMemo, useState, Fragment, type ReactNode } from 'react'
 import {
   AreaChart, Area, BarChart, Bar, LineChart, Line, XAxis, YAxis,
   Tooltip, ResponsiveContainer, CartesianGrid, Cell, LabelList,
@@ -103,6 +103,8 @@ interface EscenarioResult {
   delta_vs_base_cop: number
   descripcion: string
   profesion_chronos: string
+  costo_educacion_cop?: number
+  anos_recuperacion?: number
 }
 
 interface QuePasaSiResponse {
@@ -113,6 +115,11 @@ interface QuePasaSiResponse {
   escenarios: EscenarioResult[]
   mejor_opcion: string
   veredicto: string
+  alerta_saturacion?: {
+    riesgo: string
+    mensaje: string
+    detalle: string
+  }
 }
 
 // ===========================================================================
@@ -193,7 +200,7 @@ function useDepartamentos() {
 // ===========================================================================
 
 export default function Simulacion() {
-  const [tab, setTab] = useState<'que-pasa-si' | 'demanda-sectorial'>('que-pasa-si')
+  const [tab, setTab] = useState<'que-pasa-si' | 'demanda-sectorial' | 'viabilidad' | 'priorizacion'>('que-pasa-si')
 
   return (
     <div className="animate-fade-in space-y-5">
@@ -227,10 +234,32 @@ export default function Simulacion() {
         >
           Demanda Sectorial
         </button>
+        <button
+          onClick={() => setTab('viabilidad')}
+          className={`px-4 py-2 rounded-lg text-lg font-bold text-white transition-all ${
+            tab === 'viabilidad'
+              ? 'bg-amber-500/15 text-gold-400 border border-amber-500/30'
+              : 'text-slate-400 hover:text-slate-200'
+          }`}
+        >
+          Viabilidad de Programa
+        </button>
+        <button
+          onClick={() => setTab('priorizacion')}
+          className={`px-4 py-2 rounded-lg text-lg font-bold text-white transition-all ${
+            tab === 'priorizacion'
+              ? 'bg-amber-500/15 text-gold-400 border border-amber-500/30'
+              : 'text-slate-400 hover:text-slate-200'
+          }`}
+        >
+          Priorización Territorial
+        </button>
       </div>
 
       {tab === 'que-pasa-si' && <SimQuePasaSi />}
       {tab === 'demanda-sectorial' && <SimDemanda />}
+      {tab === 'viabilidad' && <SimViabilidad />}
+      {tab === 'priorizacion' && <SimPriorizacion />}
 
     </div>
   )
@@ -469,68 +498,95 @@ function SimQuePasaSi() {
       {/* Resultados */}
       {result && (
         <>
-          {/* Gráfico */}
+          {/* Veredicto prominente */}
+          <div className="plate card p-5 border-amber-500/30 bg-gradient-to-r from-amber-500/10 to-transparent">
+            <div className="flex items-start gap-3">
+              <span className="text-2xl">🏆</span>
+              <div>
+                <div className="flex items-center gap-2 mb-1">
+                  <span className="text-xs uppercase tracking-wider text-amber-400 font-bold">Mejor opción</span>
+                  <span className="px-2 py-0.5 rounded text-xs font-bold bg-amber-500/20 text-amber-300">
+                    {result.escenarios.find((e: any) => e.tipo === result.mejor_opcion)?.label || result.mejor_opcion}
+                  </span>
+                </div>
+                <p className="text-sm text-slate-200 font-medium leading-relaxed">{result.veredicto}</p>
+                <p className="text-xs text-slate-500 mt-1.5">
+                  Nivel detectado: {result.nivel_detectado}. Proyecciones basadas en OLE, GEIH, Saber Pro y Chronos T5.
+                </p>
+              </div>
+            </div>
+          </div>
+
+          {/* Gráfico con bandas de riesgo */}
           <div className="plate card p-5">
             <h3 className="text-sm font-semibold text-gold-400 uppercase tracking-wider mb-4">Trayectoria a 10 años</h3>
-            <ResponsiveContainer width="100%" height={350}>
-              <LineChart data={chartData} margin={{ top: 10, right: 30, left: 20, bottom: 5 }}>
+            <ResponsiveContainer width="100%" height={380}>
+              <ComposedChart data={chartData} margin={{ top: 10, right: 30, left: 20, bottom: 5 }}>
                 <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.06)" />
-                <XAxis dataKey="año" stroke="#64748b" tick={{ fontSize: 12 }} label={{ value: 'Años', position: 'insideBottom', offset: -5, fill: '#64748b' }} />
-                <YAxis
-                  stroke="#64748b"
-                  tick={{ fontSize: 12 }}
-                  tickFormatter={(v: number) => `$${Math.round(v).toLocaleString("es-CO")}`}
-                />
-                <Tooltip contentStyle={{ background: '#0a0f1f', border: '1px solid rgba(212,175,55,0.35)', borderRadius: '10px', color: '#e9ecf5' }} formatter={(v: number, name: string) => { const e = result.escenarios.find((x) => x.tipo === name); return [`$${Math.round(v).toLocaleString("es-CO")}`, e?.label || name] }} />
-                <Legend formatter={(val: string) => { const e = result.escenarios.find((x) => x.tipo === val); return e?.label || val }} />
-                {result.escenarios.map((e) => (
-                  <Line
-                    key={e.tipo}
-                    type="monotone"
-                    dataKey={e.tipo}
-                    stroke={e.color}
-                    strokeWidth={e.tipo === 'base' ? 3 : 2}
-                    dot={false}
-                    activeDot={{ r: 4 }}
-                  />
+                <XAxis dataKey="año" stroke="#64748b" tick={{ fontSize: 12 }} />
+                <YAxis stroke="#64748b" tick={{ fontSize: 12 }} tickFormatter={(v: number) => `$${(v / 1_000_000).toFixed(0)}M`} />
+                <Tooltip contentStyle={{ background: '#0a0f1f', border: '1px solid rgba(212,175,55,0.35)', borderRadius: '10px', color: '#e9ecf5' }} formatter={(v: any, name: string) => { const e = result.escenarios.find((x: any) => x.tipo === name); return [`$${Math.round(Number(v)).toLocaleString("es-CO")}`, e?.label || name] }} />
+                <Legend formatter={(val: string) => { const e = result.escenarios.find((x: any) => x.tipo === val); return e?.label || val }} />
+                {result.escenarios.map((e: any) => (
+                  <>
+                    {e.p10 && e.p90 && (
+                      <Area type="monotone" dataKey="año" fill={e.color} fillOpacity={0.08} stroke="none" isAnimationActive={false} />
+                    )}
+                    <Line type="monotone" dataKey={e.tipo} stroke={e.color} strokeWidth={e.tipo === 'base' ? 3 : 2} dot={false} activeDot={{ r: 4 }} />
+                  </>
                 ))}
-              </LineChart>
+              </ComposedChart>
             </ResponsiveContainer>
           </div>
 
           {/* KPIs */}
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
-            {result.escenarios.map((e) => {
+            {result.escenarios.map((e: any) => {
               const isBest = e.tipo === result.mejor_opcion
               const deltaColor = e.delta_vs_base_cop > 0 ? 'text-green-400' : e.delta_vs_base_cop < 0 ? 'text-rose-400' : 'text-slate-500'
               const deltaSign = e.delta_vs_base_cop > 0 ? '+' : ''
               return (
-                <div key={e.tipo} className={`plate card p-4 text-center ${isBest ? 'ring-1 ring-amber-500/40' : ''}`}>
+                <div key={e.tipo} className={`plate card p-4 text-center ${isBest ? 'ring-2 ring-amber-500/60 bg-amber-500/5' : ''}`}>
                   <div className="flex items-center justify-center gap-2 mb-2">
                     <span className="w-3 h-3 rounded-full flex-shrink-0" style={{ backgroundColor: e.color }} />
                     <span className="text-xs text-slate-300 font-medium truncate">{e.label}</span>
+                    {isBest && <span className="text-xs text-amber-400">★</span>}
                   </div>
                   <p className="text-lg font-bold font-display text-white">{formatCOP(e.ingreso_acumulado_10a)}</p>
+                  <p className="text-xs text-slate-500">acumulado 10 años</p>
                   {e.tipo !== 'base' && (
-                    <p className={`text-xs mt-1 ${deltaColor}`}>
+                    <p className={`text-xs mt-1 ${deltaColor} font-semibold`}>
                       {deltaSign}{formatCOP(Math.abs(e.delta_vs_base_cop))} vs base
                     </p>
                   )}
                   {e.tipo !== 'base' && (
-                    <p className="text-xs text-slate-500 mt-0.5">Crecimiento: {e.crecimiento_anual_pct}% anual</p>
+                    <p className="text-xs text-slate-500 mt-0.5">Crecimiento: {e.crecimiento_anual_pct > 0 ? '+' : ''}{e.crecimiento_anual_pct}% anual</p>
+                  )}
+                  {e.costo_educacion_cop > 0 && (
+                    <div className="mt-2 pt-2 border-t border-white/[0.06]">
+                      <p className="text-xs text-slate-400">Inversión: {formatCOP(e.costo_educacion_cop)}</p>
+                      {e.anos_recuperacion > 0 && (
+                        <p className="text-xs text-amber-400 mt-0.5">Recuperas en {e.anos_recuperacion} años</p>
+                      )}
+                    </div>
                   )}
                 </div>
               )
             })}
           </div>
 
-          {/* Veredicto */}
-          <div className="plate card p-5 border-amber-500/20">
-            <p className="text-sm text-slate-200 font-medium">{result.veredicto}</p>
-            <p className="text-xs text-slate-500 mt-2">
-              Nivel detectado: {result.nivel_detectado}. Las proyecciones usan datos reales de OLE, GEIH, Saber Pro y Chronos T5.
-            </p>
-          </div>
+          {/* Alerta de saturación */}
+          {result.alerta_saturacion && (
+            <div className={`plate card p-4 border ${result.alerta_saturacion.riesgo === 'alto' ? 'border-rose-500/30 bg-rose-500/5' : 'border-amber-500/20 bg-amber-500/5'}`}>
+              <div className="flex items-center gap-2">
+                <span className="text-lg">{result.alerta_saturacion.riesgo === 'alto' ? '⚠️' : '📊'}</span>
+                <div>
+                  <p className="text-sm text-slate-200 font-medium">{result.alerta_saturacion.mensaje}</p>
+                  <p className="text-xs text-slate-400 mt-1">{result.alerta_saturacion.detalle}</p>
+                </div>
+              </div>
+            </div>
+          )}
         </>
       )}
     </div>
@@ -1350,6 +1406,213 @@ function SimDecision() {
               )
             })}
           </div>
+        </>
+      )}
+    </div>
+  )
+}
+
+// ===========================================================================
+// SIMULADOR VIABILIDAD DE PROGRAMA (Universidades)
+// ===========================================================================
+
+function SimViabilidad() {
+  const { deptos } = useDepartamentos()
+  const [programa, setPrograma] = useState('')
+  const [departamento, setDepartamento] = useState('Bogotá D.C.')
+  const [nivel, setNivel] = useState('Profesional')
+  const [result, setResult] = useState<any>(null)
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState('')
+
+  const run = async () => {
+    if (!programa.trim()) { setError('Ingresa el nombre del programa'); return }
+    setLoading(true); setError(''); setResult(null)
+    try {
+      const r = await api.post('/simulacion/viabilidad-programa', { programa: programa.trim(), departamento, nivel })
+      setResult(r.data)
+    } catch (e: any) {
+      setError(e.response?.data?.detail || 'Error al evaluar viabilidad')
+    } finally { setLoading(false) }
+  }
+
+  const scoreColor = (s: number) => s >= 70 ? 'text-green-400' : s >= 45 ? 'text-amber-400' : 'text-rose-400'
+  const scoreBg = (s: number) => s >= 70 ? 'bg-green-500/20 border-green-500/40' : s >= 45 ? 'bg-amber-500/20 border-amber-500/40' : 'bg-rose-500/20 border-rose-500/40'
+
+  return (
+    <div className="space-y-4">
+      <div className="plate card p-5">
+        <h3 className="text-sm font-semibold text-gold-400 uppercase tracking-wider mb-4">Evaluar viabilidad de un programa académico</h3>
+        <p className="text-xs text-slate-400 mb-4">Cruza oferta educativa (SNIES) con demanda laboral (SPE/APE) e ingresos de graduados (OLE) para calcular un score de viabilidad 0-100.</p>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div>
+            <label className="text-xs text-slate-400 mb-1 block">Programa académico</label>
+            <input type="text" value={programa} onChange={(e) => setPrograma(e.target.value)} placeholder="Ej: Ingeniería de Software" className="bg-white/[0.03] border border-white/0.08 rounded-lg px-3 py-2 text-sm text-slate-300 focus:border-amber-500/40 outline-none w-full" />
+          </div>
+          <div>
+            <label className="text-xs text-slate-400 mb-1 block">Departamento</label>
+            <select value={departamento} onChange={(e) => setDepartamento(e.target.value)} className="bg-white/[0.03] border border-white/0.08 rounded-lg px-2 py-1.5 text-sm text-slate-300 focus:border-amber-500/40 outline-none w-full">
+              {deptos.map((d) => <option key={d}>{d}</option>)}
+            </select>
+          </div>
+          <div>
+            <label className="text-xs text-slate-400 mb-1 block">Nivel</label>
+            <select value={nivel} onChange={(e) => setNivel(e.target.value)} className="bg-white/[0.03] border border-white/0.08 rounded-lg px-2 py-1.5 text-sm text-slate-300 focus:border-amber-500/40 outline-none w-full">
+              <option>Técnico</option>
+              <option>Profesional</option>
+              <option>Especialización</option>
+              <option>Maestría</option>
+            </select>
+          </div>
+        </div>
+        <button onClick={run} disabled={loading} className="mt-4 px-6 py-2.5 rounded-lg font-semibold text-sm transition-all bg-gold-400 text-[#0a0f1f] hover:bg-gold-400/90 disabled:opacity-40">
+          {loading ? 'Evaluando...' : 'Evaluar viabilidad'}
+        </button>
+        {error && <p className="text-rose-400 text-sm mt-3">{error}</p>}
+      </div>
+
+      {result && (
+        <>
+          <div className={`plate card p-6 border ${scoreBg(result.score_viabilidad)}`}>
+            <div className="flex items-center gap-4">
+              <div className="text-center">
+                <div className={`text-4xl font-bold font-display ${scoreColor(result.score_viabilidad)}`}>{result.score_viabilidad}</div>
+                <div className="text-xs text-slate-400 mt-1">/ 100</div>
+              </div>
+              <div>
+                <div className="flex items-center gap-2 mb-2">
+                  <span className={`px-2 py-0.5 rounded text-xs font-bold uppercase ${
+                    result.nivel_riesgo === 'bajo' ? 'bg-green-500/20 text-green-400' :
+                    result.nivel_riesgo === 'medio' ? 'bg-amber-500/20 text-amber-400' :
+                    'bg-rose-500/20 text-rose-400'
+                  }`}>{result.nivel_riesgo === 'bajo' ? '✔ Viable' : result.nivel_riesgo === 'medio' ? '⚠ Moderado' : '✘ Riesgo'}</span>
+                </div>
+                <p className="text-sm text-slate-200 leading-relaxed">{result.recomendacion}</p>
+              </div>
+            </div>
+          </div>
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+            <KpiCard label="Salario estimado" value={formatCOP(result.indicadores.salario_estimado_cop)} sub="/mes" accent="gold" />
+            <KpiCard label="Salario mercado" value={formatCOP(result.indicadores.salario_mercado_cop)} sub="/mes" />
+            <KpiCard label="Demanda laboral" value={`${result.indicadores.demanda_score}%`} sub="score SPE/APE" accent="green" />
+            <KpiCard label="Saturación oferta" value={`${result.indicadores.saturacion_oferta_pct}%`} sub="matriculados vs vacantes" accent={result.indicadores.saturacion_oferta_pct > 60 ? 'rose' : 'green'} />
+            <KpiCard label="Crecimiento proyectado" value={`${result.indicadores.crecimiento_proyectado_anual_pct > 0 ? '+' : ''}${result.indicadores.crecimiento_proyectado_anual_pct}%`} sub="anual (Chronos T5)" accent="gold" />
+            <KpiCard label="Competencia" value={result.indicadores.matriculados_competencia.toLocaleString()} sub="matriculados en el depto" />
+          </div>
+          {result.indicadores.sectores_demandantes?.length > 0 && (
+            <div className="plate card p-5">
+              <h3 className="text-sm font-semibold text-gold-400 uppercase tracking-wider mb-3">Sectores demandantes</h3>
+              <div className="flex flex-wrap gap-2">
+                {result.indicadores.sectores_demandantes.map((s: any) => (
+                  <span key={s.sector} className="px-3 py-1.5 rounded-lg bg-amber-500/10 border border-amber-500/20 text-xs text-slate-300">
+                    {s.sector} <span className="text-amber-400 font-semibold ml-1">{s.empresas.toLocaleString()}</span>
+                  </span>
+                ))}
+              </div>
+            </div>
+          )}
+          <div className="text-xs text-slate-500 text-right">Fuentes: {result.fuentes?.join(', ') || 'SNIES, OLE, SPE, GEIH'}</div>
+        </>
+      )}
+    </div>
+  )
+}
+
+// ===========================================================================
+// SIMULADOR PRIORIZACIÓN TERRITORIAL (Gobiernos)
+// ===========================================================================
+
+function SimPriorizacion() {
+  const [presupuesto, setPresupuesto] = useState(1000)
+  const [result, setResult] = useState<any>(null)
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState('')
+
+  const run = async () => {
+    setLoading(true); setError(''); setResult(null)
+    try {
+      const r = await api.post('/simulacion/priorizacion-territorial', { presupuesto_cop: presupuesto * 1_000_000 })
+      setResult(r.data)
+    } catch (e: any) {
+      setError(e.response?.data?.detail || 'Error al calcular priorización')
+    } finally { setLoading(false) }
+  }
+
+  return (
+    <div className="space-y-4">
+      <div className="plate card p-5">
+        <h3 className="text-sm font-semibold text-gold-400 uppercase tracking-wider mb-4">Priorización territorial de inversión</h3>
+        <p className="text-xs text-slate-400 mb-4">Ranking de departamentos por urgencia de intervención laboral. Score compuesto: desempleo, informalidad, desempeño DNP, ingreso y proyecciones.</p>
+        <div className="flex items-end gap-4">
+          <div>
+            <label className="text-xs text-slate-400 mb-1 block">Presupuesto disponible (millones COP)</label>
+            <input type="number" value={presupuesto} onChange={(e) => setPresupuesto(Number(e.target.value))} min={100} max={100000} step={100} className="bg-white/[0.03] border border-white/0.08 rounded-lg px-3 py-2 text-sm text-slate-300 focus:border-amber-500/40 outline-none w-40" />
+          </div>
+          <button onClick={run} disabled={loading} className="px-6 py-2.5 rounded-lg font-semibold text-sm transition-all bg-gold-400 text-[#0a0f1f] hover:bg-gold-400/90 disabled:opacity-40">
+            {loading ? 'Calculando...' : 'Calcular priorización'}
+          </button>
+        </div>
+        {error && <p className="text-rose-400 text-sm mt-3">{error}</p>}
+      </div>
+
+      {result && (
+        <>
+          {result.recomendaciones_inversion?.length > 0 && (
+            <div className="plate card p-5 border-amber-500/20">
+              <h3 className="text-sm font-semibold text-gold-400 uppercase tracking-wider mb-3">Top 3 — Recomendaciones de inversión</h3>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                {result.recomendaciones_inversion.map((rec: any, i: number) => (
+                  <div key={i} className="plate card p-4 border-amber-500/30 bg-amber-500/5">
+                    <div className="text-xs text-amber-400 font-bold uppercase mb-1">#{i + 1} — {rec.departamento}</div>
+                    <div className="text-lg font-bold text-gold-400 font-display mb-2">{formatCOP(rec.inversion_sugerida_cop)}</div>
+                    <p className="text-xs text-slate-300 leading-relaxed">{rec.accion}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          <div className="plate card p-5">
+            <h3 className="text-sm font-semibold text-gold-400 uppercase tracking-wider mb-3">Ranking completo — {result.total_departamentos} departamentos</h3>
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="border-b border-white/[0.08] text-left">
+                    <th className="py-2 px-3 text-xs text-slate-400 font-medium">#</th>
+                    <th className="py-2 px-3 text-xs text-slate-400 font-medium">Departamento</th>
+                    <th className="py-2 px-3 text-xs text-slate-400 font-medium text-right">Score</th>
+                    <th className="py-2 px-3 text-xs text-slate-400 font-medium">Urgencia</th>
+                    <th className="py-2 px-3 text-xs text-slate-400 font-medium text-right">Desempleo</th>
+                    <th className="py-2 px-3 text-xs text-slate-400 font-medium text-right">Informalidad</th>
+                    <th className="py-2 px-3 text-xs text-slate-400 font-medium text-right">DNP</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {result.ranking?.slice(0, 15).map((d: any, i: number) => (
+                    <tr key={i} className={`border-b border-white/[0.04] hover:bg-white/[0.02] ${i < 3 ? 'bg-amber-500/5' : ''}`}>
+                      <td className="py-2.5 px-3 text-slate-400">{i + 1}</td>
+                      <td className="py-2.5 px-3 text-slate-200 font-medium">{d.nombre}</td>
+                      <td className="py-2.5 px-3 text-right font-bold text-gold-400">{d.score_prioridad}</td>
+                      <td className="py-2.5 px-3">
+                        <span className={`px-2 py-0.5 rounded text-xs font-bold ${
+                          d.nivel_urgencia === 'Crítico' ? 'bg-rose-500/20 text-rose-400' :
+                          d.nivel_urgencia === 'Alta' ? 'bg-amber-500/20 text-amber-400' :
+                          d.nivel_urgencia === 'Media' ? 'bg-blue-500/20 text-blue-400' :
+                          'bg-green-500/20 text-green-400'
+                        }`}>{d.nivel_urgencia}</span>
+                      </td>
+                      <td className="py-2.5 px-3 text-right text-slate-300">{d.tasa_desempleo?.toFixed(1)}%</td>
+                      <td className="py-2.5 px-3 text-right text-slate-300">{d.tasa_informalidad?.toFixed(0)}%</td>
+                      <td className="py-2.5 px-3 text-right text-slate-300">{d.dnp_desempeno?.toFixed(0) || '—'}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <div className="text-xs text-slate-500">{result.metodologia}</div>
+          <div className="text-xs text-slate-500 text-right">Fuentes: {result.fuentes?.join(', ') || 'GEIH, DNP, SNIES'}</div>
         </>
       )}
     </div>

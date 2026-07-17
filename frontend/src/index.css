@@ -440,7 +440,7 @@ body::before {
   text-shadow: 0 1px 0 rgba(0,0,0,0.4);
 }
 .hello .wave { display: inline-block; transform: translateY(2px); margin-left: 4px; }
-.hello-sub { color: var(--text-dim); font-size: 18px; margin-top: 6px; }
+.hello-sub { color: var(--text-dim); font-size: 22px; margin-top: 2px; }
 .hello-sub-acronym { font-size: 0.85em; }
 
 .top-actions { display: flex; align-items: center; gap: 12px; }
