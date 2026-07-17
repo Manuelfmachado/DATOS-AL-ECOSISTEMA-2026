@@ -436,13 +436,13 @@ export default function Prediccion() {
                 <ResponsiveContainer width="100%" height={380}>
                   <BarChart data={data.profesiones.slice(0, 10)} layout="vertical" margin={{ left: 10, right: 60 }}>
                     <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.04)" horizontal={false} />
-                    <XAxis type="number" stroke="#64748b" fontSize={11} tickFormatter={(v) => `+${v}%`} />
-                    <YAxis type="category" dataKey="profesion" stroke="#94a3b8" fontSize={11} width={200} />
+                    <XAxis type="number" stroke="#cbd5e1" fontSize={12} fontWeight={600} tickFormatter={(v) => `+${v}%`} />
+                    <YAxis type="category" dataKey="profesion" stroke="#e2e8f0" fontSize={12} fontWeight={600} width={200} />
                     <Tooltip
-                      contentStyle={{ background: '#0a0f1f', border: '1px solid rgba(212,175,55,0.3)', borderRadius: '10px', color: '#e9ecf5', fontSize: 13 }}
+                      contentStyle={{ background: '#0a0f1f', border: '1px solid rgba(212,175,55,0.3)', borderRadius: '10px', color: '#e9ecf5', fontSize: 14, fontWeight: 600 }}
                       formatter={(v: any, name: string, props: any) => {
                         const p = data.profesiones.find((x) => x.profesion === props.payload.profesion)
-                        return [`+${v}% demanda → ${formatCOP(p?.salario_10a_cop || 0)}/mes en 2035`, 'Proyección 10 años']
+                        return [`+${v}% en 10 años → ${formatCOP(p?.salario_10a_cop || 0)}/mes en 2035`, 'Demanda 2025-2035']
                       }}
                     />
                     <Bar dataKey="crecimiento_10a_pct" radius={[0, 4, 4, 0]}>
@@ -461,21 +461,15 @@ export default function Prediccion() {
                     <div className="absolute top-0 right-0 bg-gradient-to-b from-amber-300 to-amber-600 text-[#0a0f1f] text-xs font-bold px-3 py-1 rounded-bl-lg">
                       #{i + 1}
                     </div>
-                    <div className="flex items-center gap-2 mb-1">
-                      <span className="w-8 h-8 rounded-lg border border-amber-500/40 bg-amber-500/10 flex items-center justify-center text-gold-400">
-                        {true ? "" : ""}
-                      </span>
-                      <span className="text-xs text-slate-400 uppercase tracking-wider font-semibold">{p.sector}</span>
-                    </div>
                     <h3 className="font-bold text-white text-lg mb-3 pr-10">{p.profesion}</h3>
                     <div className="space-y-2">
                       <div>
-                        <p className="text-xs text-slate-500 mb-1">Crecimiento de demanda</p>
+                        <p className="text-sm text-slate-200 font-semibold mb-1">Crecimiento de demanda</p>
                         <p className="text-2xl font-bold text-green-400 font-display">+{p.crecimiento_10a_pct}%</p>
-                        <p className="text-xs text-slate-500">en 10 años (2025-2035)</p>
+                        <p className="text-xs text-slate-400">en 10 años (2025-2035)</p>
                       </div>
                       <div className="pt-2 border-t border-gold-500/20">
-                        <p className="text-xs text-slate-500 mb-1">Salario mensual 2025</p>
+                        <p className="text-sm text-slate-200 font-semibold mb-1">Salario mensual 2025</p>
                         <p className="text-xl font-bold text-gold-400 font-display">${Math.round(p.salario_mensual_cop).toLocaleString("es-CO")}</p>
                       </div>
                     </div>
@@ -518,7 +512,6 @@ export default function Prediccion() {
                         <tr key={i} className="hover:bg-white/[0.02] transition-colors">
                           <td className="px-3 py-3">
                             <div className="font-semibold text-slate-200">{p.profesion}</div>
-                            <div className="text-xs text-slate-500">{p.sector}</div>
                           </td>
                           <td className="px-3 py-3">
                             <span
@@ -530,7 +523,6 @@ export default function Prediccion() {
                                   : 'bg-rose-500/15 text-rose-400 border border-rose-500/30'
                               }`}
                             >
-                              {'—'}
                               {p.demanda}
                             </span>
                           </td>
