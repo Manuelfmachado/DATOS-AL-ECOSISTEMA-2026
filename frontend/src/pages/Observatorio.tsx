@@ -288,7 +288,7 @@ export default function Observatorio() {
           >
             <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.04)" horizontal={false} />
             <XAxis type="number" stroke="#e9ecf5" tick={{ fill: '#e9ecf5', fontSize: 12, fontWeight: 600 }} tickLine={false} tickFormatter={(v) => compactNum(v)} />
-            <YAxis type="category" dataKey="name" stroke="#e9ecf5" tick={{ fill: '#e9ecf5', fontSize: 12, fontWeight: 600 }} width={90} />
+            <YAxis type="category" dataKey="name" stroke="#e9ecf5" tick={{ fill: '#e9ecf5', fontSize: 12, fontWeight: 600 }} width={90} interval={0} />
             <Tooltip {...chartTooltip} formatter={(v: number) => [v.toLocaleString(), 'Ocupados']} />
             <Bar dataKey="ocupados" radius={[0, 4, 4, 0]}>
               {deptosEmpleo.map((_: any, i: number) => (
@@ -407,7 +407,7 @@ export default function Observatorio() {
             >
               <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.04)" horizontal={false} />
               <XAxis type="number" stroke="#e9ecf5" tick={{ fill: '#e9ecf5', fontSize: 12, fontWeight: 600 }} tickFormatter={(v) => compactNum(v)} />
-              <YAxis type="category" dataKey="name" stroke="#e9ecf5" tick={{ fill: '#e9ecf5', fontSize: 12, fontWeight: 600 }} width={100} />
+              <YAxis type="category" dataKey="name" stroke="#e9ecf5" tick={{ fill: '#e9ecf5', fontSize: 12, fontWeight: 600 }} width={100} interval={0} />
               <Tooltip {...chartTooltip} formatter={(v: number) => [v.toLocaleString(), 'Empleo']} />
               <Bar dataKey="empleo" radius={[0, 4, 4, 0]}>
                 {sectoresDepto.slice(0, 15).map((_: any, i: number) => (
