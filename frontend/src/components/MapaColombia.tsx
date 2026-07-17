@@ -338,19 +338,18 @@ export default function MapaColombia({
   }
 
   return (
-    <div className="relative w-full h-full flex flex-col md:flex-row">
-      <div className="flex-1 flex flex-col min-w-0">
-        <div ref={containerRef} className="flex-1 relative overflow-hidden">
-          <ComposableMap
-            projection="geoMercator"
-            projectionConfig={{
-              scale,
-              center: [-73, 3.5],
-            }}
-            width={size.w || 800}
-            height={size.h || 600}
-            style={{ width: '100%', height: '100%' }}
-          >
+    <div className="relative w-full h-full flex flex-col">
+      <div ref={containerRef} className="flex-1 relative overflow-hidden">
+        <ComposableMap
+          projection="geoMercator"
+          projectionConfig={{
+            scale,
+            center: [-73, 3.5],
+          }}
+          width={size.w || 800}
+          height={size.h || 600}
+          style={{ width: '100%', height: '100%' }}
+        >
           <defs>
             <filter id="deptGlow" x="-50%" y="-50%" width="200%" height="200%">
               <feGaussianBlur stdDeviation="2" result="coloredBlur" />
@@ -402,31 +401,9 @@ export default function MapaColombia({
         </ComposableMap>
       </div>
 
-      {/* Escala de colores tipo semaforo */}
-      <div className="mt-3 px-1 shrink-0">
-        <div className="text-base font-bold text-slate-200 mb-2">{config.label}</div>
-        <div className="grid grid-cols-3 gap-2">
-          {(() => {
-            const labels = config.bucketLabels || ['Bajo', 'Medio', 'Alto']
-            return config.colors.map((color, i) => {
-              return (
-                <div key={i} className="flex flex-col items-center">
-                  <div
-                    className="w-full h-3 rounded-md"
-                    style={{ background: color, opacity: 0.95 }}
-                  />
-                  <span className="text-sm text-slate-300 mt-1.5 text-center leading-tight font-medium">{labels[i]}</span>
-                </div>
-              )
-            })
-          })()}
-        </div>
-      </div>
-    </div>
-
-    {/* Panel de informacion al hacer hover */}
-    {hovered && (
-      <div className="md:w-[260px] md:shrink-0 md:border-l md:border-gold-500/20 border-t border-gold-500/20 md:border-t-0 bg-[#0a0f1f]/95 backdrop-blur px-4 py-3 text-sm shadow-2xl z-20 overflow-y-auto max-h-[45%] md:max-h-full">
+      {/* Tooltip flotante al hacer hover */}
+      {hovered && (
+        <div className="absolute top-3 right-3 bg-[#0a0f1f]/95 backdrop-blur border border-gold-500/40 rounded-xl px-4 py-3 text-sm shadow-2xl pointer-events-none z-20 min-w-[240px]">
             {(() => {
               const code = hovered
               const displayName = nameMap[code] || ''
@@ -509,6 +486,26 @@ export default function MapaColombia({
             })()}
           </div>
         )}
+      {/* Escala de colores tipo semaforo */}
+      <div className="mt-3 px-1">
+        <div className="text-base font-bold text-slate-200 mb-2">{config.label}</div>
+        <div className="grid grid-cols-3 gap-2">
+          {(() => {
+            const labels = config.bucketLabels || ['Bajo', 'Medio', 'Alto']
+            return config.colors.map((color, i) => {
+              return (
+                <div key={i} className="flex flex-col items-center">
+                  <div
+                    className="w-full h-3 rounded-md"
+                    style={{ background: color, opacity: 0.95 }}
+                  />
+                  <span className="text-sm text-slate-300 mt-1.5 text-center leading-tight font-medium">{labels[i]}</span>
+                </div>
+              )
+            })
+          })()}
+        </div>
+      </div>
     </div>
   )
 }
