@@ -558,5 +558,6 @@ export default function MapaColombia({
       })()}
       </div>
     </div>
+    </div>
   )
 }
