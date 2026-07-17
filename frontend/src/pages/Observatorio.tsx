@@ -381,8 +381,8 @@ export default function Observatorio() {
         {/* Mejores salarios */}
         <div className="plate card p-5">
           <div className="flex items-center justify-between mb-3 pb-2 border-b border-gold-500/20">
-            <h2 className="text-xl font-bold text-white font-display flex items-center gap-2">
-              <span className="w-3 h-3 rounded-full bg-green-400" /> Salarios prom. más altos
+            <h2 className="text-base font-bold text-white font-display flex items-center gap-2 whitespace-nowrap">
+              <span className="w-3 h-3 rounded-full bg-green-400" /> Salarios promedio más altos
             </h2>
             <AnalizarIAButton
               dashboard="observatorio"
@@ -405,8 +405,8 @@ export default function Observatorio() {
         {/* Menores salarios */}
         <div className="plate card p-5">
           <div className="flex items-center justify-between mb-3 pb-2 border-b border-gold-500/20">
-            <h2 className="text-xl font-bold text-white font-display flex items-center gap-2">
-              <span className="w-3 h-3 rounded-full bg-rose-400" /> Salarios prom. más bajos
+            <h2 className="text-base font-bold text-white font-display flex items-center gap-2 whitespace-nowrap">
+              <span className="w-3 h-3 rounded-full bg-rose-400" /> Salarios promedio más bajos
             </h2>
             <AnalizarIAButton
               dashboard="observatorio"
