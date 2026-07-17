@@ -279,7 +279,7 @@ export default function Observatorio() {
         <ResponsiveContainer width="100%" height={Math.max(300, deptosEmpleo.length * 22)}>
           <BarChart
             data={deptosEmpleo.map((d: any, i: number) => ({
-              name: cleanDepto(d.departamento),
+              name: cleanDepto(d.departamento).toUpperCase(),
               ocupados: d.ocupados || 0,
               fill: i < 3 ? '#d4af37' : '#64748b',
             }))}
@@ -288,7 +288,7 @@ export default function Observatorio() {
           >
             <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.04)" horizontal={false} />
             <XAxis type="number" stroke="#e9ecf5" tick={{ fill: '#e9ecf5', fontSize: 12, fontWeight: 600 }} tickLine={false} tickFormatter={(v) => compactNum(v)} />
-            <YAxis type="category" dataKey="name" stroke="#e9ecf5" tick={{ fill: '#e9ecf5', fontSize: 12, fontWeight: 600 }} width={90} interval={0} />
+            <YAxis type="category" dataKey="name" stroke="#e9ecf5" tick={{ fill: '#e9ecf5', fontSize: 10, fontWeight: 600 }} width={90} interval={0} />
             <Tooltip {...chartTooltip} formatter={(v: number) => [v.toLocaleString(), 'Ocupados']} />
             <Bar dataKey="ocupados" radius={[0, 4, 4, 0]}>
               {deptosEmpleo.map((_: any, i: number) => (
