@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import api from '../services/api'
 import MapaColombia, { type DeptoData } from '../components/MapaColombia'
-import { formatCOP, formatCOPFull, formatCOPCompact } from '../utils/format'
+import { formatCOP, formatCOPFull } from '../utils/format'
 import albaRostroSvg from '../../SVG/ALBA ROSTRO.svg'
 
 interface ProfesionDesempleo {
@@ -262,7 +262,7 @@ export default function Dashboard() {
 
           <div className="grid grid-cols-1 xl:grid-cols-12 gap-0 items-stretch">
             {/* Mapa */}
-            <div className="xl:col-span-8 relative h-[70vh] min-h-[480px] max-h-[780px] bg-[#050813] rounded-bl-xl overflow-hidden">
+            <div className="xl:col-span-7 relative h-[70vh] min-h-[480px] max-h-[780px] bg-[#050813] rounded-bl-xl overflow-hidden">
             {loadingMapa ? (
               <div className="w-full h-full flex flex-col items-center justify-center text-[#6b7390]">
                 <span className="inline-block w-16 h-16 border-4 border-slate-700 border-t-gold-500 rounded-full animate-spin mb-3" />
@@ -280,8 +280,8 @@ export default function Dashboard() {
             )}
           </div>
 
-          {/* Panel derecho: panorama nacional */}
-          <div className="xl:col-span-4 border-t xl:border-t-0 xl:border-l border-gold-500/20 p-3 sm:p-4 flex flex-col overflow-y-auto">
+          {/* Panel derecho: panorama nacional en tablas claras tipo factura */}
+          <div className="xl:col-span-5 border-t xl:border-t-0 xl:border-l border-gold-500/20 p-4 sm:p-5 flex flex-col overflow-y-auto">
             {loadingRankings ? (
               <div className="flex flex-col gap-4">
                 <div className="flex items-center gap-2 pb-3 border-b border-gold-500/30">
@@ -306,18 +306,18 @@ export default function Dashboard() {
 
 
                 {/* Dos columnas: Mejores y Peores */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   {/* Columna Mejores */}
-                  <div className="flex flex-col gap-2">
+                  <div className="flex flex-col gap-3">
                     <div className="rounded-lg border border-gold-500/30 overflow-hidden">
-                      <div className="bg-[rgba(212,175,55,0.15)] px-2 py-1.5 text-[11px] font-bold text-gold-400 uppercase tracking-wider border-b border-gold-500/30">
+                      <div className="bg-[rgba(212,175,55,0.15)] px-3 py-2.5 text-base font-bold text-gold-400 uppercase tracking-wider border-b border-gold-500/30">
                         Menor desempleo
                       </div>
-                      <table className="w-full text-[10px]">
+                      <table className="w-full text-sm">
                         <thead>
                           <tr className="border-b border-gold-500/20">
-                            <th className="text-left py-1 px-1.5 text-[9px] text-slate-400 font-medium">Dpto</th>
-                            <th className="text-right py-1 px-1.5 text-[9px] text-cyan-400 font-medium">Tasa</th>
+                            <th className="text-left py-2 px-3 text-base text-slate-400 font-medium">Departamento</th>
+                            <th className="text-right py-2 px-3 text-base text-cyan-400 font-medium">Tasa</th>
                           </tr>
                         </thead>
                         <tbody>
@@ -325,8 +325,8 @@ export default function Dashboard() {
                             <tr key={i} className="border-b border-white/[0.04] hover:bg-white/[0.04] cursor-pointer"
                               onClick={() => setSelectedDepto(d)}
                             >
-                              <td className="py-1 px-1.5 text-slate-300">{d.departamento.replace('ARCHIPIÉLAGO DE SAN ANDRÉS', 'SAN ANDRÉS')}</td>
-                              <td className="py-1 px-1.5 text-right text-cyan-400 font-semibold">{d.tasa_desempleo?.toFixed(1)}%</td>
+                              <td className="py-2 px-3 text-slate-300">{d.departamento.replace('ARCHIPIÉLAGO DE SAN ANDRÉS', 'SAN ANDRÉS')}</td>
+                              <td className="py-2 px-3 text-right text-cyan-400 font-semibold">{d.tasa_desempleo?.toFixed(1)}%</td>
                             </tr>
                           ))}
                         </tbody>
@@ -334,14 +334,14 @@ export default function Dashboard() {
                     </div>
 
                     <div className="rounded-lg border border-gold-500/30 overflow-hidden">
-                      <div className="bg-[rgba(212,175,55,0.15)] px-2 py-1.5 text-[11px] font-bold text-gold-400 uppercase tracking-wider border-b border-gold-500/30">
+                      <div className="bg-[rgba(212,175,55,0.15)] px-3 py-2.5 text-base font-bold text-gold-400 uppercase tracking-wider border-b border-gold-500/30">
                         Mejores salarios
                       </div>
-                      <table className="w-full text-[10px]">
+                      <table className="w-full text-sm">
                         <thead>
                           <tr className="border-b border-gold-500/20">
-                            <th className="text-left py-1 px-1.5 text-[9px] text-slate-400 font-medium">Dpto</th>
-                            <th className="text-right py-1 px-1.5 text-[9px] text-gold-400 font-medium">Sal.</th>
+                            <th className="text-left py-2 px-3 text-base text-slate-400 font-medium">Departamento</th>
+                            <th className="text-right py-2 px-3 text-base text-gold-400 font-medium">Salario</th>
                           </tr>
                         </thead>
                         <tbody>
@@ -349,8 +349,8 @@ export default function Dashboard() {
                             <tr key={i} className="border-b border-white/[0.04] hover:bg-white/[0.04] cursor-pointer"
                               onClick={() => setSelectedDepto(d)}
                             >
-                              <td className="py-1 px-1.5 text-slate-300">{d.departamento.replace('ARCHIPIÉLAGO DE SAN ANDRÉS', 'SAN ANDRÉS')}</td>
-                              <td className="py-1 px-1.5 text-right text-gold-400 font-semibold">{formatCOPCompact(d.ingreso_promedio)}</td>
+                              <td className="py-2 px-3 text-slate-300">{d.departamento.replace('ARCHIPIÉLAGO DE SAN ANDRÉS', 'SAN ANDRÉS')}</td>
+                              <td className="py-2 px-3 text-right text-gold-400 font-semibold">{formatCOP(d.ingreso_promedio)}</td>
                             </tr>
                           ))}
                         </tbody>
@@ -358,14 +358,14 @@ export default function Dashboard() {
                     </div>
 
                     <div className="rounded-lg border border-gold-500/30 overflow-hidden">
-                      <div className="bg-[rgba(212,175,55,0.15)] px-2 py-1.5 text-[11px] font-bold text-gold-400 uppercase tracking-wider border-b border-gold-500/30">
+                      <div className="bg-[rgba(212,175,55,0.15)] px-3 py-2.5 text-base font-bold text-gold-400 uppercase tracking-wider border-b border-gold-500/30">
                         Mayor formalidad
                       </div>
-                      <table className="w-full text-[10px]">
+                      <table className="w-full text-sm">
                         <thead>
                           <tr className="border-b border-gold-500/20">
-                            <th className="text-left py-1 px-1.5 text-[9px] text-slate-400 font-medium">Dpto</th>
-                            <th className="text-right py-1 px-1.5 text-[9px] text-cyan-400 font-medium">Form.</th>
+                            <th className="text-left py-2 px-3 text-base text-slate-400 font-medium">Departamento</th>
+                            <th className="text-right py-2 px-3 text-base text-cyan-400 font-medium">Formal</th>
                           </tr>
                         </thead>
                         <tbody>
@@ -373,8 +373,8 @@ export default function Dashboard() {
                             <tr key={i} className="border-b border-white/[0.04] hover:bg-white/[0.04] cursor-pointer"
                               onClick={() => setSelectedDepto(d)}
                             >
-                              <td className="py-1 px-1.5 text-slate-300">{d.departamento.replace('ARCHIPIÉLAGO DE SAN ANDRÉS', 'SAN ANDRÉS')}</td>
-                              <td className="py-1 px-1.5 text-right text-cyan-400 font-semibold">{d.tasa_formalidad?.toFixed(0)}%</td>
+                              <td className="py-2 px-3 text-slate-300">{d.departamento.replace('ARCHIPIÉLAGO DE SAN ANDRÉS', 'SAN ANDRÉS')}</td>
+                              <td className="py-2 px-3 text-right text-cyan-400 font-semibold">{d.tasa_formalidad?.toFixed(0)}%</td>
                             </tr>
                           ))}
                         </tbody>
@@ -383,16 +383,16 @@ export default function Dashboard() {
                   </div>
 
                   {/* Columna Peores */}
-                  <div className="flex flex-col gap-2">
+                  <div className="flex flex-col gap-3">
                     <div className="rounded-lg border border-gold-500/30 overflow-hidden">
-                      <div className="bg-[rgba(212,175,55,0.15)] px-2 py-1.5 text-[11px] font-bold text-gold-400 uppercase tracking-wider border-b border-gold-500/30">
+                      <div className="bg-[rgba(212,175,55,0.15)] px-3 py-2.5 text-base font-bold text-gold-400 uppercase tracking-wider border-b border-gold-500/30">
                         Mayor desempleo
                       </div>
-                      <table className="w-full text-[10px]">
+                      <table className="w-full text-sm">
                         <thead>
                           <tr className="border-b border-gold-500/20">
-                            <th className="text-left py-1 px-1.5 text-[9px] text-slate-400 font-medium">Dpto</th>
-                            <th className="text-right py-1 px-1.5 text-[9px] text-red-400 font-medium">Tasa</th>
+                            <th className="text-left py-2 px-3 text-base text-slate-400 font-medium">Departamento</th>
+                            <th className="text-right py-2 px-3 text-base text-red-400 font-medium">Tasa</th>
                           </tr>
                         </thead>
                         <tbody>
@@ -400,8 +400,8 @@ export default function Dashboard() {
                             <tr key={i} className="border-b border-white/[0.04] hover:bg-white/[0.04] cursor-pointer"
                               onClick={() => setSelectedDepto(d)}
                             >
-                              <td className="py-1 px-1.5 text-slate-300">{d.departamento.replace('ARCHIPIÉLAGO DE SAN ANDRÉS', 'SAN ANDRÉS')}</td>
-                              <td className="py-1 px-1.5 text-right text-red-400 font-semibold">{d.tasa_desempleo?.toFixed(1)}%</td>
+                              <td className="py-2 px-3 text-slate-300">{d.departamento.replace('ARCHIPIÉLAGO DE SAN ANDRÉS', 'SAN ANDRÉS')}</td>
+                              <td className="py-2 px-3 text-right text-red-400 font-semibold">{d.tasa_desempleo?.toFixed(1)}%</td>
                             </tr>
                           ))}
                         </tbody>
@@ -409,14 +409,14 @@ export default function Dashboard() {
                     </div>
 
                     <div className="rounded-lg border border-gold-500/30 overflow-hidden">
-                      <div className="bg-[rgba(212,175,55,0.15)] px-2 py-1.5 text-[11px] font-bold text-gold-400 uppercase tracking-wider border-b border-gold-500/30">
+                      <div className="bg-[rgba(212,175,55,0.15)] px-3 py-2.5 text-base font-bold text-gold-400 uppercase tracking-wider border-b border-gold-500/30">
                         Menores salarios
                       </div>
-                      <table className="w-full text-[10px]">
+                      <table className="w-full text-sm">
                         <thead>
                           <tr className="border-b border-gold-500/20">
-                            <th className="text-left py-1 px-1.5 text-[9px] text-slate-400 font-medium">Dpto</th>
-                            <th className="text-right py-1 px-1.5 text-[9px] text-slate-400 font-medium">Sal.</th>
+                            <th className="text-left py-2 px-3 text-base text-slate-400 font-medium">Departamento</th>
+                            <th className="text-right py-2 px-3 text-base text-slate-400 font-medium">Salario</th>
                           </tr>
                         </thead>
                         <tbody>
@@ -424,8 +424,8 @@ export default function Dashboard() {
                             <tr key={i} className="border-b border-white/[0.04] hover:bg-white/[0.04] cursor-pointer"
                               onClick={() => setSelectedDepto(d)}
                             >
-                              <td className="py-1 px-1.5 text-slate-300">{d.departamento.replace('ARCHIPIÉLAGO DE SAN ANDRÉS', 'SAN ANDRÉS')}</td>
-                              <td className="py-1 px-1.5 text-right text-slate-400 font-semibold">{formatCOPCompact(d.ingreso_promedio)}</td>
+                              <td className="py-2 px-3 text-slate-300">{d.departamento.replace('ARCHIPIÉLAGO DE SAN ANDRÉS', 'SAN ANDRÉS')}</td>
+                              <td className="py-2 px-3 text-right text-slate-400 font-semibold">{formatCOP(d.ingreso_promedio)}</td>
                             </tr>
                           ))}
                         </tbody>
@@ -433,14 +433,14 @@ export default function Dashboard() {
                     </div>
 
                     <div className="rounded-lg border border-gold-500/30 overflow-hidden">
-                      <div className="bg-[rgba(212,175,55,0.15)] px-2 py-1.5 text-[11px] font-bold text-gold-400 uppercase tracking-wider border-b border-gold-500/30">
+                      <div className="bg-[rgba(212,175,55,0.15)] px-3 py-2.5 text-base font-bold text-gold-400 uppercase tracking-wider border-b border-gold-500/30">
                         Mayor informalidad
                       </div>
-                      <table className="w-full text-[10px]">
+                      <table className="w-full text-sm">
                         <thead>
                           <tr className="border-b border-gold-500/20">
-                            <th className="text-left py-1 px-1.5 text-[9px] text-slate-400 font-medium">Dpto</th>
-                            <th className="text-right py-1 px-1.5 text-[9px] text-red-400 font-medium">Inf.</th>
+                            <th className="text-left py-2 px-3 text-base text-slate-400 font-medium">Departamento</th>
+                            <th className="text-right py-2 px-3 text-base text-red-400 font-medium">Informal</th>
                           </tr>
                         </thead>
                         <tbody>
@@ -448,8 +448,8 @@ export default function Dashboard() {
                             <tr key={i} className="border-b border-white/[0.04] hover:bg-white/[0.04] cursor-pointer"
                               onClick={() => setSelectedDepto(d)}
                             >
-                              <td className="py-1 px-1.5 text-slate-300">{d.departamento.replace('ARCHIPIÉLAGO DE SAN ANDRÉS', 'SAN ANDRÉS')}</td>
-                              <td className="py-1 px-1.5 text-right text-red-400 font-semibold">{(100 - (d.tasa_formalidad || 0)).toFixed(0)}%</td>
+                              <td className="py-2 px-3 text-slate-300">{d.departamento.replace('ARCHIPIÉLAGO DE SAN ANDRÉS', 'SAN ANDRÉS')}</td>
+                              <td className="py-2 px-3 text-right text-red-400 font-semibold">{(100 - (d.tasa_formalidad || 0)).toFixed(0)}%</td>
                             </tr>
                           ))}
                         </tbody>
