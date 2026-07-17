@@ -289,13 +289,13 @@ export default function Prediccion() {
                       <ResponsiveContainer width="100%" height={380}>
                         <BarChart data={barData} layout="vertical" margin={{ left: 10, right: 60 }}>
                           <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.04)" horizontal={false} />
-                          <XAxis type="number" stroke="#64748b" fontSize={11} tickFormatter={(v) => `+${v}%`} />
-                          <YAxis type="category" dataKey="sector" stroke="#94a3b8" fontSize={11} width={180} />
+                          <XAxis type="number" stroke="#cbd5e1" fontSize={12} fontWeight={600} tickFormatter={(v) => `+${v}%`} />
+                          <YAxis type="category" dataKey="sector" stroke="#e2e8f0" fontSize={12} fontWeight={600} width={180} />
                           <Tooltip
-                            contentStyle={{ background: '#0a0f1f', border: '1px solid rgba(212,175,55,0.3)', borderRadius: '10px', color: '#e9ecf5', fontSize: 13 }}
+                            contentStyle={{ background: '#0a0f1f', border: '1px solid rgba(212,175,55,0.3)', borderRadius: '10px', color: '#e9ecf5', fontSize: 14, fontWeight: 600 }}
                             formatter={(v: any, name: string, props: any) => {
                               const s = barData.find((x) => x.sector === props.payload.sector)
-                              return [`+${v}% → ${compactNum(s?.empleo_10y || 0)} empleos`, 'Proyección 10 años']
+                              return [`+${v}% en 10 años → ${compactNum(s?.empleo_10y || 0)} empleos`, 'Crecimiento 2025-2035']
                             }}
                           />
                           <Bar dataKey="variacion_10y_pct" radius={[0, 4, 4, 0]}>
@@ -314,15 +314,15 @@ export default function Prediccion() {
                           <p className="text-2xl font-bold text-white mb-4 font-display">{s.sector}</p>
                           <div className="space-y-4">
                             <div className="flex flex-col">
-                              <p className="text-xs text-slate-400 uppercase tracking-wider mb-1">Empleados en {anioBase}</p>
+                              <p className="text-sm text-slate-200 uppercase tracking-wider mb-1 font-semibold">Empleados en {anioBase}</p>
                               <p className="text-3xl font-bold text-gold-400 font-display">{Math.round(s.empleo_actual).toLocaleString('es-CO')}</p>
                             </div>
                             <div className="flex flex-col">
-                              <p className="text-xs text-slate-400 uppercase tracking-wider mb-1">Proyección 2035</p>
+                              <p className="text-sm text-slate-200 uppercase tracking-wider mb-1 font-semibold">Proyección 2035</p>
                               <p className="text-3xl font-bold text-gold-400 font-display">{Math.round(s.empleo_10y).toLocaleString('es-CO')}</p>
                             </div>
                             <div className="pt-4 border-t border-gold-500/20">
-                              <p className="text-xs text-slate-400 uppercase tracking-wider mb-1">Crecimiento</p>
+                              <p className="text-sm text-slate-200 uppercase tracking-wider mb-1 font-semibold">Crecimiento</p>
                               <p className="text-2xl font-bold" style={{ color: COLORS[i % COLORS.length] }}>
                                 +{s.variacion_10y_pct}%
                               </p>
@@ -355,28 +355,30 @@ export default function Prediccion() {
                           <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" />
                           <XAxis
                             dataKey="año"
-                            stroke="#64748b"
-                            fontSize={12}
+                            stroke="#cbd5e1"
+                            fontSize={13}
+                            fontWeight={600}
                             tickMargin={10}
                             interval={1}
                             angle={0}
                           />
                           <YAxis
-                            stroke="#64748b"
-                            fontSize={12}
+                            stroke="#cbd5e1"
+                            fontSize={13}
+                            fontWeight={600}
                             tickFormatter={(v) => Math.round(v).toLocaleString('es-CO')}
-                            width={55}
+                            width={60}
                           />
                           <Tooltip
-                            contentStyle={{ background: '#0a0f1f', border: '1px solid rgba(212,175,55,0.3)', borderRadius: '10px', color: '#e9ecf5', fontSize: 13 }}
+                            contentStyle={{ background: '#0a0f1f', border: '1px solid rgba(212,175,55,0.3)', borderRadius: '10px', color: '#e9ecf5', fontSize: 14, fontWeight: 600 }}
                             formatter={(v: number, name: string, props: any) => {
                               const esProyeccion = props?.payload?.año > anioBase
                               return [compactNum(v), `${name}${esProyeccion ? ' (proy.)' : ''}`]
                             }}
                             labelFormatter={(label) => `${label}${Number(label) > anioBase ? ' — proyección' : ''}`}
                           />
-                          <ReferenceLine x={anioBase} stroke="#d4af37" strokeDasharray="5 5" label={{ value: 'Proyección →', position: 'insideTopRight', fill: '#d4af37', fontSize: 11 }} />
-                          <Legend formatter={(v: string) => <span style={{ color: '#e9ecf5', fontSize: 12 }}>{v}</span>} />
+                          <ReferenceLine x={anioBase} stroke="#d4af37" strokeDasharray="5 5" label={{ value: 'Proyección →', position: 'insideTopRight', fill: '#d4af37', fontSize: 12, fontWeight: 700 }} />
+                          <Legend formatter={(v: string) => <span style={{ color: '#e9ecf5', fontSize: 13, fontWeight: 600 }}>{v}</span>} />
                           {topEmpleo.map((s: any, i: number) => (
                             <Line
                               key={s.sector}
