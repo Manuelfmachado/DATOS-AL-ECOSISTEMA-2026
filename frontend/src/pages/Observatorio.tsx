@@ -701,8 +701,8 @@ export default function Observatorio() {
                 <div key={d.departamento}>
                   <div
                     onClick={() => setSelectedDepto(sel ? null : d.departamento)}
-                    className={`flex items-center gap-3 bg-white/[0.02] rounded-lg px-3 py-2 border cursor-pointer transition-colors hover:border-amber-500/60 ${
-                      sel ? 'border-amber-500/60 bg-white/[0.02]' : 'border-white/[0.04]'
+                    className={`flex items-center gap-3 bg-white/[0.02] rounded-lg px-3 py-2 border cursor-pointer transition-colors ${
+                      sel ? 'border-white/[0.12] bg-white/[0.03]' : 'border-white/[0.04] hover:border-white/[0.08]'
                     }`}
                   >
                     <div className="flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold" style={{ backgroundColor: `${barColor}20`, color: barColor }}>
