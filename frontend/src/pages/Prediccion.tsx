@@ -260,7 +260,7 @@ export default function Prediccion() {
                       <div className="flex items-start gap-3">
                         
                         <div>
-                          <p className="text-base text-slate-200 font-semibold mb-1">¿Qué muestran estas cifras?</p>
+                          <p className="text-base text-gold-400 font-semibold mb-1">¿Qué muestran estas cifras?</p>
                           <p className="text-base text-slate-400 leading-relaxed">
                             Empleo por macrosector según la GEIH del DANE. La proyección a 10 años combina el crecimiento base del empleo y la tendencia sectorial reciente.
                           </p>
@@ -408,7 +408,7 @@ export default function Prediccion() {
                 <div className="flex items-start gap-3">
                   
                   <div>
-                    <p className="text-base text-slate-200 font-semibold mb-1">¿Qué muestran estas cifras?</p>
+                    <p className="text-base text-gold-400 font-semibold mb-1">¿Qué muestran estas cifras?</p>
                     <p className="text-base text-slate-400 leading-relaxed">
                       Profesiones con mayor proyección de demanda laboral. El crecimiento es de demanda, no salarial. Fuentes: O*NET, ESCO y WEF Future of Jobs.
                     </p>
@@ -548,7 +548,7 @@ export default function Prediccion() {
                 <div className="flex items-start gap-3">
                   
                   <div>
-                    <p className="text-base text-slate-200 font-semibold mb-1">¿Qué muestran estas cifras?</p>
+                    <p className="text-base text-gold-400 font-semibold mb-1">¿Qué muestran estas cifras?</p>
                     <p className="text-base text-slate-400 leading-relaxed">
                       Habilidades más demandadas para el futuro laboral. Puntuación de 0 a 100 según el WEF Future of Jobs Report, adaptado al contexto colombiano.
                     </p>
@@ -653,7 +653,7 @@ export default function Prediccion() {
                 <div className="overflow-x-auto">
                   <table className="w-full text-sm text-left">
                     <thead>
-                      <tr className="text-base text-slate-400 uppercase tracking-wider border-b border-white/[0.08]">
+                      <tr className="text-sm text-gold-400 uppercase tracking-wider border-b border-white/[0.08]">
                         <th className="px-3 py-3">#</th>
                         <th className="px-3 py-3">Habilidad</th>
                         <th className="px-3 py-3">Nivel</th>
@@ -698,7 +698,7 @@ export default function Prediccion() {
                 <div className="flex items-start gap-3">
                   
                   <div>
-                    <p className="text-base text-slate-200 font-semibold mb-1">¿Qué muestran estas cifras?</p>
+                    <p className="text-base text-gold-400 font-semibold mb-1">¿Qué muestran estas cifras?</p>
                     <p className="text-base text-slate-400 leading-relaxed">
                       Proyección salarial mensual por profesión en pesos colombianos. Basada en GEIH del DANE con crecimiento real anual del 3.5%.
                     </p>

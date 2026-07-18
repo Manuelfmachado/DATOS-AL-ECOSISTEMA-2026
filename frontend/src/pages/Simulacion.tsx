@@ -200,7 +200,7 @@ function useDepartamentos() {
 // ===========================================================================
 
 export default function Simulacion() {
-  const [tab, setTab] = useState<'que-pasa-si' | 'demanda-sectorial' | 'viabilidad' | 'priorizacion'>('que-pasa-si')
+  const [tab, setTab] = useState<'que-pasa-si' | 'viabilidad' | 'priorizacion'>('que-pasa-si')
 
   return (
     <div className="animate-fade-in space-y-5">
@@ -218,27 +218,17 @@ export default function Simulacion() {
           onClick={() => setTab('que-pasa-si')}
           className={`px-4 py-2 rounded-lg text-lg font-bold text-white transition-all ${
             tab === 'que-pasa-si'
-              ? 'bg-amber-500/15 text-gold-400 border border-amber-500/30'
+              ? 'bg-amber-500/25 text-gold-400 border border-gold-500/60 shadow-[0_0_10px_rgba(212,175,55,0.2)]'
               : 'text-slate-400 hover:text-slate-200'
           }`}
         >
           ¿Y si...?
         </button>
         <button
-          onClick={() => setTab('demanda-sectorial')}
-          className={`px-4 py-2 rounded-lg text-lg font-bold text-white transition-all ${
-            tab === 'demanda-sectorial'
-              ? 'bg-amber-500/15 text-gold-400 border border-amber-500/30'
-              : 'text-slate-400 hover:text-slate-200'
-          }`}
-        >
-          Demanda Sectorial
-        </button>
-        <button
           onClick={() => setTab('viabilidad')}
           className={`px-4 py-2 rounded-lg text-lg font-bold text-white transition-all ${
             tab === 'viabilidad'
-              ? 'bg-amber-500/15 text-gold-400 border border-amber-500/30'
+              ? 'bg-amber-500/25 text-gold-400 border border-gold-500/60 shadow-[0_0_10px_rgba(212,175,55,0.2)]'
               : 'text-slate-400 hover:text-slate-200'
           }`}
         >
@@ -248,7 +238,7 @@ export default function Simulacion() {
           onClick={() => setTab('priorizacion')}
           className={`px-4 py-2 rounded-lg text-lg font-bold text-white transition-all ${
             tab === 'priorizacion'
-              ? 'bg-amber-500/15 text-gold-400 border border-amber-500/30'
+              ? 'bg-amber-500/25 text-gold-400 border border-gold-500/60 shadow-[0_0_10px_rgba(212,175,55,0.2)]'
               : 'text-slate-400 hover:text-slate-200'
           }`}
         >
@@ -257,7 +247,6 @@ export default function Simulacion() {
       </div>
 
       {tab === 'que-pasa-si' && <SimQuePasaSi />}
-      {tab === 'demanda-sectorial' && <SimDemanda />}
       {tab === 'viabilidad' && <SimViabilidad />}
       {tab === 'priorizacion' && <SimPriorizacion />}
 
@@ -391,7 +380,7 @@ function SimQuePasaSi() {
         <h3 className="text-sm font-semibold text-gold-400 uppercase tracking-wider mb-4">Perfil</h3>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div>
-            <label className="text-xs text-slate-400 mb-1 block">Programa</label>
+            <label className="text-sm text-slate-400 mb-1 block">Programa</label>
             <input
               type="text"
               value={programaQuery}
@@ -414,13 +403,13 @@ function SimQuePasaSi() {
             )}
           </div>
           <div>
-            <label className="text-xs text-slate-400 mb-1 block">Departamento</label>
+            <label className="text-sm text-slate-400 mb-1 block">Departamento</label>
             <select value={departamento} onChange={(e) => setDepartamento(e.target.value)} className={`${selectStyles} w-full`}>
               {deptos.map((d) => <option key={d}>{d}</option>)}
             </select>
           </div>
           <div>
-            <label className="text-xs text-slate-400 mb-1 block">Edad</label>
+            <label className="text-sm text-slate-400 mb-1 block">Edad</label>
             <input type="number" value={edad} onChange={(e) => setEdad(Number(e.target.value))} min={16} max={70} className={`${selectStyles} w-full`} />
           </div>
         </div>
@@ -564,7 +553,7 @@ function SimQuePasaSi() {
                   )}
                   {e.costo_educacion_cop > 0 && (
                     <div className="mt-2 pt-2 border-t border-white/[0.06]">
-                      <p className="text-xs text-slate-400">Inversión: {formatCOP(e.costo_educacion_cop)}</p>
+                      <p className="text-sm text-slate-400">Inversión: {formatCOP(e.costo_educacion_cop)}</p>
                       {e.anos_recuperacion > 0 && (
                         <p className="text-xs text-amber-400 mt-0.5">Recuperas en {e.anos_recuperacion} años</p>
                       )}
@@ -582,7 +571,7 @@ function SimQuePasaSi() {
                 <span className="text-lg">{result.alerta_saturacion.riesgo === 'alto' ? '⚠️' : '📊'}</span>
                 <div>
                   <p className="text-sm text-slate-200 font-medium">{result.alerta_saturacion.mensaje}</p>
-                  <p className="text-xs text-slate-400 mt-1">{result.alerta_saturacion.detalle}</p>
+                  <p className="text-sm text-slate-400 mt-1">{result.alerta_saturacion.detalle}</p>
                 </div>
               </div>
             </div>
@@ -663,7 +652,7 @@ function SimTrayectoria() {
             )}
             {programaQuery.length >= 2 && programas.length > 0 && !programa && (
               <div className="mt-1 max-h-56 overflow-y-auto bg-[#0a0f1f] border border-amber-500/20 rounded-lg shadow-xl absolute z-10 left-0 right-0">
-                <div className="px-3 py-1 text-[10px] text-slate-500 border-b border-white/[0.04]">{programas.length} programas encontrados</div>
+                <div className="px-3 py-1 text-xs text-slate-500 border-b border-white/[0.04]">{programas.length} programas encontrados</div>
                 {programas.slice(0, 20).map((p) => (
                   <button
                     key={p}
@@ -856,7 +845,7 @@ function SimMigracion() {
         <>
           {/* Score */}
           <div className="plate card p-5 text-center">
-            <p className="text-xs text-slate-400 uppercase tracking-wider mb-2">Score de atractivo territorial</p>
+            <p className="text-sm text-slate-400 uppercase tracking-wider mb-2">Score de atractivo territorial</p>
             <div className="relative inline-block">
               <p className={`text-5xl font-bold font-display ${result.score_atractivo >= 65 ? 'text-green-400' : result.score_atractivo >= 45 ? 'text-amber-400' : 'text-rose-400'}`}>
                 {result.score_atractivo.toFixed(0)}
@@ -910,7 +899,7 @@ function DeptoCard({ titulo, data, color }: { titulo: string; data: Record<strin
 function DeltaCard({ label, value, cop, positive }: { label: string; value: string; cop?: number; positive: boolean }) {
   return (
     <div className="plate card p-4 text-center">
-      <p className="text-xs text-slate-400 uppercase tracking-wider mb-1">{label}</p>
+      <p className="text-sm text-slate-400 uppercase tracking-wider mb-1">{label}</p>
       <p className={`text-2xl font-bold font-display ${positive ? 'text-green-400' : 'text-rose-400'}`}>{value}</p>
       {cop != null && <p className={`text-xs mt-1 ${positive ? 'text-green-400/70' : 'text-rose-400/70'}`}>{cop > 0 ? '+' : ''}{formatCOP(cop)}</p>}
     </div>
@@ -992,7 +981,7 @@ function SimReskilling() {
           {/* Overlap */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div className="plate card p-5 text-center">
-              <p className="text-xs text-slate-400 uppercase tracking-wider mb-2">Overlap de habilidades</p>
+              <p className="text-sm text-slate-400 uppercase tracking-wider mb-2">Overlap de habilidades</p>
               <p className={`text-5xl font-bold font-display ${result.overlap_pct >= 70 ? 'text-green-400' : result.overlap_pct >= 40 ? 'text-amber-400' : 'text-rose-400'}`}>
                 {result.overlap_pct.toFixed(0)}%
               </p>
@@ -1003,7 +992,7 @@ function SimReskilling() {
             </div>
             <div className="plate card p-5 md:col-span-2 flex items-center">
               <div className="flex-1">
-                <p className="text-xs text-slate-400 uppercase tracking-wider mb-1">Veredicto</p>
+                <p className="text-sm text-slate-400 uppercase tracking-wider mb-1">Veredicto</p>
                 <p className="text-sm text-slate-300">{result.veredicto}</p>
               </div>
             </div>
@@ -1089,7 +1078,7 @@ function OcupacionInput({ label, query, setQuery, seleccionado, opciones, onSele
       )}
       {opciones.length > 0 && !seleccionado && (
         <div className="mt-1 max-h-48 overflow-y-auto bg-[#0a0f1f] border border-amber-500/20 rounded-lg shadow-xl absolute z-10 left-0 right-0">
-          <div className="px-3 py-1 text-[10px] text-slate-500 border-b border-white/[0.04]">{opciones.length} ocupaciones encontradas</div>
+          <div className="px-3 py-1 text-xs text-slate-500 border-b border-white/[0.04]">{opciones.length} ocupaciones encontradas</div>
           {opciones.slice(0, 15).map((o) => (
             <button key={o} onClick={() => onSelect(o)} className="block w-full text-left px-3 py-2 text-sm text-slate-300 hover:bg-amber-500/10 hover:text-gold-400 transition-colors">
               {o}
@@ -1331,7 +1320,7 @@ function SimDecision() {
         <>
           {/* Mejor opción */}
           <div className="plate card p-5 text-center border-amber-500/30">
-            <p className="text-xs text-slate-400 uppercase tracking-wider mb-2">Mejor opción según ingreso acumulado a 10 años</p>
+            <p className="text-sm text-slate-400 uppercase tracking-wider mb-2">Mejor opción según ingreso acumulado a 10 años</p>
             <div className="flex items-center justify-center gap-3">
               <p className="text-3xl font-bold font-display" style={{ color: opcionesOrden.find((o) => o.key === result.mejor_opcion)?.color }}>
                 {opcionesOrden.find((o) => o.key === result.mejor_opcion)?.label}
@@ -1347,9 +1336,9 @@ function SimDecision() {
               const isMejor = result.mejor_opcion === o.key
               return (
                 <div key={o.key} className={`plate card p-4 text-center ${isMejor ? 'border-2' : ''}`} style={isMejor ? { borderColor: o.color + '60' } : {}}>
-                  <p className="text-xs text-slate-400 uppercase tracking-wider">{o.label}</p>
+                  <p className="text-sm text-slate-400 uppercase tracking-wider">{o.label}</p>
                   <p className="text-xl font-bold font-display mt-1" style={{ color: o.color }}>{formatCOP(val)}</p>
-                  <p className="text-[10px] text-slate-500 mt-1">Ingreso acumulado 10 años</p>
+                  <p className="text-xs text-slate-500 mt-1">Ingreso acumulado 10 años</p>
                 </div>
               )
             })}
@@ -1398,7 +1387,7 @@ function SimDecision() {
                   <div className="flex items-center gap-2 mb-2" style={{ color: o.color }}>
                     <span className="font-bold text-sm" style={{ color: o.color }}>{o.label}</span>
                   </div>
-                  <p className="text-xs text-slate-400">{data.descripcion}</p>
+                  <p className="text-sm text-slate-400">{data.descripcion}</p>
                   {o.key === 'estudiar' && <p className="text-xs text-slate-500 mt-2">Años de inversión: {data.anos_inversion}</p>}
                   {o.key === 'trabajar' && <p className="text-xs text-slate-500 mt-2">Crecimiento: {data.crecimiento_anual_pct}% anual</p>}
                   {o.key === 'emprender' && <p className="text-xs text-slate-500 mt-2">Prob. de éxito: {data.prob_exito_pct}%</p>}
@@ -1443,20 +1432,20 @@ function SimViabilidad() {
     <div className="space-y-4">
       <div className="plate card p-5">
         <h3 className="text-sm font-semibold text-gold-400 uppercase tracking-wider mb-4">Evaluar viabilidad de un programa académico</h3>
-        <p className="text-xs text-slate-400 mb-4">Cruza oferta educativa (SNIES) con demanda laboral (SPE/APE) e ingresos de graduados (OLE) para calcular un score de viabilidad 0-100.</p>
+        <p className="text-sm text-slate-400 mb-4">Cruza oferta educativa (SNIES) con demanda laboral (SPE/APE) e ingresos de graduados (OLE) para calcular un score de viabilidad 0-100.</p>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div>
-            <label className="text-xs text-slate-400 mb-1 block">Programa académico</label>
+            <label className="text-sm text-slate-400 mb-1 block">Programa académico</label>
             <input type="text" value={programa} onChange={(e) => setPrograma(e.target.value)} placeholder="Ej: Ingeniería de Software" className="bg-white/[0.03] border border-white/0.08 rounded-lg px-3 py-2 text-sm text-slate-300 focus:border-amber-500/40 outline-none w-full" />
           </div>
           <div>
-            <label className="text-xs text-slate-400 mb-1 block">Departamento</label>
+            <label className="text-sm text-slate-400 mb-1 block">Departamento</label>
             <select value={departamento} onChange={(e) => setDepartamento(e.target.value)} className="bg-white/[0.03] border border-white/0.08 rounded-lg px-2 py-1.5 text-sm text-slate-300 focus:border-amber-500/40 outline-none w-full">
               {deptos.map((d) => <option key={d}>{d}</option>)}
             </select>
           </div>
           <div>
-            <label className="text-xs text-slate-400 mb-1 block">Nivel</label>
+            <label className="text-sm text-slate-400 mb-1 block">Nivel</label>
             <select value={nivel} onChange={(e) => setNivel(e.target.value)} className="bg-white/[0.03] border border-white/0.08 rounded-lg px-2 py-1.5 text-sm text-slate-300 focus:border-amber-500/40 outline-none w-full">
               <option>Técnico</option>
               <option>Profesional</option>
@@ -1477,7 +1466,7 @@ function SimViabilidad() {
             <div className="flex items-center gap-4">
               <div className="text-center">
                 <div className={`text-4xl font-bold font-display ${scoreColor(result.score_viabilidad)}`}>{result.score_viabilidad}</div>
-                <div className="text-xs text-slate-400 mt-1">/ 100</div>
+                <div className="text-sm text-slate-400 mt-1">/ 100</div>
               </div>
               <div>
                 <div className="flex items-center gap-2 mb-2">
@@ -1542,10 +1531,10 @@ function SimPriorizacion() {
     <div className="space-y-4">
       <div className="plate card p-5">
         <h3 className="text-sm font-semibold text-gold-400 uppercase tracking-wider mb-4">Priorización territorial de inversión</h3>
-        <p className="text-xs text-slate-400 mb-4">Ranking de departamentos por urgencia de intervención laboral. Score compuesto: desempleo, informalidad, desempeño DNP, ingreso y proyecciones.</p>
+        <p className="text-sm text-slate-400 mb-4">Ranking de departamentos por urgencia de intervención laboral. Score compuesto: desempleo, informalidad, desempeño DNP, ingreso y proyecciones.</p>
         <div className="flex items-end gap-4">
           <div>
-            <label className="text-xs text-slate-400 mb-1 block">Presupuesto disponible (millones COP)</label>
+            <label className="text-sm text-slate-400 mb-1 block">Presupuesto disponible (millones COP)</label>
             <input type="number" value={presupuesto} onChange={(e) => setPresupuesto(Number(e.target.value))} min={100} max={100000} step={100} className="bg-white/[0.03] border border-white/0.08 rounded-lg px-3 py-2 text-sm text-slate-300 focus:border-amber-500/40 outline-none w-40" />
           </div>
           <button onClick={run} disabled={loading} className="px-6 py-2.5 rounded-lg font-semibold text-sm transition-all bg-gold-400 text-[#0a0f1f] hover:bg-gold-400/90 disabled:opacity-40">
@@ -1578,13 +1567,13 @@ function SimPriorizacion() {
               <table className="w-full text-sm">
                 <thead>
                   <tr className="border-b border-white/[0.08] text-left">
-                    <th className="py-2 px-3 text-xs text-slate-400 font-medium">#</th>
-                    <th className="py-2 px-3 text-xs text-slate-400 font-medium">Departamento</th>
-                    <th className="py-2 px-3 text-xs text-slate-400 font-medium text-right">Score</th>
-                    <th className="py-2 px-3 text-xs text-slate-400 font-medium">Urgencia</th>
-                    <th className="py-2 px-3 text-xs text-slate-400 font-medium text-right">Desempleo</th>
-                    <th className="py-2 px-3 text-xs text-slate-400 font-medium text-right">Informalidad</th>
-                    <th className="py-2 px-3 text-xs text-slate-400 font-medium text-right">DNP</th>
+                    <th className="py-2 px-3 text-sm text-slate-400 font-medium">#</th>
+                    <th className="py-2 px-3 text-sm text-slate-400 font-medium">Departamento</th>
+                    <th className="py-2 px-3 text-sm text-slate-400 font-medium text-right">Score</th>
+                    <th className="py-2 px-3 text-sm text-slate-400 font-medium">Urgencia</th>
+                    <th className="py-2 px-3 text-sm text-slate-400 font-medium text-right">Desempleo</th>
+                    <th className="py-2 px-3 text-sm text-slate-400 font-medium text-right">Informalidad</th>
+                    <th className="py-2 px-3 text-sm text-slate-400 font-medium text-right">DNP</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -1627,7 +1616,7 @@ function KpiCard({ label, value, sub, accent }: { label: string; value: string; 
   const color = accent === 'gold' ? 'text-gold-400' : accent === 'green' ? 'text-green-400' : accent === 'rose' ? 'text-rose-400' : 'text-white'
   return (
     <div className="plate card p-4 text-center">
-      <p className="text-xs text-slate-400 uppercase tracking-wider mb-1">{label}</p>
+      <p className="text-sm text-slate-400 uppercase tracking-wider mb-1">{label}</p>
       <p className={`text-xl font-bold font-display ${color}`}>{value}</p>
       {sub && <p className="text-xs text-slate-500 mt-1">{sub}</p>}
     </div>

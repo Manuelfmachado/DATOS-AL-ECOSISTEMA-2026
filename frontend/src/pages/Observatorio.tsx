@@ -190,7 +190,7 @@ export default function Observatorio() {
     <div className="animate-fade-in space-y-5">
       {/* Header */}
       <div>
-        <h1 className="text-5xl font-bold text-white font-display">Panorama del empleo en Colombia</h1>
+        <h1 className="text-5xl font-bold text-gold-400 font-display">Panorama del empleo en Colombia</h1>
         <p className="text-base text-white font-semibold mt-1">
           Datos oficiales para orientar políticas de empleo y formación profesional.
         </p>
