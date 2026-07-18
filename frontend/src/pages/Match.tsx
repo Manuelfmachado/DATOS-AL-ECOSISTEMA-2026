@@ -177,7 +177,7 @@ export default function Match() {
   return (
     <div className="animate-fade-in space-y-5">
       <div>
-        <h1 className="text-5xl font-bold text-white font-display">
+        <h1 className="text-5xl font-bold text-gold-400 font-display">
           Match Inteligente
         </h1>
         <p className="text-base text-white font-semibold mt-1">

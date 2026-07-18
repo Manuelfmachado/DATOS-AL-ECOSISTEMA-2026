@@ -280,7 +280,7 @@ export default function Coach() {
     <div className="animate-fade-in">
       <header className="topbar">
         <div>
-          <h1 className="text-5xl font-bold text-white font-display">Coach IA</h1>
+          <h1 className="text-5xl font-bold text-gold-400 font-display">Coach IA</h1>
           <p className="hello-sub text-base text-white font-semibold">Prepárate para conseguir empleo: mejora tu CV o practica una entrevista en vivo por voz.</p>
         </div>
       </header>

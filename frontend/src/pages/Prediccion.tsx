@@ -173,7 +173,7 @@ export default function Prediccion() {
     <div className="animate-fade-in space-y-5">
       {/* Header */}
       <div>
-        <h1 className="text-5xl font-bold text-white font-display">
+        <h1 className="text-5xl font-bold text-gold-400 font-display">
           Predicción IA
         </h1>
         <p className="text-base text-white font-semibold mt-1">
@@ -271,7 +271,7 @@ export default function Prediccion() {
                     {/* Crecimiento proyectado */}
                     <div className="plate card p-5">
                       <div className="flex items-center justify-between mb-4 pb-2 border-b border-gold-500/20">
-                        <h2 className="text-2xl font-bold text-white font-display">Crecimiento proyectado a 10 años</h2>
+                        <h2 className="text-2xl font-bold text-gold-400 font-display">Crecimiento proyectado a 10 años</h2>
                         <div className="flex items-center gap-3">
                           <AnalizarIAButton
                             dashboard="prediccion"
@@ -335,7 +335,7 @@ export default function Prediccion() {
                     {/* Evolución temporal top 6 */}
                     <div className="plate card p-5">
                       <div className="flex items-center justify-between mb-4 pb-2 border-b border-gold-500/20">
-                        <h2 className="text-2xl font-bold text-white font-display">Evolución del empleo (histórico + proyección)</h2>
+                        <h2 className="text-2xl font-bold text-gold-400 font-display">Evolución del empleo (histórico + proyección)</h2>
                         <div className="flex items-center gap-3">
                           <AnalizarIAButton
                             dashboard="prediccion"
@@ -419,7 +419,7 @@ export default function Prediccion() {
               {/* Gráfico de crecimiento de demanda */}
               <div className="plate card p-5">
                 <div className="flex items-center justify-between mb-4 pb-2 border-b border-gold-500/20">
-                  <h2 className="text-2xl font-bold text-white font-display">Crecimiento de demanda a 10 años</h2>
+                  <h2 className="text-2xl font-bold text-gold-400 font-display">Crecimiento de demanda a 10 años</h2>
                   <div className="flex items-center gap-3">
                     <AnalizarIAButton
                       dashboard="prediccion"
@@ -480,7 +480,7 @@ export default function Prediccion() {
               {/* Ranking completo */}
               <div className="plate card p-5">
                 <div className="flex items-center justify-between mb-4 pb-2 border-b border-gold-500/20">
-                  <h2 className="text-2xl font-bold text-white font-display flex items-center gap-2">
+                  <h2 className="text-2xl font-bold text-gold-400 font-display flex items-center gap-2">
                      Ranking completo de profesiones
                   </h2>
                   <div className="flex items-center gap-3">
@@ -559,7 +559,7 @@ export default function Prediccion() {
               {/* Gráfico de habilidades */}
               <div className="plate card p-5">
                 <div className="flex items-center justify-between mb-4 pb-2 border-b border-gold-500/20">
-                  <h2 className="text-2xl font-bold text-white font-display flex items-center gap-2">
+                  <h2 className="text-2xl font-bold text-gold-400 font-display flex items-center gap-2">
                      Top 10 habilidades más demandadas
                   </h2>
                   <div className="flex items-center gap-3">
@@ -634,7 +634,7 @@ export default function Prediccion() {
               {/* Tabla completa */}
               <div className="plate card p-5">
                 <div className="flex items-center justify-between mb-4 pb-2 border-b border-gold-500/20">
-                  <h2 className="text-2xl font-bold text-white font-display flex items-center gap-2">
+                  <h2 className="text-2xl font-bold text-gold-400 font-display flex items-center gap-2">
                      Ranking completo de habilidades
                   </h2>
                   <div className="flex items-center gap-3">
@@ -709,7 +709,7 @@ export default function Prediccion() {
               {/* Gráfico de salarios */}
               <div className="plate card p-5">
                 <div className="flex items-center justify-between mb-4 pb-2 border-b border-gold-500/20">
-                  <h2 className="text-2xl font-bold text-white font-display flex items-center gap-2">
+                  <h2 className="text-2xl font-bold text-gold-400 font-display flex items-center gap-2">
                      Proyección salarial por profesión
                   </h2>
                   <div className="flex items-center gap-3">
@@ -758,7 +758,7 @@ export default function Prediccion() {
                         </div>
                         <div>
                           <p className="text-base text-slate-500 mb-1">Salario 2035</p>
-                          <p className="text-base font-bold text-white font-display">${Math.round(p.salario_10a_cop).toLocaleString("es-CO")}</p>
+                          <p className="text-base font-bold text-gold-400 font-display">${Math.round(p.salario_10a_cop).toLocaleString("es-CO")}</p>
                         </div>
                         <div className="pt-2 border-t border-gold-500/20">
                           <p className="text-base text-slate-500 mb-1">Crecimiento</p>
@@ -775,7 +775,7 @@ export default function Prediccion() {
               {/* Tabla completa */}
               <div className="bg-[#070a14] border border-white/[0.06] rounded-xl p-5">
                 <div className="flex items-center justify-between mb-4 pb-2 border-b border-gold-500/20">
-                  <h2 className="text-2xl font-bold text-white font-display flex items-center gap-2">
+                  <h2 className="text-2xl font-bold text-gold-400 font-display flex items-center gap-2">
                      Ranking completo de salarios
                   </h2>
                   <div className="flex items-center gap-3">
@@ -830,7 +830,7 @@ export default function Prediccion() {
               {salariosReales && salariosReales.length > 0 && (
                 <div className="plate card p-5">
                   <div className="flex items-center justify-between mb-4 pb-2 border-b border-gold-500/20">
-<h2 className="text-2xl font-bold text-white font-display flex items-center gap-2">
+<h2 className="text-2xl font-bold text-gold-400 font-display flex items-center gap-2">
                        Salarios reales por ocupación — DANE GEIH
                     </h2>
                     <div className="flex items-center gap-3">

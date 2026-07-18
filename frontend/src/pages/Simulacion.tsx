@@ -205,7 +205,7 @@ export default function Simulacion() {
   return (
     <div className="animate-fade-in space-y-5">
       <div>
-        <h1 className="text-5xl font-bold text-white font-display">
+        <h1 className="text-5xl font-bold text-gold-400 font-display">
           Simulación
         </h1>
         <p className="text-base text-white font-semibold mt-1">
@@ -711,7 +711,7 @@ function SimTrayectoria() {
           {/* Gráfico */}
           <div className="plate card p-5">
             <div className="mb-4 pb-3 border-b border-gold-500/20">
-              <h3 className="text-lg font-bold text-white font-display mb-1">
+              <h3 className="text-lg font-bold text-gold-400 font-display mb-1">
                 Tu salario estimado año a año
               </h3>
               <p className="text-sm text-slate-400">
@@ -863,7 +863,7 @@ function SimMigracion() {
 
           {/* Deltas */}
           <div className="plate card p-5">
-            <h3 className="text-lg font-bold text-white font-display mb-4">Diferencia (destino - origen)</h3>
+            <h3 className="text-lg font-bold text-gold-400 font-display mb-4">Diferencia (destino - origen)</h3>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
               <DeltaCard label="Salario promedio" value={`${result.delta.salario_pct > 0 ? '+' : ''}${result.delta.salario_pct}%`} cop={result.delta.salario_cop} positive={result.delta.salario_pct > 0} />
               <DeltaCard label="Formalidad" value={`${result.delta.formalidad_pct > 0 ? '+' : ''}${result.delta.formalidad_pct} pts`} positive={result.delta.formalidad_pct > 0} />
@@ -1001,7 +1001,7 @@ function SimReskilling() {
           {/* Habilidades que faltan */}
           {result.habilidades_faltan.length > 0 && (
             <div className="plate card p-5">
-              <h3 className="text-lg font-bold text-white font-display mb-4">
+              <h3 className="text-lg font-bold text-gold-400 font-display mb-4">
                 Habilidades que necesitas desarrollar ({result.habilidades_faltan.length})
               </h3>
               <div className="flex flex-wrap gap-2">
@@ -1035,7 +1035,7 @@ function SimReskilling() {
           {/* Programas SENA */}
           {result.programas_sena_recomendados.length > 0 && (
             <div className="plate card p-5">
-              <h3 className="text-lg font-bold text-white font-display mb-4">
+              <h3 className="text-lg font-bold text-gold-400 font-display mb-4">
                 Programas SENA recomendados
               </h3>
               <div className="space-y-2">
@@ -1169,7 +1169,7 @@ function SimDemanda() {
 
           <div className="plate card p-5">
             <div className="flex items-center justify-between mb-4 pb-2 border-b border-gold-500/20">
-              <h3 className="text-lg font-bold text-white font-display">
+              <h3 className="text-lg font-bold text-gold-400 font-display">
                 Empleo proyectado a 12 meses
               </h3>
               <span className="text-sm text-gold-400 uppercase tracking-wider font-semibold">{result.sector_nombre}</span>
@@ -1347,7 +1347,7 @@ function SimDecision() {
           {/* Gráfico comparativo */}
           <div className="plate card p-5">
             <div className="flex items-center justify-between mb-4 pb-2 border-b border-gold-500/20">
-              <h3 className="text-lg font-bold text-white font-display">
+              <h3 className="text-lg font-bold text-gold-400 font-display">
                 Ingreso mensual proyectado a 10 años
               </h3>
               <span className="text-sm text-gold-400 uppercase tracking-wider font-semibold">Monte Carlo · 500 sim.</span>

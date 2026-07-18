@@ -93,7 +93,7 @@ export default function EmprendeIA() {
 
   return (
     <div>
-      <h1 className="text-5xl font-bold text-white mb-2 font-display">
+      <h1 className="text-5xl font-bold text-gold-400 mb-2 font-display">
         Emprende IA
       </h1>
       <p className="text-base text-white font-semibold mb-6">
