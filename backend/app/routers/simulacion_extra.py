@@ -132,11 +132,34 @@ def viabilidad_programa(req: ViabilidadRequest):
     # 3. Demanda laboral (SPE/APE)
     demanda_score = 0.0
     demanda_total = 0
-    if "OCUPACION" in spe.columns and "INSCRITOS" in spe.columns:
+    # Buscar columna de inscritos más reciente (inscritos_2020, inscritos_2019, etc.)
+    inscritos_col = None
+    for col in spe.columns:
+        if "INSCRITOS" in col:
+            inscritos_col = col
+            break
+    if "OCUPACION" in spe.columns and inscritos_col:
+        # Palabras clave relevantes (sin stop words) con prefijo de 6+ chars para capturar variaciones
+        stop_words = {"DE", "DEL", "LA", "LAS", "LOS", "EL", "EN", "Y", "E", "PARA", "CON", "POR", "AL", "A", "O"}
+        keywords = [w for w in programa_norm.split() if w not in stop_words]
+        if not keywords:
+            keywords = programa_norm.split()[:3]
+        # Prefijos mínimos de 5 caracteres para cada keyword (INGENIERIA -> INGENI, SOFTWARE -> SOFTW)
+        prefixes = [kw[:max(5, len(kw)//2)] for kw in keywords]
         for _, row in spe.iterrows():
             ocup = _norm(str(row["OCUPACION"]))
-            if programa_norm[:6] in ocup or ocup in programa_norm:
-                demanda_total += int(row.get("INSCRITOS", 0) or 0)
+            # Match si algún prefijo está en la ocupación
+            matched = any(pf in ocup for pf in prefixes)
+            if not matched:
+                # También match si la ocupación comparte palabras con el programa
+                ocup_words = set(ocup.split())
+                prog_words = set(programa_norm.split()) - stop_words
+                matched = len(ocup_words & prog_words) > 0
+            if not matched and len(ocup) > 4:
+                matched = ocup in programa_norm
+            if matched:
+                val = row.get(inscritos_col, 0)
+                demanda_total += int(val) if pd.notna(val) else 0
     demanda_score = min(100, demanda_total / 50)  # normalizar
 
     # 4. Saturación (oferta SNIES vs demanda)
@@ -146,10 +169,14 @@ def viabilidad_programa(req: ViabilidadRequest):
         depto_mask = snies["DEPARTAMENTO"].apply(lambda x: depto_norm in _norm(str(x)) if pd.notna(x) else False)
         depto_data = snies[depto_mask]
         if len(depto_data) > 0:
-            # Buscar programas similares en el depto
+            # Buscar programas similares en el depto (filtrando stop words)
             if "PROGRAMA" in snies.columns:
+                stop_words = {"DE", "DEL", "LA", "LAS", "LOS", "EL", "EN", "Y", "E", "PARA", "CON", "POR", "AL", "A", "O"}
+                prog_keywords = [w for w in programa_norm.split() if w not in stop_words]
+                if not prog_keywords:
+                    prog_keywords = programa_norm.split()[:3]
                 prog_mask = depto_data["PROGRAMA"].apply(
-                    lambda x: any(w in _norm(str(x)) for w in programa_norm.split()[:3])
+                    lambda x: any(kw in _norm(str(x)) for kw in prog_keywords)
                     if pd.notna(x) else False
                 )
                 matriculados_depto = int(depto_data[prog_mask]["MATRICULADOS"].sum())
@@ -296,7 +323,7 @@ def priorizacion_territorial(req: PriorizacionRequest):
         except (ValueError, TypeError):
             continue
 
-    # GEIH desempleo
+    # GEIH desempleo (calculado: no_ocupados / (ocupados + no_ocupados))
     for _, row in geih_desempleo.iterrows():
         depto = _norm(str(row.get("DEPARTAMENTO", "")))
         if not depto:
@@ -304,7 +331,12 @@ def priorizacion_territorial(req: PriorizacionRequest):
         if depto not in deptos:
             deptos[depto] = {}
         try:
-            deptos[depto]["tasa_desempleo"] = float(row.get("TASA_DESEMPLEO", 0) or 0)
+            no_ocupados = float(row.get("NO_OCUPADOS", 0) or 0)
+            ocupados = deptos[depto].get("ocupados", 0)
+            if ocupados + no_ocupados > 0:
+                deptos[depto]["tasa_desempleo"] = round(no_ocupados / (ocupados + no_ocupados) * 100, 1)
+            else:
+                deptos[depto]["tasa_desempleo"] = 0.0
         except (ValueError, TypeError):
             continue
 
