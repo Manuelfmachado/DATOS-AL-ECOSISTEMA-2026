@@ -485,7 +485,7 @@ export default function Observatorio() {
             >
               <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.04)" horizontal={false} />
               <XAxis type="number" stroke="#cbd5e1" tick={{ fill: '#cbd5e1', fontSize: 12, fontWeight: 600 }} tickFormatter={(v) => compactNum(v)} />
-              <YAxis type="category" dataKey="name" stroke="#e2e8f0" tick={{ fill: '#e2e8f0', fontSize: 11, fontWeight: 600 }} width={220} interval={0} />
+              <YAxis type="category" dataKey="name" stroke="#e2e8f0" tick={{ fill: '#e2e8f0', fontSize: 13, fontWeight: 600 }} width={240} interval={0} />
               <Tooltip {...chartTooltip} formatter={(v: number) => [v.toLocaleString(), 'Empleo']} />
               <Bar dataKey="empleo" radius={[0, 4, 4, 0]}>
                 {sectoresDepto.slice(0, 15).map((_: any, i: number) => (
@@ -532,7 +532,7 @@ export default function Observatorio() {
             >
               <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.04)" horizontal={false} />
               <XAxis type="number" stroke="#cbd5e1" tick={{ fill: '#cbd5e1', fontSize: 12, fontWeight: 600 }} tickFormatter={(v) => compactNum(v)} />
-              <YAxis type="category" dataKey="name" stroke="#e2e8f0" tick={{ fill: '#e2e8f0', fontSize: 11, fontWeight: 600 }} width={150} interval={0} />
+              <YAxis type="category" dataKey="name" stroke="#e2e8f0" tick={{ fill: '#e2e8f0', fontSize: 13, fontWeight: 600 }} width={200} interval={0} />
               <Tooltip {...chartTooltip} formatter={(v: number) => [v.toLocaleString(), 'Cotizantes']} />
               <Bar dataKey="cotizantes" radius={[0, 4, 4, 0]}>
                 {formalList.slice(0, 8).map((_: any, i: number) => (
@@ -569,13 +569,13 @@ export default function Observatorio() {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
             <div className="bg-red-500/10 border border-red-500/20 rounded-lg p-3">
               <p className="text-base text-slate-200">
-                <span className="text-red-400 font-bold">Sobre-formación (rojo):</span> hay más graduados que empleos disponibles. 
+                <span className="text-red-400 font-bold">Sobre-formación:</span> hay más graduados que empleos disponibles. 
                 Más difícil conseguir trabajo en esa área.
               </p>
             </div>
             <div className="bg-cyan-500/10 border border-cyan-500/20 rounded-lg p-3">
               <p className="text-base text-slate-200">
-                <span className="text-cyan-400 font-bold">Oportunidad (cyan):</span> hay más empleos que graduados. 
+                <span className="text-cyan-400 font-bold">Oportunidad:</span> hay más empleos que graduados. 
                 Buena opción para estudiar o buscar trabajo.
               </p>
             </div>

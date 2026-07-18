@@ -499,7 +499,7 @@ export default function Prediccion() {
                 <div className="overflow-x-auto">
                   <table className="w-full text-sm text-left">
                     <thead>
-                      <tr className="text-base text-slate-400 uppercase tracking-wider border-b border-white/[0.08]">
+                      <tr className="text-base text-gold-400 uppercase tracking-wider border-b border-white/[0.08]">
                         <th className="px-3 py-3">Profesión</th>
                         <th className="px-3 py-3">Demanda</th>
                         <th className="px-3 py-3 text-right">Crec. 10 años</th>
@@ -515,7 +515,7 @@ export default function Prediccion() {
                           </td>
                           <td className="px-3 py-3">
                             <span
-                              className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium ${
+                              className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-sm font-medium ${
                                 p.demanda === 'alta'
                                   ? 'bg-green-500/15 text-green-400 border border-green-500/30'
                                   : p.demanda === 'media'
@@ -669,7 +669,7 @@ export default function Prediccion() {
                           </td>
                           <td className="px-3 py-3">
                             <span
-                              className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium ${
+                              className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-sm font-medium ${
                                 h.demanda >= 85
                                   ? 'bg-green-500/15 text-green-400 border border-green-500/30'
                                   : h.demanda >= 70
@@ -847,7 +847,7 @@ export default function Prediccion() {
                     Datos oficiales de la Gran Encuesta Integrada de Hogares (GEIH) del DANE — {salariosReales[0]?.periodo}.
                   </p>
                   <div className="overflow-x-auto">
-                    <table className="w-full text-sm text-left">
+                  <table className="w-full text-base text-left">
                       <thead>
                         <tr className="text-base text-slate-400 uppercase tracking-wider border-b border-white/[0.08]">
                           <th className="px-3 py-3">Ocupación</th>
