@@ -15,13 +15,13 @@ const SvgIcon = ({ raw }: { raw: string }) => (
 )
 
 const navItems = [
-  { to: '/', label: 'Inicio', icon: <SvgIcon raw={inicioSvg} /> },
-  { to: '/observatorio', label: 'Observatorio', icon: <SvgIcon raw={observatorioSvg} /> },
-  { to: '/prediccion', label: 'Predicción', icon: <SvgIcon raw={prediccionSvg} /> },
-  { to: '/match', label: 'Match Inteligente', icon: <SvgIcon raw={matchSvg} /> },
-  { to: '/emprende', label: 'Emprende IA', icon: <SvgIcon raw={emprendeSvg} /> },
-  { to: '/coach', label: 'Coach IA', icon: <SvgIcon raw={coachSvg} /> },
-  { to: '/simulacion', label: 'Simulación', icon: <SvgIcon raw={simulacionSvg} /> },
+  { to: '/', label: 'INICIO', icon: <SvgIcon raw={inicioSvg} /> },
+  { to: '/observatorio', label: 'OBSERVATORIO', icon: <SvgIcon raw={observatorioSvg} /> },
+  { to: '/prediccion', label: 'PREDICCIÓN', icon: <SvgIcon raw={prediccionSvg} /> },
+  { to: '/match', label: 'MATCH INTELIGENTE', icon: <SvgIcon raw={matchSvg} /> },
+  { to: '/emprende', label: 'EMPRENDE IA', icon: <SvgIcon raw={emprendeSvg} /> },
+  { to: '/coach', label: 'COACH IA', icon: <SvgIcon raw={coachSvg} /> },
+  { to: '/simulacion', label: 'SIMULACIÓN', icon: <SvgIcon raw={simulacionSvg} /> },
 ]
 
 export default function Layout() {
