@@ -479,10 +479,11 @@ function SimViabilidad() {
               <div>
                 <div className="flex items-center gap-2 mb-2">
                   <span className={`px-2 py-0.5 rounded text-xs font-bold uppercase ${
+                    result.sin_oferta_local ? 'bg-[#d4af37]/20 text-[#d4af37]' :
                     result.nivel_riesgo === 'bajo' ? 'bg-green-500/20 text-green-400' :
                     result.nivel_riesgo === 'medio' ? 'bg-amber-500/20 text-amber-400' :
                     'bg-rose-500/20 text-rose-400'
-                  }`}>{result.nivel_riesgo === 'bajo' ? '✔ Viable' : result.nivel_riesgo === 'medio' ? '⚠ Moderado' : '✘ Riesgo'}</span>
+                  }`}>{result.sin_oferta_local ? '★ Oportunidad' : result.nivel_riesgo === 'bajo' ? '✔ Viable' : result.nivel_riesgo === 'medio' ? '⚠ Moderado' : '✘ Riesgo'}</span>
                 </div>
                 <p className="text-base text-slate-200 leading-relaxed">{result.recomendacion}</p>
               </div>
@@ -492,9 +493,9 @@ function SimViabilidad() {
             <KpiCard label="Salario estimado" value={formatCOP(result.indicadores.salario_estimado_cop)} sub="/mes" accent="gold" />
             <KpiCard label="Salario mercado" value={formatCOP(result.indicadores.salario_mercado_cop)} sub="/mes" />
             <KpiCard label="Demanda laboral" value={`${result.indicadores.demanda_score}%`} sub="score SPE/APE" accent="green" />
-            <KpiCard label="Saturación oferta" value={`${result.indicadores.saturacion_oferta_pct}%`} sub="matriculados vs vacantes" accent={result.indicadores.saturacion_oferta_pct > 60 ? 'rose' : 'green'} />
+            <KpiCard label="Saturación oferta" value={result.sin_oferta_local ? 'Sin oferta' : `${result.indicadores.saturacion_oferta_pct}%`} sub={result.sin_oferta_local ? 'oportunidad de abrir programa' : 'matriculados vs vacantes'} accent={result.sin_oferta_local ? 'gold' : result.indicadores.saturacion_oferta_pct > 60 ? 'rose' : 'green'} />
             <KpiCard label="Crecimiento proyectado" value={`${result.indicadores.crecimiento_proyectado_anual_pct > 0 ? '+' : ''}${result.indicadores.crecimiento_proyectado_anual_pct}%`} sub="anual (Chronos T5)" accent="gold" />
-            <KpiCard label="Competencia" value={result.indicadores.matriculados_competencia.toLocaleString()} sub="matriculados en el depto" />
+            <KpiCard label="Competencia" value={result.sin_oferta_local ? 'Ninguna' : result.indicadores.matriculados_competencia.toLocaleString()} sub={result.sin_oferta_local ? 'sin programas en el depto' : 'matriculados en el depto'} accent={result.sin_oferta_local ? 'gold' : undefined} />
           </div>
           {result.indicadores.sectores_demandantes?.length > 0 && (
             <div className="plate card p-5">

@@ -214,6 +214,7 @@ def viabilidad_programa(req: ViabilidadRequest):
     # 4. Saturación (oferta SNIES vs demanda)
     saturacion_pct = 0.0
     matriculados_depto = 0
+    sin_oferta_local = False
     if "DEPARTAMENTO" in snies.columns and "MATRICULADOS" in snies.columns:
         depto_mask = snies["DEPARTAMENTO"].apply(lambda x: depto_norm in _norm(str(x)) if pd.notna(x) else False)
         depto_data = snies[depto_mask]
@@ -224,14 +225,17 @@ def viabilidad_programa(req: ViabilidadRequest):
                     lambda x: all(kw in _norm(str(x)) for kw in prog_keywords)
                     if pd.notna(x) else False
                 )
-                # Si no hay matches con todas, intentar con al menos el 75%
-                if not prog_mask.any() and len(prog_keywords) > 1:
-                    min_kw = max(1, int(len(prog_keywords) * 0.75))
+                # Fallback estricto: solo si hay 3+ keywords, requerir al menos ceil(75%)
+                if not prog_mask.any() and len(prog_keywords) >= 3:
+                    import math
+                    min_kw = max(2, math.ceil(len(prog_keywords) * 0.75))
                     prog_mask = depto_data["PROGRAMA"].apply(
                         lambda x: sum(1 for kw in prog_keywords if kw in _norm(str(x))) >= min_kw
                         if pd.notna(x) else False
                     )
                 matriculados_depto = int(depto_data[prog_mask]["MATRICULADOS"].sum())
+                if matriculados_depto == 0:
+                    sin_oferta_local = True
 
     # Ratio oferta/demanda
     if matriculados_depto > 0 and demanda_total > 0:
@@ -265,12 +269,19 @@ def viabilidad_programa(req: ViabilidadRequest):
     score = 50.0  # base
     score += min(25, (ingreso_estimado / SMMLV_2026 - 1) * 10)  # ingreso relativo
     score += min(20, demanda_score * 0.2)  # demanda
-    score -= min(20, saturacion_pct * 0.2)  # saturación penaliza
+    if sin_oferta_local:
+        score += 10  # bonus: sin competencia local = oportunidad
+        saturacion_pct = 0.0  # sin oferta no hay saturación
+    else:
+        score -= min(20, saturacion_pct * 0.2)  # saturación penaliza
     score += min(15, crecimiento_anual_pct * 3)  # proyección
     score = max(0, min(100, round(score, 1)))
 
     # 8. Recomendación
-    if score >= 70:
+    if sin_oferta_local and score >= 70:
+        recomendacion = f"OPORTUNIDAD: No hay programas de {req.programa.lower()} en {req.departamento}. Alta demanda nacional y sin competencia local. Salario estimado: ${ingreso_estimado:,.0f} COP/mes."
+        nivel_riesgo = "bajo"
+    elif score >= 70:
         recomendacion = f"VIABLE: Alta empleabilidad proyectada en {req.departamento}. Salario estimado: ${ingreso_estimado:,.0f} COP/mes."
         nivel_riesgo = "bajo"
     elif score >= 45:
@@ -287,6 +298,7 @@ def viabilidad_programa(req: ViabilidadRequest):
         "score_viabilidad": score,
         "nivel_riesgo": nivel_riesgo,
         "recomendacion": recomendacion,
+        "sin_oferta_local": sin_oferta_local,
         "indicadores": {
             "salario_estimado_cop": round(ingreso_estimado, -3),
             "salario_mercado_cop": round(salario_mercado, -3),
