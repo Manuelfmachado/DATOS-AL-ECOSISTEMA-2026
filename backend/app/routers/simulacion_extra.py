@@ -155,7 +155,7 @@ def viabilidad_programa(req: ViabilidadRequest):
                 matriculados_depto = int(depto_data[prog_mask]["MATRICULADOS"].sum())
 
     # Ratio oferta/demanda
-    if matrizados_depto > 0 and demanda_total > 0:
+    if matriculados_depto > 0 and demanda_total > 0:
         saturacion_pct = min(100, (matriculados_depto / max(demanda_total, 1)) * 100)
 
     # 5. Salario de mercado (GEIH)
