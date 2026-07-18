@@ -138,23 +138,50 @@ def viabilidad_programa(req: ViabilidadRequest):
     # 2. Buscar ingreso de graduados para programas similares
     ingreso_estimado = SMMLV_2026 * 1.5  # default: 1.5 SMMLV
 
-    # Buscar en OLE ingresos por programa
+    # Palabras clave del programa (sin stop words)
+    stop_words = {"DE", "DEL", "LA", "LAS", "LOS", "EL", "EN", "Y", "E", "PARA", "CON", "POR", "AL", "A", "O"}
+    prog_keywords = [w for w in programa_norm.split() if w not in stop_words]
+    if not prog_keywords:
+        prog_keywords = programa_norm.split()[:3]
+    prog_prefixes = [kw[:max(5, len(kw)//2)] for kw in prog_keywords]
+    prog_short = programa_norm[:20]
+
+    # Buscar en OLE ingresos por programa (búsqueda por keywords)
+    ole_matched_ingresos: list[tuple[float, float]] = []  # (salario_cop, peso=graduados)
     if "PROGRAMA" in ole_ingresos.columns:
-        mask = ole_ingresos["PROGRAMA"].apply(lambda x: programa_norm in _norm(str(x)) if pd.notna(x) else False)
-        matches = ole_ingresos[mask]
-    else:
-        matches = pd.DataFrame()
+        for _, row in ole_ingresos.iterrows():
+            prog_ole = _norm(str(row["PROGRAMA"]))
+            # Match si comparte prefijos o keywords
+            matched = any(pf in prog_ole for pf in prog_prefixes)
+            if not matched:
+                matched = prog_short in prog_ole
+            if matched and "RANGO_INGRESO" in ole_ingresos.columns:
+                rango = str(row["RANGO_INGRESO"])
+                if rango and rango != "nan":
+                    sal = _rango_a_cop(rango)
+                    peso = float(row.get("GRADUADOS", 1) or 1)
+                    ole_matched_ingresos.append((sal, peso))
+        if ole_matched_ingresos:
+            # Ponderar por graduados: percentil varía según nivel educativo
+            nivel_percentil: dict[str, float] = {
+                "TECNICO": 0.30, "TECNOLOGICO": 0.40, "PROFESIONAL": 0.50,
+                "ESPECIALIZACION": 0.65, "MAESTRIA": 0.80, "DOCTORADO": 0.90,
+            }
+            pct = nivel_percentil.get(_norm(req.nivel), 0.50)
+            ole_matched_ingresos.sort(key=lambda x: x[0])
+            total_peso = sum(p for _, p in ole_matched_ingresos)
+            cum = 0.0
+            for sal, peso in ole_matched_ingresos:
+                cum += peso
+                if cum >= total_peso * pct:
+                    ingreso_estimado = sal
+                    break
 
-    if len(matches) > 0 and "RANGO_INGRESO" in ole_ingresos.columns:
-        rangos = matches["RANGO_INGRESO"].dropna()
-        if len(rangos) > 0:
-            ingresos = [_rango_a_cop(str(r)) for r in rangos]
-            ingreso_estimado = float(np.median(ingresos))
-
-    # También buscar por área de conocimiento
+    # Fallback: búsqueda por área de conocimiento
     if ingreso_estimado <= SMMLV_2026 * 1.5 and "AREA" in ole_area.columns:
         for _, row in ole_area.iterrows():
-            if programa_norm in _norm(str(row.get("AREA", ""))):
+            area = _norm(str(row.get("AREA", "")))
+            if any(pf in area for pf in prog_prefixes):
                 if "RANGO_INGRESO" in ole_area.columns:
                     ingreso_estimado = _rango_a_cop(str(row["RANGO_INGRESO"]))
                 break
@@ -169,22 +196,14 @@ def viabilidad_programa(req: ViabilidadRequest):
             inscritos_col = col
             break
     if "OCUPACION" in spe.columns and inscritos_col:
-        # Palabras clave relevantes (sin stop words) con prefijo de 6+ chars para capturar variaciones
-        stop_words = {"DE", "DEL", "LA", "LAS", "LOS", "EL", "EN", "Y", "E", "PARA", "CON", "POR", "AL", "A", "O"}
-        keywords = [w for w in programa_norm.split() if w not in stop_words]
-        if not keywords:
-            keywords = programa_norm.split()[:3]
-        # Prefijos mínimos de 5 caracteres para cada keyword (INGENIERIA -> INGENI, SOFTWARE -> SOFTW)
-        prefixes = [kw[:max(5, len(kw)//2)] for kw in keywords]
         for _, row in spe.iterrows():
             ocup = _norm(str(row["OCUPACION"]))
             # Match si algún prefijo está en la ocupación
-            matched = any(pf in ocup for pf in prefixes)
+            matched = any(pf in ocup for pf in prog_prefixes)
             if not matched:
                 # También match si la ocupación comparte palabras con el programa
                 ocup_words = set(ocup.split())
-                prog_words = set(programa_norm.split()) - stop_words
-                matched = len(ocup_words & prog_words) > 0
+                matched = len(ocup_words & set(prog_keywords)) > 0
             if not matched and len(ocup) > 4:
                 matched = ocup in programa_norm
             if matched:
@@ -199,12 +218,8 @@ def viabilidad_programa(req: ViabilidadRequest):
         depto_mask = snies["DEPARTAMENTO"].apply(lambda x: depto_norm in _norm(str(x)) if pd.notna(x) else False)
         depto_data = snies[depto_mask]
         if len(depto_data) > 0:
-            # Buscar programas similares en el depto (filtrando stop words)
+            # Buscar programas similares en el depto usando keywords
             if "PROGRAMA" in snies.columns:
-                stop_words = {"DE", "DEL", "LA", "LAS", "LOS", "EL", "EN", "Y", "E", "PARA", "CON", "POR", "AL", "A", "O"}
-                prog_keywords = [w for w in programa_norm.split() if w not in stop_words]
-                if not prog_keywords:
-                    prog_keywords = programa_norm.split()[:3]
                 prog_mask = depto_data["PROGRAMA"].apply(
                     lambda x: any(kw in _norm(str(x)) for kw in prog_keywords)
                     if pd.notna(x) else False
@@ -215,16 +230,15 @@ def viabilidad_programa(req: ViabilidadRequest):
     if matriculados_depto > 0 and demanda_total > 0:
         saturacion_pct = min(100, (matriculados_depto / max(demanda_total, 1)) * 100)
 
-    # 5. Salario de mercado (GEIH)
-    salario_mercado = SMMLV_2026 * 1.3
-    if "OFICIO" in geih_salario.columns and "SALARIO_PROMEDIO" in geih_salario.columns:
-        for _, row in geih_salario.iterrows():
-            oficio = _norm(str(row["OFICIO"]))
-            if programa_norm[:8] in oficio:
-                salario_mercado = float(row["SALARIO_PROMEDIO"])
-                break
+    # 5. Salario de mercado según nivel educativo
+    nivel_mult: dict[str, float] = {
+        "TECNICO": 1.2, "TECNOLOGICO": 1.4, "PROFESIONAL": 1.6,
+        "ESPECIALIZACION": 2.2, "MAESTRIA": 2.8, "DOCTORADO": 3.5,
+    }
+    mult = nivel_mult.get(_norm(req.nivel), 1.6)
+    salario_mercado = SMMLV_2026 * mult
 
-    # 6. Proyección de crecimiento (predicciones mundiales)
+    # 6. Proyección de crecimiento (predicciones mundiales) - búsqueda por prefijos
     crecimiento_anual_pct = 0.0
     try:
         pred_path = DATA / "predicciones_mundiales.json"
@@ -233,7 +247,8 @@ def viabilidad_programa(req: ViabilidadRequest):
                 preds = json.load(f)
             profesiones = preds.get("profesiones", [])
             for prof in profesiones:
-                if programa_norm[:6] in _norm(prof.get("profesion", "")):
+                prof_norm = _norm(prof.get("profesion", ""))
+                if any(pf in prof_norm for pf in prog_prefixes):
                     crecimiento_anual_pct = prof.get("crecimiento_anual_pct", 0.0)
                     break
     except Exception:
