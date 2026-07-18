@@ -597,18 +597,18 @@ export default function Observatorio() {
                     </div>
                     <div className="space-y-1">
                       <div className="flex items-center gap-2">
-                        <span className="text-xs text-blue-400 w-10">Oferta</span>
-                        <div className="flex-1 h-2 bg-dark-900 rounded-full overflow-hidden">
+                        <span className="text-base text-blue-400 w-14">Oferta</span>
+                        <div className="flex-1 h-2.5 bg-dark-900 rounded-full overflow-hidden">
                           <div className="h-full bg-blue-500 rounded-full" style={{ width: `${b.oferta_share}%` }} />
                         </div>
-                        <span className="text-sm text-blue-400 font-bold w-8 text-right">{b.oferta_share?.toFixed(0)}%</span>
+                        <span className="text-base text-blue-400 font-bold w-10 text-right">{b.oferta_share?.toFixed(0)}%</span>
                       </div>
                       <div className="flex items-center gap-2">
-                        <span className="text-xs text-amber-400 w-10">Demanda</span>
-                        <div className="flex-1 h-2 bg-dark-900 rounded-full overflow-hidden">
+                        <span className="text-base text-amber-400 w-14">Demanda</span>
+                        <div className="flex-1 h-2.5 bg-dark-900 rounded-full overflow-hidden">
                           <div className="h-full bg-amber-500 rounded-full" style={{ width: `${b.demanda_share}%` }} />
                         </div>
-                        <span className="text-sm text-amber-400 font-bold w-8 text-right">{b.demanda_share?.toFixed(0)}%</span>
+                        <span className="text-base text-amber-400 font-bold w-10 text-right">{b.demanda_share?.toFixed(0)}%</span>
                       </div>
                     </div>
                   </div>
@@ -631,18 +631,18 @@ export default function Observatorio() {
                     </div>
                     <div className="space-y-1">
                       <div className="flex items-center gap-2">
-                        <span className="text-xs text-blue-400 w-10">Oferta</span>
-                        <div className="flex-1 h-2 bg-dark-900 rounded-full overflow-hidden">
+                        <span className="text-base text-blue-400 w-14">Oferta</span>
+                        <div className="flex-1 h-2.5 bg-dark-900 rounded-full overflow-hidden">
                           <div className="h-full bg-blue-500 rounded-full" style={{ width: `${b.oferta_share}%` }} />
                         </div>
-                        <span className="text-sm text-blue-400 font-bold w-8 text-right">{b.oferta_share?.toFixed(0)}%</span>
+                        <span className="text-base text-blue-400 font-bold w-10 text-right">{b.oferta_share?.toFixed(0)}%</span>
                       </div>
                       <div className="flex items-center gap-2">
-                        <span className="text-xs text-amber-400 w-10">Demanda</span>
-                        <div className="flex-1 h-2 bg-dark-900 rounded-full overflow-hidden">
+                        <span className="text-base text-amber-400 w-14">Demanda</span>
+                        <div className="flex-1 h-2.5 bg-dark-900 rounded-full overflow-hidden">
                           <div className="h-full bg-amber-500 rounded-full" style={{ width: `${b.demanda_share}%` }} />
                         </div>
-                        <span className="text-sm text-amber-400 font-bold w-8 text-right">{b.demanda_share?.toFixed(0)}%</span>
+                        <span className="text-base text-amber-400 font-bold w-10 text-right">{b.demanda_share?.toFixed(0)}%</span>
                       </div>
                     </div>
                   </div>
@@ -657,7 +657,7 @@ export default function Observatorio() {
       {/* 6. Prioridad de intervención departamental */}
       {/* ================================================================ */}
       {prior?.departamentos && (
-        <div className="bg-[#0a0f1f] border border-[#d4af37]/40 rounded-xl p-5">
+        <div className="bg-[#0a0f1f] border border-[#d4af37]/60 rounded-xl p-5">
           <div className="flex items-center justify-between mb-3 pb-2 border-b border-gold-500/20 gap-3">
             <div className="min-w-0">
               <h2 className="text-2xl font-bold text-white font-display truncate">Prioridad de intervención por departamento</h2>
@@ -692,10 +692,10 @@ export default function Observatorio() {
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b border-white/[0.08] bg-white/[0.03]">
-                  <th className="text-left py-2.5 px-3 text-xs text-slate-400 font-medium w-8">#</th>
-                  <th className="text-left py-2.5 px-3 text-xs text-slate-400 font-medium">Departamento</th>
-                  <th className="text-right py-2.5 px-3 text-xs text-slate-400 font-medium w-16">Score</th>
-                  <th className="text-right py-2.5 px-3 text-xs text-slate-400 font-medium w-16">Nivel</th>
+                  <th className="text-left py-3 px-3 text-base text-slate-300 font-semibold w-8">#</th>
+                  <th className="text-left py-3 px-3 text-base text-slate-300 font-semibold">Departamento</th>
+                  <th className="text-right py-3 px-3 text-base text-slate-300 font-semibold w-16">Score</th>
+                  <th className="text-right py-3 px-3 text-base text-slate-300 font-semibold w-16">Nivel</th>
                 </tr>
               </thead>
               <tbody>
@@ -723,7 +723,7 @@ export default function Observatorio() {
                     <td className="py-2.5 px-3">
                       <div className="flex items-center gap-3">
                         <span className="text-base text-slate-200 font-medium">{cleanDepto(d.departamento)}</span>
-                        <div className="flex-1 h-3 bg-white/[0.06] rounded-full overflow-hidden hidden sm:block max-w-[220px]">
+                        <div className="flex-1 h-3 bg-white/[0.06] rounded-full overflow-hidden hidden sm:block max-w-[380px]">
                           <div className="h-full rounded-full transition-all" style={{ width: `${d.indice_prioridad}%`, background: `linear-gradient(90deg, ${barColor}, ${barColor}dd)` }} />
                         </div>
                       </div>
