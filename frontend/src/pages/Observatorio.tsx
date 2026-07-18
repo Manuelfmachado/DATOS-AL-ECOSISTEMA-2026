@@ -683,15 +683,6 @@ export default function Observatorio() {
               <p className="text-sm text-white">Estable: menor prioridad de intervención</p>
             </div>
           </div>
-            <div className="bg-amber-600/40 border border-amber-400/60 rounded-lg p-3 text-center">
-              <p className="text-amber-200 font-bold text-lg">50-69</p>
-              <p className="text-sm text-white">Atención: necesita seguimiento e intervenciones focalizadas</p>
-            </div>
-            <div className="bg-green-600/40 border border-green-400/60 rounded-lg p-3 text-center">
-              <p className="text-green-200 font-bold text-lg">&lt;50</p>
-              <p className="text-sm text-white">Estable: menor prioridad de intervención</p>
-            </div>
-          </div>
 
           <div className="overflow-hidden rounded-lg border border-white/[0.06]">
             <table className="w-full text-sm">

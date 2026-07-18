@@ -205,7 +205,7 @@ export default function Prediccion() {
                 onClick={() => setTab(t.key)}
                 className={`flex-1 py-3 text-xl font-bold rounded-lg transition-all ${
                   tab === t.key
-                    ? 'bg-gradient-to-b from-amber-300/20 to-amber-700/10 text-white border border-amber-500/50'
+                    ? 'bg-[#d4af37]/30 text-white border border-[#d4af37]/80 shadow-[0_0_16px_rgba(212,175,55,0.25)]'
                     : 'text-white hover:text-gold-400 hover:bg-white/[0.04] border border-transparent'
                 }`}
               >
@@ -773,7 +773,7 @@ export default function Prediccion() {
               </div>
 
               {/* Tabla completa */}
-              <div className="plate card p-5">
+              <div className="bg-[#070a14] border border-white/[0.06] rounded-xl p-5">
                 <div className="flex items-center justify-between mb-4 pb-2 border-b border-gold-500/20">
                   <h2 className="text-2xl font-bold text-white font-display flex items-center gap-2">
                      Ranking completo de salarios
