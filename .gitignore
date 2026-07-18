@@ -47,3 +47,23 @@ RECURSOS/colombia_deptos_full.json
 RECURSOS/colombia_inline.txt
 RECURSOS/china.json
 *.tmp
+
+# Build artifacts and local offline packages (not for GitHub)
+ALBA_Offline_v1.0.zip
+ALBA-Offline-v1.zip
+alba-offline/build/
+alba-offline/check_db.py
+alba-offline/LEEME_OFFLINE.txt
+build_err*.txt
+build_out*.txt
+data/alba_offline.db
+data/alba_offline.db-shm
+data/alba_offline.db-wal
+ALBA_Presentacion.pdf
+
+# Kilo local config (.kilo command/agent can be kept selectively)
+.kilo/
+
+# OS files
+Thumbs.db
+.DS_Store

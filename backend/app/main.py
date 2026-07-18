@@ -9,7 +9,7 @@ Ejecutar:
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from app.routers import observatorio, prediccion, match, emprende, coach, coach_live, simulacion, simulacion_extra, ia
+from app.routers import observatorio, prediccion, match, emprende, coach, coach_live, simulacion, simulacion_extra, viaje, ia
 
 app = FastAPI(
     title="ALBA - Analítica Laboral Basada en IA",
@@ -35,6 +35,7 @@ app.include_router(coach.router)
 app.include_router(coach_live.router)
 app.include_router(simulacion.router)
 app.include_router(simulacion_extra.router)
+app.include_router(viaje.router)
 app.include_router(ia.router)
 
 

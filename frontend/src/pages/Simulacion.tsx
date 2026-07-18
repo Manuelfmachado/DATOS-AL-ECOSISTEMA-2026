@@ -5,7 +5,7 @@ import {
   ReferenceLine, Legend, ComposedChart,
 } from 'recharts'
 import api from '../services/api'
-import { formatCOP, formatCOPFull, formatNumber } from '../utils/format'
+import { formatCOP, formatCOPFull, formatCOPCompact, formatNumber } from '../utils/format'
 
 // ===========================================================================
 // Tipos
@@ -122,6 +122,50 @@ interface QuePasaSiResponse {
   }
 }
 
+// ── Viaje de una decisión ──────────────────────────────────────────────────
+interface ViajeRadiografia {
+  desempleo_pct: number
+  informalidad_pct: number | null
+  formalidad_pct: number
+  ingreso_promedio_cop: number
+  ingreso_nacional_cop: number
+  ajuste_territorial: number
+  ocupados: number
+  dnp_desempeno: number | null
+  accion_recomendada: string
+}
+interface ViajeSector {
+  rama_ciiu: number
+  nombre: string
+  empleo: number
+  participacion_pct: number
+}
+interface ViajeProgramaHueco {
+  programa: string
+  programas_locales: number
+  matriculados_locales: number
+  egresados_anuales_nacional: number
+  rango_modal: string
+  salario_mediano_cop: number
+  salario_ajustado_cop: number
+  veredicto: string
+}
+interface ViajeMetodologia {
+  formula: string
+  ingreso_depto_cop: number
+  ingreso_nacional_cop: number
+  ajuste_territorial: number
+  nota: string
+}
+interface ViajeResponse {
+  departamento: string
+  radiografia: ViajeRadiografia
+  sectores_top: ViajeSector[]
+  programas_con_hueco: ViajeProgramaHueco[]
+  metodologia_salario: ViajeMetodologia
+  fuentes: string[]
+}
+
 // ===========================================================================
 // Constantes
 // ===========================================================================
@@ -200,7 +244,7 @@ function useDepartamentos() {
 // ===========================================================================
 
 export default function Simulacion() {
-  const [tab, setTab] = useState<'que-pasa-si' | 'viabilidad' | 'priorizacion'>('que-pasa-si')
+  const [tab, setTab] = useState<'viaje' | 'que-pasa-si' | 'viabilidad' | 'priorizacion'>('viaje')
 
   return (
     <div className="animate-fade-in space-y-5">
@@ -209,12 +253,32 @@ export default function Simulacion() {
           Simulación
         </h1>
         <p className="text-lg text-slate-300 mt-1">
-          Los mismos datos, tres públicos distintos. Selecciona tu perfil para simular tu decisión.
+          El viaje de una decisión: los mismos datos, tres públicos, una sola pantalla.
         </p>
       </div>
 
       {/* Selector de perfil */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <button
+          onClick={() => setTab('viaje')}
+          className={`plate card p-5 text-left transition-all ${
+            tab === 'viaje'
+              ? 'border-[#d4af37]/80 shadow-[0_0_18px_rgba(212,175,55,0.20)]'
+              : 'hover:border-white/[0.12]'
+          }`}
+        >
+          <div className="flex items-center gap-3 mb-3">
+            <span className="text-3xl">🗺️</span>
+            <div>
+              <p className={`text-base font-bold ${tab === 'viaje' ? 'text-[#d4af37]' : 'text-white'}`}>El viaje de una decisión</p>
+              <p className="text-sm text-slate-400">Una pantalla, tres públicos</p>
+            </div>
+          </div>
+          <p className="text-sm text-slate-300 leading-relaxed">
+            Elige un territorio y ve al mismo tiempo la radiografía, los programas con hueco y el salario proyectado.
+          </p>
+        </button>
+
         <button
           onClick={() => setTab('que-pasa-si')}
           className={`plate card p-5 text-left transition-all ${
@@ -276,10 +340,203 @@ export default function Simulacion() {
         </button>
       </div>
 
+      {tab === 'viaje' && <SimViaje />}
       {tab === 'que-pasa-si' && <SimQuePasaSi />}
       {tab === 'viabilidad' && <SimViabilidad />}
       {tab === 'priorizacion' && <SimPriorizacion />}
 
+    </div>
+  )
+}
+
+
+// ===========================================================================
+// EL VIAJE DE UNA DECISIÓN — una pantalla, tres públicos, mismos datos
+// ===========================================================================
+
+const DEPTOS_FALLBACK_VIAJE = [
+  'Amazonas', 'Antioquia', 'Arauca', 'ArchipiÃ©lago de San AndrÃ©s', 'AtlÃ¡ntico',
+  'BogotÃ¡ D.C.', 'BolÃ­var', 'BoyacÃ¡', 'Caldas', 'CaquetÃ¡', 'Casanare', 'Cauca',
+  'Cesar', 'ChocÃ³', 'CÃ³rdoba', 'Cundinamarca', 'GuainÃ­a', 'Guaviare', 'Huila',
+  'La Guajira', 'Magdalena', 'Meta', 'NariÃ±o', 'Norte de Santander', 'Putumayo',
+  'QuindÃ­o', 'Risaralda', 'Santander', 'Sucre', 'Tolima', 'Valle del Cauca',
+  'VaupÃ©s', 'Vichada',
+]
+
+function SimViaje() {
+  const [depto, setDepto] = useState('')
+  const [data, setData] = useState<ViajeResponse | null>(null)
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState('')
+  const [options, setOptions] = useState<string[]>(DEPTOS_FALLBACK_VIAJE)
+
+  useEffect(() => {
+    api.get('/simulacion/viaje/departamentos')
+      .then((r) => {
+        const arr: string[] = r.data?.departamentos || []
+        if (arr.length >= 30) {
+          // Si Supabase devuelve nombres con mojibake, usamos el fallback más legible
+          setOptions(DEPTOS_FALLBACK_VIAJE)
+        }
+      })
+      .catch(() => setOptions(DEPTOS_FALLBACK_VIAJE))
+  }, [])
+
+  const run = async () => {
+    if (!depto.trim()) {
+      setError('Selecciona un departamento')
+      return
+    }
+    setLoading(true)
+    setError('')
+    try {
+      const r = await api.get('/simulacion/viaje', { params: { departamento: depto.trim() }, timeout: 120000 })
+      setData(r.data as ViajeResponse)
+    } catch (e: any) {
+      setError(e?.response?.data?.detail || 'No se pudo cargar la simulación')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const inf = data?.radiografia
+
+  return (
+    <div className="space-y-5">
+      {/* Selector de departamento */}
+      <div className="plate card p-5">
+        <h2 className="text-lg font-bold text-[#d4af37] mb-1">Elige un territorio</h2>
+        <p className="text-sm text-slate-400 mb-4">
+          Con un solo click verás la <span className="text-white">radiografía</span>, los <span className="text-white">programas con hueco</span> y el <span className="text-white">salario proyectado</span>.
+        </p>
+        <div className="flex flex-wrap gap-3 items-end">
+          <div className="flex-1 min-w-[240px]">
+            <label className="block text-xs uppercase tracking-wider text-slate-500 mb-1">Departamento</label>
+            <select
+              value={depto}
+              onChange={(e) => setDepto(e.target.value)}
+              className="w-full bg-white/[0.03] border border-white/10 rounded-lg px-3 py-2 text-base text-white focus:border-[#d4af37] focus:outline-none"
+            >
+              <option value="">— Selecciona —</option>
+              {options.map((d) => <option key={d} value={d}>{d}</option>)}
+            </select>
+          </div>
+          <button
+            onClick={run}
+            disabled={loading}
+            className="px-5 py-2.5 rounded-lg bg-[#d4af37] text-black font-semibold hover:bg-[#c9a130] disabled:opacity-50 transition"
+          >
+            {loading ? 'Cargando…' : 'Iniciar viaje'}
+          </button>
+        </div>
+        {error && <p className="mt-3 text-rose-400 text-sm">{error}</p>}
+      </div>
+
+      {data && inf && (
+        <>
+          {/* Sección 1 — Radiografía territorial (Gobierno) */}
+          <div className="plate card p-5">
+            <div className="flex items-center gap-2 mb-3">
+              <span className="text-xl">🏛️</span>
+              <h3 className="text-lg font-bold text-white">Radiografía de {data.departamento} — <span className="text-slate-400 text-sm font-normal">Gobierno</span></h3>
+            </div>
+            <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-3">
+              <KpiCard label="Desempleo" value={`${inf.desempleo_pct}%`} accent={inf.desempleo_pct >= 15 ? 'rose' : inf.desempleo_pct >= 10 ? 'gold' : 'green'} />
+              <KpiCard label="Informalidad" value={inf.informalidad_pct != null ? `${inf.informalidad_pct}%` : '—'} accent={inf.informalidad_pct != null && inf.informalidad_pct >= 75 ? 'rose' : inf.informalidad_pct != null && inf.informalidad_pct >= 50 ? 'gold' : 'green'} />
+              <KpiCard label="Formalidad" value={`${inf.formalidad_pct}%`} accent="green" />
+              <KpiCard label="DNP/MDM" value={inf.dnp_desempeno != null ? inf.dnp_desempeno.toString() : '—'} accent={inf.dnp_desempeno != null && inf.dnp_desempeno < 50 ? 'rose' : 'green'} />
+              <KpiCard label="Ocupados" value={formatNumber(inf.ocupados)} />
+              <KpiCard label="Ingreso promedio" value={formatCOPCompact(inf.ingreso_promedio_cop)} />
+              <KpiCard label="Ingreso nacional" value={formatCOPCompact(inf.ingreso_nacional_cop)} />
+              <KpiCard label="Ajuste territorial" value={`×${inf.ajuste_territorial}`} accent="gold" sub="factor vs nacional" />
+            </div>
+            <div className="mt-4 p-3 rounded-lg bg-[#d4af37]/10 border border-[#d4af37]/30">
+              <p className="text-sm text-slate-200">
+                <span className="text-[#d4af37] font-semibold">Acción recomendada: </span>
+                {inf.accion_recomendada}
+              </p>
+            </div>
+          </div>
+
+          {/* Sección 2 — Sectores que contratan (Gobierno + Universidad) */}
+          <div className="plate card p-5">
+            <div className="flex items-center gap-2 mb-3">
+              <span className="text-xl">📊</span>
+              <h3 className="text-lg font-bold text-white">Sectores que contratan en {data.departamento} — <span className="text-slate-400 text-sm font-normal">Gobierno + Universidad</span></h3>
+            </div>
+            {data.sectores_top.length === 0 ? (
+              <p className="text-slate-400 text-sm">No hay datos sectoriales disponibles.</p>
+            ) : (
+              <ResponsiveContainer width="100%" height={240}>
+                <BarChart data={data.sectores_top} layout="vertical" margin={{ left: 20, right: 30 }}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.06)" />
+                  <XAxis type="number" tick={{ fill: '#94a3b8', fontSize: 12 }} tickFormatter={(v) => formatNumber(v)} />
+                  <YAxis type="category" dataKey="nombre" width={160} tick={{ fill: '#cbd5f5', fontSize: 11 }} />
+                  <Tooltip
+                    contentStyle={{ background: '#0f1729', border: '1px solid rgba(212,175,55,0.4)', borderRadius: 8 }}
+                    labelStyle={{ color: '#d4af37' }}
+                    formatter={(v: any, n: any, p: any) => [`${formatNumber(v)} ocupados (${p?.payload?.participacion_pct}%)`, 'Empleo']}
+                  />
+                  <Bar dataKey="empleo" fill="#d4af37" radius={[0, 4, 4, 0]} />
+                </BarChart>
+              </ResponsiveContainer>
+            )}
+          </div>
+
+          {/* Sección 3 — Programas con hueco regional (Universidad + Estudiante) */}
+          <div className="plate card p-5">
+            <div className="flex items-center gap-2 mb-3">
+              <span className="text-xl">🏫</span>
+              <h3 className="text-lg font-bold text-white">Programas con hueco en {data.departamento} — <span className="text-slate-400 text-sm font-normal">Universidad + Estudiante</span></h3>
+            </div>
+            <p className="text-sm text-slate-400 mb-4">
+              Programas con alta demanda nacional y <span className="text-white">sin oferta local</span>. El salario se ajusta al territorio usando el ratio real de GEIH.
+            </p>
+            {data.programas_con_hueco.length === 0 ? (
+              <p className="text-slate-400 text-sm">No se detectaron huecos relevantes en este departamento.</p>
+            ) : (
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm">
+                  <thead>
+                    <tr className="text-left text-slate-400 border-b border-white/10">
+                      <th className="py-2 pr-3">Programa</th>
+                      <th className="py-2 px-3 text-right">Egresados/año (nacional)</th>
+                      <th className="py-2 px-3 text-right">Salario mediano OLE</th>
+                      <th className="py-2 px-3 text-right">Salario ajustado</th>
+                      <th className="py-2 pl-3 text-center">Veredicto</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {data.programas_con_hueco.map((p, i) => (
+                      <tr key={i} className="border-b border-white/5 hover:bg-white/[0.02]">
+                        <td className="py-2.5 pr-3 text-white">{p.programa}</td>
+                        <td className="py-2.5 px-3 text-right text-slate-300">{formatNumber(p.egresados_anuales_nacional)}</td>
+                        <td className="py-2.5 px-3 text-right text-slate-300">{formatCOPCompact(p.salario_mediano_cop)}</td>
+                        <td className="py-2.5 px-3 text-right text-[#d4af37] font-semibold">{formatCOPCompact(p.salario_ajustado_cop)}</td>
+                        <td className="py-2.5 pl-3 text-center">
+                          <span className="px-2 py-1 rounded-md text-xs bg-green-500/20 text-green-400 border border-green-500/30">{p.veredicto}</span>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </div>
+
+          {/* Metodología y fuentes */}
+          <div className="plate card p-4">
+            <p className="text-xs text-slate-400 mb-1">
+              <span className="text-slate-300 font-semibold">Metodología salarial: </span>
+              {data.metodologia_salario.formula} — {data.metodologia_salario.nota}
+            </p>
+            <p className="text-xs text-slate-500">
+              <span className="text-slate-300 font-semibold">Fuentes: </span>
+              {data.fuentes.join(' · ')}
+            </p>
+          </div>
+        </>
+      )}
     </div>
   )
 }
