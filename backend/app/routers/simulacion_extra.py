@@ -218,12 +218,19 @@ def viabilidad_programa(req: ViabilidadRequest):
         depto_mask = snies["DEPARTAMENTO"].apply(lambda x: depto_norm in _norm(str(x)) if pd.notna(x) else False)
         depto_data = snies[depto_mask]
         if len(depto_data) > 0:
-            # Buscar programas similares en el depto usando keywords
+            # Buscar programas similares en el depto: requerir TODAS las keywords
             if "PROGRAMA" in snies.columns:
                 prog_mask = depto_data["PROGRAMA"].apply(
-                    lambda x: any(kw in _norm(str(x)) for kw in prog_keywords)
+                    lambda x: all(kw in _norm(str(x)) for kw in prog_keywords)
                     if pd.notna(x) else False
                 )
+                # Si no hay matches con todas, intentar con al menos el 75%
+                if not prog_mask.any() and len(prog_keywords) > 1:
+                    min_kw = max(1, int(len(prog_keywords) * 0.75))
+                    prog_mask = depto_data["PROGRAMA"].apply(
+                        lambda x: sum(1 for kw in prog_keywords if kw in _norm(str(x))) >= min_kw
+                        if pd.notna(x) else False
+                    )
                 matriculados_depto = int(depto_data[prog_mask]["MATRICULADOS"].sum())
 
     # Ratio oferta/demanda
