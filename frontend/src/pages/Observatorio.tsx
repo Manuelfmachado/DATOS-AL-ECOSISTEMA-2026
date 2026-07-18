@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, Fragment } from 'react'
 import {
   BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid,
   Cell, LineChart, Line, Legend,
@@ -684,8 +684,18 @@ export default function Observatorio() {
             </div>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-            {prior.departamentos.map((d: any) => {
+          <div className="overflow-hidden rounded-lg border border-white/[0.06]">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b border-white/[0.08] bg-white/[0.03]">
+                  <th className="text-left py-2.5 px-3 text-xs text-slate-400 font-medium w-8">#</th>
+                  <th className="text-left py-2.5 px-3 text-xs text-slate-400 font-medium">Departamento</th>
+                  <th className="text-right py-2.5 px-3 text-xs text-slate-400 font-medium w-16">Score</th>
+                  <th className="text-right py-2.5 px-3 text-xs text-slate-400 font-medium w-16">Nivel</th>
+                </tr>
+              </thead>
+              <tbody>
+            {prior.departamentos.map((d: any, i: number) => {
               const isUrgente = d.indice_prioridad >= 70
               const isAtencion = d.indice_prioridad >= 50
               const barColor = isUrgente ? '#ef4444' : isAtencion ? '#f59e0b' : '#22c55e'
@@ -698,43 +708,48 @@ export default function Observatorio() {
                 d.ingreso_promedio != null ? `Ingreso promedio ${formatCOP(d.ingreso_promedio)}` : '',
               ].filter(Boolean)
               return (
-                <div key={d.departamento}>
-                  <div
+                <Fragment key={d.departamento}>
+                  <tr
                     onClick={() => setSelectedDepto(sel ? null : d.departamento)}
-                    className={`flex items-center gap-3 bg-white/[0.02] rounded-lg px-3 py-2 border cursor-pointer transition-colors ${
-                      sel ? 'border-white/[0.12] bg-white/[0.03]' : 'border-white/[0.04] hover:border-white/[0.08]'
-                    }`}
+                    className={`border-b border-white/[0.04] cursor-pointer transition-colors ${
+                      i % 2 === 0 ? 'bg-white/[0.01]' : 'bg-transparent'
+                    } ${sel ? 'bg-amber-500/10 border-amber-500/20' : 'hover:bg-white/[0.04]'}`}
                   >
-                    <div className="flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold" style={{ backgroundColor: `${barColor}20`, color: barColor }}>
-                      {d.indice_prioridad}
-                    </div>
-                    <div className="min-w-0 flex-1">
-                      <p className="text-sm text-slate-200 font-medium truncate">{cleanDepto(d.departamento)}</p>
-                      <div className="flex items-center gap-2 mt-0.5">
-                        <div className="flex-1 h-1.5 bg-white/5 rounded-full overflow-hidden">
-                          <div className="h-full rounded-full transition-all" style={{ width: `${d.indice_prioridad}%`, backgroundColor: barColor }} />
+                    <td className="py-2.5 px-3 text-slate-500 font-mono text-xs">{i + 1}</td>
+                    <td className="py-2.5 px-3">
+                      <div className="flex items-center gap-3">
+                        <span className="text-sm text-slate-200 font-medium">{cleanDepto(d.departamento)}</span>
+                        <div className="flex-1 h-1.5 bg-white/[0.06] rounded-full overflow-hidden hidden sm:block max-w-[120px]">
+                          <div className="h-full rounded-full transition-all" style={{ width: `${d.indice_prioridad}%`, background: `linear-gradient(90deg, ${barColor}, ${barColor}dd)` }} />
                         </div>
-                        <span className="text-[10px] uppercase font-bold" style={{ color: barColor }}>{d.nivel}</span>
                       </div>
-                    </div>
-                  </div>
+                    </td>
+                    <td className="py-2.5 px-3 text-right">
+                      <span className="font-bold font-display text-base" style={{ color: barColor }}>{d.indice_prioridad}</span>
+                    </td>
+                    <td className="py-2.5 px-3 text-right">
+                      <span className="text-[10px] uppercase tracking-wider font-bold px-2 py-0.5 rounded" style={{ backgroundColor: `${barColor}30`, color: barColor }}>{d.nivel}</span>
+                    </td>
+                  </tr>
                   {sel && desglose.length > 0 && (
-                    <div className="mt-1 ml-12 px-3 py-2.5 bg-white/[0.02] rounded-lg border border-amber-500/15 text-sm text-slate-300 space-y-1">
-                      {desglose.filter(Boolean).map((line: string, i: number) => (
-                        <div key={i} className="flex items-center gap-1.5">
-                          <span className="w-1.5 h-1.5 rounded-full bg-amber-500/60 flex-shrink-0" />
-                          <span>{line}</span>
+                    <tr>
+                      <td colSpan={4} className="py-2.5 px-6 bg-amber-500/[0.04] border-b border-amber-500/10">
+                        <div className="text-[11px] text-slate-400 space-y-1">
+                          {desglose.filter(Boolean).map((line: string, j: number) => (
+                            <div key={j} className="flex items-center gap-2">
+                              <span className="w-1 h-1 rounded-full bg-amber-500/60 flex-shrink-0" />
+                              <span>{line}</span>
+                            </div>
+                          ))}
                         </div>
-                      ))}
-                      <div className="text-xs text-slate-400 pt-1.5 border-t border-white/[0.04] mt-1.5">
-                        {d.tasa_desempleo != null && `Desempleo ${d.tasa_desempleo}%`}
-                        {d.dnp_desempeno != null && ` · DNP ${d.dnp_desempeno}/100`}
-                      </div>
-                    </div>
+                      </td>
+                    </tr>
                   )}
-                </div>
+                </Fragment>
               )
             })}
+              </tbody>
+            </table>
           </div>
         </div>
       )}
