@@ -389,7 +389,7 @@ function SimQuePasaSi() {
               className={`${selectStyles} w-full`}
             />
             {programas.length > 0 && !programa && (
-              <div className="plate card mt-1 max-h-48 overflow-y-auto border-amber-500/20">
+              <div className="bg-[#0a0f1f] border border-amber-500/40 rounded-lg mt-1 max-h-48 overflow-y-auto shadow-2xl">
                 {programas.map((p) => (
                   <button
                     key={p}
@@ -1447,7 +1447,7 @@ function SimViabilidad() {
             <label className="text-base text-slate-400 mb-1 block">Programa académico</label>
             <input type="text" value={programaQuery} onChange={(e) => { setProgramaQuery(e.target.value); setPrograma('') }} placeholder="Busca tu programa..." className="bg-white/[0.03] border border-white/0.08 rounded-lg px-3 py-2 text-base text-slate-300 focus:border-amber-500/40 outline-none w-full" />
             {programas.length > 0 && !programa && (
-              <div className="plate card mt-1 max-h-48 overflow-y-auto border-amber-500/20 absolute z-50 w-full">
+              <div className="bg-[#0a0f1f] border border-amber-500/40 rounded-lg mt-1 max-h-48 overflow-y-auto absolute z-50 w-full shadow-2xl">
                 {programas.map((p) => (
                   <button key={p} onClick={() => { setPrograma(p); setProgramaQuery(p); setProgramas([]) }} className="block w-full text-left px-3 py-2 text-base text-slate-300 hover:bg-amber-500/10 hover:text-gold-400 transition-colors">
                     {p}
