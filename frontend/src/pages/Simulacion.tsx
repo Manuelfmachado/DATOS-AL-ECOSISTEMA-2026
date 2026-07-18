@@ -208,41 +208,71 @@ export default function Simulacion() {
         <h1 className="text-5xl font-bold text-gold-400 font-display">
           Simulación
         </h1>
-        <p className="text-base text-white font-semibold mt-1">
-          Explora escenarios laborales basados en datos reales del mercado colombiano.
+        <p className="text-lg text-slate-300 mt-1">
+          Los mismos datos, tres públicos distintos. Selecciona tu perfil para simular tu decisión.
         </p>
       </div>
 
-      <div className="flex gap-1 bg-white/[0.03] rounded-xl p-1 border border-white/[0.06] w-fit">
+      {/* Selector de perfil */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <button
           onClick={() => setTab('que-pasa-si')}
-          className={`px-4 py-2 rounded-lg text-lg font-bold text-white transition-all ${
+          className={`plate card p-5 text-left transition-all ${
             tab === 'que-pasa-si'
-              ? 'bg-[#d4af37]/20 text-white border border-[#d4af37]/50 shadow-[0_0_14px_rgba(212,175,55,0.25)]'
-              : 'text-slate-400 hover:text-slate-200'
+              ? 'border-[#d4af37]/80 shadow-[0_0_18px_rgba(212,175,55,0.20)]'
+              : 'hover:border-white/[0.12]'
           }`}
         >
-          ¿Y si...?
+          <div className="flex items-center gap-3 mb-3">
+            <span className="text-3xl">🎓</span>
+            <div>
+              <p className={`text-base font-bold ${tab === 'que-pasa-si' ? 'text-[#d4af37]' : 'text-white'}`}>Soy estudiante</p>
+              <p className="text-sm text-slate-400">Mi futuro laboral</p>
+            </div>
+          </div>
+          <p className="text-sm text-slate-300 leading-relaxed">
+            ¿Qué carrera, habilidades y territorio me dan mejores oportunidades?
+          </p>
         </button>
+
         <button
           onClick={() => setTab('viabilidad')}
-          className={`px-4 py-2 rounded-lg text-lg font-bold text-white transition-all ${
+          className={`plate card p-5 text-left transition-all ${
             tab === 'viabilidad'
-              ? 'bg-[#d4af37]/20 text-white border border-[#d4af37]/50 shadow-[0_0_14px_rgba(212,175,55,0.25)]'
-              : 'text-slate-400 hover:text-slate-200'
+              ? 'border-[#d4af37]/80 shadow-[0_0_18px_rgba(212,175,55,0.20)]'
+              : 'hover:border-white/[0.12]'
           }`}
         >
-          Viabilidad de Programa
+          <div className="flex items-center gap-3 mb-3">
+            <span className="text-3xl">🏛️</span>
+            <div>
+              <p className={`text-base font-bold ${tab === 'viabilidad' ? 'text-[#d4af37]' : 'text-white'}`}>Soy universidad</p>
+              <p className="text-sm text-slate-400">Portafolio académico</p>
+            </div>
+          </div>
+          <p className="text-sm text-slate-300 leading-relaxed">
+            ¿Conviene abrir, actualizar o ampliar este programa en esta región?
+          </p>
         </button>
+
         <button
           onClick={() => setTab('priorizacion')}
-          className={`px-4 py-2 rounded-lg text-lg font-bold text-white transition-all ${
+          className={`plate card p-5 text-left transition-all ${
             tab === 'priorizacion'
-              ? 'bg-[#d4af37]/20 text-white border border-[#d4af37]/50 shadow-[0_0_14px_rgba(212,175,55,0.25)]'
-              : 'text-slate-400 hover:text-slate-200'
+              ? 'border-[#d4af37]/80 shadow-[0_0_18px_rgba(212,175,55,0.20)]'
+              : 'hover:border-white/[0.12]'
           }`}
         >
-          Priorización Territorial
+          <div className="flex items-center gap-3 mb-3">
+            <span className="text-3xl">🏛️</span>
+            <div>
+              <p className={`text-base font-bold ${tab === 'priorizacion' ? 'text-[#d4af37]' : 'text-white'}`}>Soy gobierno</p>
+              <p className="text-sm text-slate-400">Planificador territorial</p>
+            </div>
+          </div>
+          <p className="text-sm text-slate-300 leading-relaxed">
+            ¿Dónde y cómo invertir el presupuesto público para mayor impacto?
+          </p>
         </button>
       </div>
 
@@ -316,9 +346,11 @@ function SimQuePasaSi() {
   return (
     <div className="space-y-4">
       <div className="plate card p-5">
+        <h3 className="text-lg font-bold text-white mb-2">🎓 Mi futuro laboral</h3>
+        <p className="text-base text-slate-400 mb-4">Simula tu carrera ideal combinando programa, departamento y habilidades para ver tus oportunidades reales.</p>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="relative">
-            <label className="text-lg text-slate-300 mb-1 block font-medium">Quiero estudiar</label>
+            <label className="text-base text-slate-400 mb-1 block">🎯 Carrera o programa</label>
             <input type="text" value={programaQuery} onChange={(e) => { setProgramaQuery(e.target.value); setPrograma('') }} placeholder="Busca tu carrera..." className={`${selectStyles} w-full`} />
             {programas.length > 0 && !programa && (
               <div className="bg-[#0a0f1f] border border-amber-500/40 rounded-lg mt-1 max-h-48 overflow-y-auto absolute z-50 w-full shadow-2xl">
@@ -329,7 +361,7 @@ function SimQuePasaSi() {
             )}
           </div>
           <div>
-            <label className="text-lg text-slate-300 mb-1 block font-medium">y quiero trabajar en</label>
+            <label className="text-base text-slate-400 mb-1 block">📍 Quiero trabajar en</label>
             <select value={departamento} onChange={(e) => setDepartamento(e.target.value)} className={`${selectStyles} w-full`}>
               {deptos.map((d) => <option key={d}>{d}</option>)}
             </select>
@@ -337,7 +369,7 @@ function SimQuePasaSi() {
         </div>
         <div className="mt-5">
           <button onClick={run} disabled={loading || !programa} className="px-6 py-2.5 rounded-lg font-semibold text-base transition-all bg-gold-400 text-[#0a0f1f] hover:bg-gold-400/90 disabled:opacity-40">
-            {loading ? 'Proyectando...' : 'Proyectar mi carrera'}
+            {loading ? 'Proyectando...' : 'Simular mi futuro'}
           </button>
           {error && <p className="text-rose-400 text-sm mt-3">{error}</p>}
         </div>
@@ -430,8 +462,8 @@ function SimViabilidad() {
   return (
     <div className="space-y-4">
       <div className="plate card p-5">
-        <h3 className="text-base font-semibold text-gold-400 uppercase tracking-wider mb-4">Evaluar viabilidad de un programa académico</h3>
-        <p className="text-base text-slate-400 mb-4">Cruza oferta educativa (SNIES) con demanda laboral (SPE/APE) e ingresos de graduados (OLE) para calcular un score de viabilidad 0-100.</p>
+        <h3 className="text-lg font-bold text-white mb-2">🏛️ Portafolio académico</h3>
+        <p className="text-base text-slate-400 mb-4">Evalúa si conviene abrir un programa académico en un departamento. Cruza oferta educativa (SNIES) con demanda laboral (SPE/APE) e ingresos de graduados (OLE).</p>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div className="relative">
             <label className="text-base text-slate-400 mb-1 block">Programa académico</label>
@@ -463,7 +495,7 @@ function SimViabilidad() {
           </div>
         </div>
         <button onClick={run} disabled={loading} className="mt-4 px-6 py-2.5 rounded-lg font-semibold text-base transition-all bg-gold-400 text-[#0a0f1f] hover:bg-gold-400/90 disabled:opacity-40">
-          {loading ? 'Evaluando...' : 'Evaluar viabilidad'}
+          {loading ? 'Evaluando...' : 'Evaluar programa'}
         </button>
         {error && <p className="text-rose-400 text-sm mt-3">{error}</p>}
       </div>
@@ -539,8 +571,8 @@ function SimPriorizacion() {
   return (
     <div className="space-y-4">
       <div className="plate card p-5">
-        <h3 className="text-base font-semibold text-gold-400 uppercase tracking-wider mb-4">Priorización territorial de inversión</h3>
-        <p className="text-base text-slate-400 mb-4">Ranking de departamentos por urgencia de intervención laboral. Score compuesto: desempleo, informalidad, desempeño DNP, ingreso y proyecciones.</p>
+        <h3 className="text-lg font-bold text-white mb-2">🏛️ Planificador territorial</h3>
+        <p className="text-base text-slate-400 mb-4">Ranking de departamentos por urgencia de intervención laboral. Distribuye tu presupuesto para ver cobertura, impacto y equidad territorial.</p>
         <div className="flex items-end gap-4">
           <div>
             <label className="text-base text-slate-400 mb-1 block">Presupuesto disponible (millones COP)</label>
