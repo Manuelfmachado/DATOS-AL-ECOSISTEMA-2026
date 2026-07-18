@@ -185,15 +185,15 @@ body::before {
 .plate {
   position: relative;
   border-radius: 14px;
-  background: linear-gradient(180deg, var(--metal-top) 0%, var(--metal-mid) 35%, var(--metal-bot) 100%);
+  background: #0a0f1f;
   border: 1px solid rgba(212, 175, 55, 0.45);
   box-shadow:
     0 0 0 1px rgba(212, 175, 55, 0.08),
     0 18px 38px -12px rgba(0, 0, 0, 0.75),
     0 6px 14px -6px rgba(0, 0, 0, 0.55),
-    inset 0 1px 0 rgba(255, 255, 255, 0.14),
+    inset 0 1px 0 rgba(255, 255, 255, 0.06),
     inset 0 -1px 0 rgba(0, 0, 0, 0.55),
-    inset 1px 0 0 rgba(255, 255, 255, 0.05),
+    inset 1px 0 0 rgba(255, 255, 255, 0.02),
     inset -1px 0 0 rgba(0, 0, 0, 0.35);
   overflow: hidden;
   transition: all 0.3s ease;
@@ -203,11 +203,8 @@ body::before {
   content: "";
   position: absolute; inset: 0;
   background:
-    linear-gradient(180deg, rgba(255, 255, 255, 0.14) 0%, rgba(255, 255, 255, 0.04) 8%, transparent 22%),
-    repeating-linear-gradient(90deg, rgba(255, 255, 255, 0.018) 0 1px, transparent 1px 2px),
-    linear-gradient(180deg, rgba(212, 175, 55, 0.18), transparent 30%);
+    linear-gradient(180deg, rgba(255, 255, 255, 0.06) 0%, transparent 12%);
   pointer-events: none;
-  mix-blend-mode: screen;
   transition: opacity 0.3s ease;
 }
 

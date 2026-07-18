@@ -225,11 +225,11 @@ export default function Observatorio() {
       {/* ================================================================ */}
       {tend?.sectores && (
         <div className="plate card p-5">
-          <div className="flex items-center justify-between mb-4 pb-2 border-b border-gold-500/20">
-            <h2 className="text-2xl font-bold text-white font-display flex items-center gap-2">
+          <div className="flex items-center justify-between mb-4 pb-2 border-b border-gold-500/20 gap-3">
+            <h2 className="text-2xl font-bold text-white font-display flex items-center gap-2 truncate min-w-0">
               Tendencias del empleo
             </h2>
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-3 flex-shrink-0">
               <AnalizarIAButton
                 dashboard="observatorio"
                 widgetTitle="Tendencias del empleo"
@@ -280,8 +280,8 @@ export default function Observatorio() {
         })
         return (
         <div className="plate card p-5">
-          <div className="flex items-center justify-between mb-4 pb-2 border-b border-gold-500/20">
-            <h2 className="text-2xl font-bold text-white font-display flex items-center gap-2">
+          <div className="flex items-center justify-between mb-4 pb-2 border-b border-gold-500/20 gap-3">
+            <h2 className="text-2xl font-bold text-white font-display flex items-center gap-2 truncate min-w-0">
               Sectores emergentes
             </h2>
             <AnalizarIAButton
@@ -342,15 +342,17 @@ export default function Observatorio() {
       {/* ================================================================ */}
       <div className="plate card p-5">
         <div className="flex items-center justify-between mb-3 pb-2 border-b border-gold-500/20">
-          <h2 className="text-2xl font-bold text-white font-display flex items-center gap-2">
+          <h2 className="text-2xl font-bold text-white font-display flex items-center gap-2 truncate min-w-0">
             Empleo por departamento
           </h2>
-          <AnalizarIAButton
-            dashboard="observatorio"
-            widgetTitle="Empleo por departamento"
-            widgetType="grafico"
-            data={deptosEmpleo}
-          />
+          <div className="flex-shrink-0">
+            <AnalizarIAButton
+              dashboard="observatorio"
+              widgetTitle="Empleo por departamento"
+              widgetType="grafico"
+              data={deptosEmpleo}
+            />
+          </div>
         </div>
         <ResponsiveContainer width="100%" height={Math.max(300, deptosEmpleo.length * 22)}>
           <BarChart
@@ -432,9 +434,9 @@ export default function Observatorio() {
       {/* 3.5 Empleo por sector departamental (GEIH depto-sector, 95K filas) */}
       {/* ================================================================ */}
       <div className="plate card p-5">
-        <div className="flex items-center justify-between mb-4 pb-2 border-b border-gold-500/20">
-          <h2 className="text-2xl font-bold text-white font-display">Empleo por sector</h2>
-          <div className="flex items-center gap-3">
+        <div className="flex items-center justify-between mb-4 pb-2 border-b border-gold-500/20 gap-3">
+          <h2 className="text-2xl font-bold text-white font-display truncate min-w-0">Empleo por sector</h2>
+          <div className="flex items-center gap-3 flex-shrink-0">
             {sectoresDepto && (
               <AnalizarIAButton
                 dashboard="observatorio"
@@ -547,22 +549,24 @@ export default function Observatorio() {
       {/* ================================================================ */}
       {brecha && (
         <div className="plate card p-5">
-          <div className="flex items-center justify-between mb-3 pb-2 border-b border-gold-500/20">
-            <div>
-              <h2 className="text-2xl font-bold text-white font-display">Brecha: oferta educativa vs demanda laboral</h2>
+          <div className="flex items-center justify-between mb-3 pb-2 border-b border-gold-500/20 gap-3">
+            <div className="min-w-0">
+              <h2 className="text-2xl font-bold text-white font-display truncate">Brecha: oferta educativa vs demanda laboral</h2>
               <p className="text-base text-slate-300 mt-1">
                 Compara cuántos estudiantes se forman en cada área contra cuántos empleos reales hay.
               </p>
             </div>
-            <AnalizarIAButton
+            <div className="flex-shrink-0">
+              <AnalizarIAButton
               dashboard="observatorio"
               widgetTitle="Brecha oferta vs demanda"
               widgetType="grafico"
               data={{ sobre: brecha.top_sobre_oferta, sub: brecha.top_sub_oferta }}
             />
           </div>
+        </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
             <div className="bg-red-500/10 border border-red-500/20 rounded-lg p-3">
               <p className="text-base text-slate-200">
                 <span className="text-red-400 font-bold">Sobre-formación (rojo):</span> hay más graduados que empleos disponibles. 
@@ -654,9 +658,9 @@ export default function Observatorio() {
       {/* ================================================================ */}
       {prior?.departamentos && (
         <div className="bg-[#0a0f1f] border border-[#d4af37]/40 rounded-xl p-5">
-          <div className="flex items-center justify-between mb-3 pb-2 border-b border-gold-500/20">
-            <div>
-              <h2 className="text-2xl font-bold text-white font-display">Prioridad de intervención por departamento</h2>
+          <div className="flex items-center justify-between mb-3 pb-2 border-b border-gold-500/20 gap-3">
+            <div className="min-w-0">
+              <h2 className="text-2xl font-bold text-white font-display truncate">Prioridad de intervención por departamento</h2>
               <p className="text-base text-slate-300 mt-1">
                 Puntaje 0-100 que mide qué departamentos más necesitan ayuda.
               </p>
