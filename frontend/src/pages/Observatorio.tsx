@@ -657,7 +657,7 @@ export default function Observatorio() {
       {/* 6. Prioridad de intervención departamental */}
       {/* ================================================================ */}
       {prior?.departamentos && (
-        <div className="bg-[#0a0f1f] border border-[#d4af37]/60 rounded-xl p-5">
+        <div className="plate card p-5">
           <div className="flex items-center justify-between mb-3 pb-2 border-b border-gold-500/20 gap-3">
             <div className="min-w-0">
               <h2 className="text-2xl font-bold text-white font-display truncate">Prioridad de intervención por departamento</h2>
@@ -688,7 +688,7 @@ export default function Observatorio() {
             </div>
           </div>
 
-          <div className="overflow-hidden rounded-lg border border-white/[0.06]">
+          <div className="overflow-hidden rounded-lg">
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b border-white/[0.08] bg-white/[0.03]">
