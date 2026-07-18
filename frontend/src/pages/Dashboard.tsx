@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom'
 import api from '../services/api'
 import MapaColombia, { type DeptoData } from '../components/MapaColombia'
 import { formatCOP, formatCOPFull } from '../utils/format'
-import albaRostroSvg from '../../SVG/ALBA ROSTRO.svg'
+import albaRostroSvg from '../../SVG/ROSTRO ALBA.svg'
 
 interface ProfesionDesempleo {
   profesion: string

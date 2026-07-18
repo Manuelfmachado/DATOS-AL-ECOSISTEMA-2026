@@ -670,10 +670,19 @@ export default function Observatorio() {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mb-4">
-            <div className="bg-red-600/40 border border-red-400/60 rounded-lg p-3 text-center">
+            <div className="bg-red-600/75 border border-red-400/60 rounded-lg p-3 text-center">
               <p className="text-red-200 font-bold text-lg">≥70</p>
               <p className="text-sm text-white">Urgente: alta necesidad de políticas públicas y programas</p>
             </div>
+            <div className="bg-amber-600/75 border border-amber-400/60 rounded-lg p-3 text-center">
+              <p className="text-amber-200 font-bold text-lg">50-69</p>
+              <p className="text-sm text-white">Atención: necesita seguimiento e intervenciones focalizadas</p>
+            </div>
+            <div className="bg-green-600/75 border border-green-400/60 rounded-lg p-3 text-center">
+              <p className="text-green-200 font-bold text-lg">&lt;50</p>
+              <p className="text-sm text-white">Estable: menor prioridad de intervención</p>
+            </div>
+          </div>
             <div className="bg-amber-600/40 border border-amber-400/60 rounded-lg p-3 text-center">
               <p className="text-amber-200 font-bold text-lg">50-69</p>
               <p className="text-sm text-white">Atención: necesita seguimiento e intervenciones focalizadas</p>

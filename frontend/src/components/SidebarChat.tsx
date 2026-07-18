@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from 'react'
 import api from '../services/api'
 import { useChat, type ChatMessage } from '../context/ChatContext'
-import albaChatBotSvg from '../../SVG/ALBA ROSTRO.svg'
+import albaChatBotSvg from '../../SVG/ROSTRO ALBA.svg'
 
 const AlbaIcon = ({ className = '', size = 28 }: { className?: string; size?: number }) => (
   <img
