@@ -58,7 +58,7 @@ function TabButton({ active, onClick, label }: TabButtonProps) {
       onClick={onClick}
       className={`flex-1 py-3 text-xl font-bold rounded-lg transition-all ${
         active
-          ? 'bg-gradient-to-b from-amber-300/20 to-amber-700/10 text-white border border-amber-500/50'
+          ? 'bg-[#d4af37]/20 text-white border border-[#d4af37]/50 shadow-[0_0_16px_rgba(212,175,55,0.15)]'
           : 'text-white hover:text-gold-400 hover:bg-white/[0.04] border border-transparent'
       }`}
     >
@@ -77,7 +77,7 @@ function ScoreGauge({ score, label }: { score: number; label: string }) {
         <span className={`text-5xl font-bold ${color}`}>{Math.round(score)}</span>
       </div>
       <div>
-        <p className="text-base text-slate-400 font-semibold">{label}</p>
+        <p className="text-lg text-slate-400 font-semibold">{label}</p>
         <p className={`text-2xl font-bold ${color}`}>
           {score >= 75 ? 'Alto' : score >= 50 ? 'Medio' : 'Bajo'}
         </p>
@@ -195,7 +195,7 @@ export default function Match() {
         <div className="flex items-start gap-3">
           <div>
             <p className="text-lg text-white font-bold mb-2">¿Cómo funciona este análisis?</p>
-            <p className="text-base text-slate-300 leading-relaxed">
+            <p className="text-lg text-slate-300 leading-relaxed">
               La IA ({iaLabel}) analiza tu perfil o pensum comparándolo con los requisitos de la vacante o las tendencias del mercado laboral.
               El score es una estimación basada en el conocimiento del modelo sobre el mercado colombiano. Las brechas muestran qué te falta y cómo cubrirlo,
               con recursos clasificados por tipo: SENA (gratuito), online (plataformas como Coursera), certificaciones y recursos libres.
@@ -234,7 +234,7 @@ export default function Match() {
           <button
             onClick={analizarCvVacante}
             disabled={loading || !cv.trim() || !vacante.trim()}
-            className="w-full bg-gradient-to-b from-amber-300 to-amber-600 text-[#0a0f1f] py-3 rounded-lg font-bold hover:shadow-lg hover:shadow-amber-500/30 disabled:opacity-50 flex items-center justify-center gap-2"
+            className="w-full bg-[#d4af37] text-[#0a0f1f] py-3 rounded-lg font-bold hover:shadow-lg hover:shadow-[#d4af37]/30 disabled:opacity-50 flex items-center justify-center gap-2 text-lg"
           >
             {loading ? (
               <>Analizando con IA...</>
@@ -278,7 +278,7 @@ export default function Match() {
                           {cvResultado.habilidades_detectadas && cvResultado.habilidades_detectadas.length > 0 && (
                             <div className="mt-3 flex flex-wrap gap-2">
                               {cvResultado.habilidades_detectadas.map((h, i) => (
-                                <span key={i} className="text-sm px-3 py-1 rounded-full bg-green-500/15 text-green-400 border border-green-500/30">
+                                <span key={i} className="text-base px-3 py-1 rounded-full bg-green-500/15 text-green-400 border border-green-500/30">
                                   {h}
                                 </span>
                               ))}
@@ -293,10 +293,10 @@ export default function Match() {
                             Salario real de egresados
                           </h3>
                           <p className="text-2xl font-bold text-gold-400 mb-2">{cvResultado.salario_real.rango_modal}</p>
-                          <p className="text-base text-slate-300">
+                          <p className="text-lg text-slate-300">
                             Basado en <strong className="text-white">{Math.round(cvResultado.salario_real.total_graduados).toLocaleString("es-CO")}</strong> graduados reales
                           </p>
-                          <p className="text-sm text-slate-500 mt-1">Fuente: {cvResultado.salario_real.fuente}</p>
+                          <p className="text-lg text-slate-500 mt-1">Fuente: {cvResultado.salario_real.fuente}</p>
                         </div>
                       )}
                 </div>
@@ -309,7 +309,7 @@ export default function Match() {
                   </h3>
                   <ul className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     {cvResultado.fortalezas.map((f, i) => (
-                      <li key={i} className="flex items-start gap-2 text-base text-slate-200">
+                      <li key={i} className="flex items-start gap-2 text-lg text-slate-200">
                         {f}
                       </li>
                     ))}
@@ -339,14 +339,14 @@ export default function Match() {
                         <div className="flex-1">
                           <div className="flex items-center justify-between mb-2">
                             <span className="text-lg font-bold text-white">{b.requisito}</span>
-                            <span className="text-sm font-bold bg-amber-500/20 text-amber-400 px-3 py-1 rounded-full border border-amber-500/30">
+                            <span className="text-base font-bold bg-amber-500/20 text-amber-400 px-3 py-1 rounded-full border border-amber-500/30">
                               +{b.peso} pts
                             </span>
                           </div>
-                          <p className="text-base text-slate-300 mb-3">{b.como_cubrir}</p>
+                          <p className="text-lg text-slate-300 mb-3">{b.como_cubrir}</p>
                           {b.recursos && b.recursos.length > 0 && (
                             <div className="space-y-2">
-                              <p className="text-sm text-slate-400 font-bold">Recursos recomendados:</p>
+                              <p className="text-base text-slate-400 font-bold">Recursos recomendados:</p>
                               {b.recursos.map((r, idx) => (
                                 <div key={idx} className="flex items-center gap-2 text-base">
                                   <span className={`px-2 py-0.5 rounded font-bold ${
@@ -370,11 +370,11 @@ export default function Match() {
                   <div className="mt-6 p-5 bg-blue-500/10 border border-blue-500/30 rounded-xl flex items-center justify-between">
                     <div>
                       <p className="text-base text-blue-300">Si cubres lo marcado, tu score podría subir a:</p>
-                      <p className="text-sm text-blue-400/70">El puntaje es una estimación; el orden y la profundidad también importan.</p>
+                      <p className="text-base text-blue-400/70">El puntaje es una estimación; el orden y la profundidad también importan.</p>
                     </div>
                     <div className="text-right">
                       <p className="text-4xl font-bold text-blue-400">{Math.round(scoreSimulado())}</p>
-                      <p className="text-sm text-blue-400/70">puntos</p>
+                      <p className="text-base text-blue-400/70">puntos</p>
                     </div>
                   </div>
                 </div>
@@ -410,7 +410,7 @@ export default function Match() {
           <button
             onClick={analizarPensum}
             disabled={loading || !pensum.trim()}
-            className="w-full bg-gradient-to-b from-amber-300 to-amber-600 text-[#0a0f1f] py-3 rounded-lg font-bold hover:shadow-lg hover:shadow-amber-500/30 disabled:opacity-50 flex items-center justify-center gap-2"
+            className="w-full bg-[#d4af37] text-[#0a0f1f] py-3 rounded-lg font-bold hover:shadow-lg hover:shadow-[#d4af37]/30 disabled:opacity-50 flex items-center justify-center gap-2 text-lg"
           >
             {loading ? (
               <>Analizando con IA...</>
@@ -437,7 +437,7 @@ export default function Match() {
                   </h3>
                   <ul className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     {pensumResultado.fortalezas.map((f, i) => (
-                      <li key={i} className="flex items-start gap-2 text-base text-slate-200">
+                      <li key={i} className="flex items-start gap-2 text-lg text-slate-200">
                         {f}
                       </li>
                     ))}
@@ -467,7 +467,7 @@ export default function Match() {
                             {b.nivel_importancia === 'alta' ? 'Alta importancia' : b.nivel_importancia === 'media' ? 'Media importancia' : 'Baja importancia'}
                           </span>
                         </div>
-                        <p className="text-base text-slate-300">{b.sugerencia}</p>
+                        <p className="text-lg text-slate-300">{b.sugerencia}</p>
                       </div>
                     ))}
                   </div>

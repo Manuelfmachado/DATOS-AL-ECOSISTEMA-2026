@@ -218,7 +218,7 @@ export default function Simulacion() {
           onClick={() => setTab('que-pasa-si')}
           className={`px-4 py-2 rounded-lg text-lg font-bold text-white transition-all ${
             tab === 'que-pasa-si'
-              ? 'bg-amber-500/25 text-gold-400 border border-gold-500/60 shadow-[0_0_10px_rgba(212,175,55,0.2)]'
+              ? 'bg-[#d4af37]/20 text-white border border-[#d4af37]/50 shadow-[0_0_14px_rgba(212,175,55,0.25)]'
               : 'text-slate-400 hover:text-slate-200'
           }`}
         >
@@ -228,7 +228,7 @@ export default function Simulacion() {
           onClick={() => setTab('viabilidad')}
           className={`px-4 py-2 rounded-lg text-lg font-bold text-white transition-all ${
             tab === 'viabilidad'
-              ? 'bg-amber-500/25 text-gold-400 border border-gold-500/60 shadow-[0_0_10px_rgba(212,175,55,0.2)]'
+              ? 'bg-[#d4af37]/20 text-white border border-[#d4af37]/50 shadow-[0_0_14px_rgba(212,175,55,0.25)]'
               : 'text-slate-400 hover:text-slate-200'
           }`}
         >
@@ -238,7 +238,7 @@ export default function Simulacion() {
           onClick={() => setTab('priorizacion')}
           className={`px-4 py-2 rounded-lg text-lg font-bold text-white transition-all ${
             tab === 'priorizacion'
-              ? 'bg-amber-500/25 text-gold-400 border border-gold-500/60 shadow-[0_0_10px_rgba(212,175,55,0.2)]'
+              ? 'bg-[#d4af37]/20 text-white border border-[#d4af37]/50 shadow-[0_0_14px_rgba(212,175,55,0.25)]'
               : 'text-slate-400 hover:text-slate-200'
           }`}
         >
@@ -366,21 +366,21 @@ function SimQuePasaSi() {
         className="accent-amber-500 w-4 h-4 rounded"
         style={{ accentColor: color }}
       />
-      <span className="text-sm text-slate-300 font-medium min-w-[140px]">{label}</span>
+      <span className="text-base text-slate-300 font-medium min-w-[160px]">{label}</span>
       {inline}
     </label>
   )
 
-  const selectStyles = "bg-white/[0.03] border border-white/0.08 rounded-lg px-2 py-1.5 text-sm text-slate-300 focus:border-amber-500/40 outline-none"
+  const selectStyles = "bg-white/[0.03] border border-white/0.08 rounded-lg px-2 py-1.5 text-base text-slate-300 focus:border-amber-500/40 outline-none"
 
   return (
     <div className="space-y-4">
       {/* Perfil */}
       <div className="plate card p-5">
-        <h3 className="text-sm font-semibold text-gold-400 uppercase tracking-wider mb-4">Perfil</h3>
+        <h3 className="text-base font-semibold text-gold-400 uppercase tracking-wider mb-4">Perfil</h3>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div>
-            <label className="text-sm text-slate-400 mb-1 block">Programa</label>
+            <label className="text-base text-slate-400 mb-1 block">Programa</label>
             <input
               type="text"
               value={programaQuery}
@@ -394,7 +394,7 @@ function SimQuePasaSi() {
                   <button
                     key={p}
                     onClick={() => { setPrograma(p); setProgramaQuery(p); setProgramas([]) }}
-                    className="block w-full text-left px-3 py-2 text-sm text-slate-300 hover:bg-amber-500/10 hover:text-gold-400 transition-colors"
+                    className="block w-full text-left px-3 py-2 text-base text-slate-300 hover:bg-amber-500/10 hover:text-gold-400 transition-colors"
                   >
                     {p}
                   </button>
@@ -403,13 +403,13 @@ function SimQuePasaSi() {
             )}
           </div>
           <div>
-            <label className="text-sm text-slate-400 mb-1 block">Departamento</label>
+            <label className="text-base text-slate-400 mb-1 block">Departamento</label>
             <select value={departamento} onChange={(e) => setDepartamento(e.target.value)} className={`${selectStyles} w-full`}>
               {deptos.map((d) => <option key={d}>{d}</option>)}
             </select>
           </div>
           <div>
-            <label className="text-sm text-slate-400 mb-1 block">Edad</label>
+            <label className="text-base text-slate-400 mb-1 block">Edad</label>
             <input type="number" value={edad} onChange={(e) => setEdad(Number(e.target.value))} min={16} max={70} className={`${selectStyles} w-full`} />
           </div>
         </div>
@@ -417,7 +417,7 @@ function SimQuePasaSi() {
 
       {/* Escenarios */}
       <div className="plate card p-5">
-        <h3 className="text-sm font-semibold text-gold-400 uppercase tracking-wider mb-4">¿Y si...?</h3>
+        <h3 className="text-base font-semibold text-gold-400 uppercase tracking-wider mb-4">¿Y si...?</h3>
         <div className="space-y-2">
           {toggleRow('base', 'Sigo mi plan actual', 'border-amber-500/40', <span className="text-xs text-slate-500">Tu trayectoria base</span>, true)}
           {toggleRow('migracion', 'Me mudo a...', 'border-blue-500/40',
@@ -472,7 +472,7 @@ function SimQuePasaSi() {
           <button
             onClick={run}
             disabled={loading || !programa}
-            className="px-6 py-2.5 rounded-lg font-semibold text-sm transition-all bg-gold-400 text-[#0a0f1f] hover:bg-gold-400/90 disabled:opacity-40"
+            className="px-6 py-2.5 rounded-lg font-semibold text-base transition-all bg-gold-400 text-[#0a0f1f] hover:bg-gold-400/90 disabled:opacity-40"
           >
             {loading ? 'Simulando...' : 'Simular'}
           </button>
@@ -494,7 +494,7 @@ function SimQuePasaSi() {
                     {result.escenarios.find((e: any) => e.tipo === result.mejor_opcion)?.label || result.mejor_opcion}
                   </span>
                 </div>
-                <p className="text-sm text-slate-200 font-medium leading-relaxed">{result.veredicto}</p>
+                <p className="text-base text-slate-200 font-medium leading-relaxed">{result.veredicto}</p>
                 <p className="text-xs text-slate-500 mt-1.5">
                   Nivel detectado: {result.nivel_detectado}. Proyecciones basadas en OLE, GEIH, Saber Pro y Chronos T5.
                 </p>
@@ -504,7 +504,7 @@ function SimQuePasaSi() {
 
           {/* Gráfico con bandas de riesgo */}
           <div className="plate card p-5">
-            <h3 className="text-sm font-semibold text-gold-400 uppercase tracking-wider mb-4">Trayectoria a 10 años</h3>
+            <h3 className="text-base font-semibold text-gold-400 uppercase tracking-wider mb-4">Trayectoria a 10 años</h3>
             <ResponsiveContainer width="100%" height={380}>
               <ComposedChart data={chartData} margin={{ top: 10, right: 30, left: 20, bottom: 5 }}>
                 <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.06)" />
@@ -549,7 +549,7 @@ function SimQuePasaSi() {
                   )}
                   {e.costo_educacion_cop > 0 && (
                     <div className="mt-2 pt-2 border-t border-white/[0.06]">
-                      <p className="text-sm text-slate-400">Inversión: {formatCOP(e.costo_educacion_cop)}</p>
+                      <p className="text-base text-slate-400">Inversión: {formatCOP(e.costo_educacion_cop)}</p>
                       {e.anos_recuperacion > 0 && (
                         <p className="text-xs text-amber-400 mt-0.5">Recuperas en {e.anos_recuperacion} años</p>
                       )}
@@ -566,8 +566,8 @@ function SimQuePasaSi() {
               <div className="flex items-center gap-2">
                 <span className="text-lg">{result.alerta_saturacion.riesgo === 'alto' ? '⚠️' : '📊'}</span>
                 <div>
-                  <p className="text-sm text-slate-200 font-medium">{result.alerta_saturacion.mensaje}</p>
-                  <p className="text-sm text-slate-400 mt-1">{result.alerta_saturacion.detalle}</p>
+                  <p className="text-base text-slate-200 font-medium">{result.alerta_saturacion.mensaje}</p>
+                  <p className="text-base text-slate-400 mt-1">{result.alerta_saturacion.detalle}</p>
                 </div>
               </div>
             </div>
@@ -632,13 +632,13 @@ function SimTrayectoria() {
       <div className="plate card p-5 space-y-4">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="relative">
-            <label className="block text-sm text-slate-400 mb-1.5">Programa académico</label>
+            <label className="block text-base text-slate-400 mb-1.5">Programa académico</label>
             <input
               type="text"
               value={programaQuery}
               onChange={(e) => { setProgramaQuery(e.target.value); setPrograma('') }}
               placeholder="Escribe: ingeniería, derecho, enfermería..."
-              className="w-full bg-[#0a0f1f] text-slate-200 text-sm border border-amber-500/20 rounded-lg px-3 py-2.5 focus:outline-none focus:border-amber-500/50"
+              className="w-full bg-[#0a0f1f] text-slate-200 text-base border border-amber-500/20 rounded-lg px-3 py-2.5 focus:outline-none focus:border-amber-500/50"
             />
             {programaQuery.length > 0 && programaQuery.length < 2 && !programa && (
               <p className="text-xs text-slate-500 mt-1">Escribe al menos 2 caracteres para buscar</p>
@@ -647,13 +647,13 @@ function SimTrayectoria() {
               <p className="text-xs text-slate-500 mt-1">Buscando programas...</p>
             )}
             {programaQuery.length >= 2 && programas.length > 0 && !programa && (
-              <div className="mt-1 max-h-56 overflow-y-auto bg-[#0a0f1f] border border-amber-500/20 rounded-lg shadow-xl absolute z-10 left-0 right-0">
+              <div className="mt-1 max-h-56 overflow-y-auto bg-[#0a0f1f] border border-amber-500/20 rounded-lg shadow-xl absolute z-50 left-0 right-0">
                 <div className="px-3 py-1 text-xs text-slate-500 border-b border-white/[0.04]">{programas.length} programas encontrados</div>
                 {programas.slice(0, 20).map((p) => (
                   <button
                     key={p}
                     onClick={() => { setPrograma(p); setProgramaQuery(p); setProgramas([]) }}
-                    className="block w-full text-left px-3 py-2 text-sm text-slate-300 hover:bg-amber-500/10 hover:text-gold-400 transition-colors"
+                    className="block w-full text-left px-3 py-2 text-base text-slate-300 hover:bg-amber-500/10 hover:text-gold-400 transition-colors"
                   >
                     {p}
                   </button>
@@ -667,13 +667,13 @@ function SimTrayectoria() {
             )}
           </div>
           <div>
-            <label className="block text-sm text-slate-400 mb-1.5">
+            <label className="block text-base text-slate-400 mb-1.5">
               Departamento {deptosCargando && <span className="text-slate-600">(cargando...)</span>}
             </label>
             <select
               value={departamento}
               onChange={(e) => setDepartamento(e.target.value)}
-              className="w-full bg-[#0a0f1f] text-slate-200 text-sm border border-amber-500/20 rounded-lg px-3 py-2.5 focus:outline-none focus:border-amber-500/50"
+              className="w-full bg-[#0a0f1f] text-slate-200 text-base border border-amber-500/20 rounded-lg px-3 py-2.5 focus:outline-none focus:border-amber-500/50"
             >
               {deptos.map((d) => <option key={d} value={d}>{d}</option>)}
             </select>
@@ -682,7 +682,7 @@ function SimTrayectoria() {
         <button
           onClick={run}
           disabled={loading || !programa}
-          className="w-full md:w-auto px-6 py-2.5 bg-gradient-to-b from-amber-400 to-amber-600 text-[#0a0f1f] font-bold text-sm rounded-lg hover:from-amber-300 hover:to-amber-500 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+          className="w-full md:w-auto px-6 py-2.5 bg-[#d4af37] text-[#0a0f1f] font-bold text-base rounded-lg hover:shadow-lg hover:shadow-[#d4af37]/30 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
         >
           {loading ? <>Simulando...</> : <>Simular trayectoria</>}
         </button>
@@ -710,12 +710,12 @@ function SimTrayectoria() {
               <h3 className="text-lg font-bold text-gold-400 font-display mb-1">
                 Tu salario estimado año a año
               </h3>
-              <p className="text-sm text-slate-400">
+              <p className="text-base text-slate-400">
                 {result.programa} · {result.departamento}
               </p>
             </div>
 
-            <p className="text-sm text-slate-400 mb-4">
+            <p className="text-base text-slate-400 mb-4">
               <strong className="text-gold-400">Línea dorada:</strong> lo que ganarías. Las grises son el rango posible (mínimo y máximo realista).
             </p>
 
@@ -772,7 +772,7 @@ function SimTrayectoria() {
 
           {result.recomendacion && (
             <div className="plate card p-5 border-amber-500/20">
-              <p className="text-sm text-slate-300">{result.recomendacion}</p>
+              <p className="text-base text-slate-300">{result.recomendacion}</p>
               {result.profesion_chronos && result.profesion_chronos !== 'Baseline general' && (
                 <p className="text-xs text-amber-400/80 mt-2">
                   Profesión equivalente (Chronos T5): {result.profesion_chronos}
@@ -814,14 +814,14 @@ function SimMigracion() {
       <div className="plate card p-5 space-y-4">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-end">
           <div>
-            <label className="block text-sm text-slate-400 mb-1.5">Departamento origen</label>
-            <select value={origen} onChange={(e) => setOrigen(e.target.value)} disabled={deptosCargando} className="w-full bg-[#0a0f1f] text-slate-200 text-sm border border-amber-500/20 rounded-lg px-3 py-2.5 focus:outline-none focus:border-amber-500/50 disabled:opacity-50">
+            <label className="block text-base text-slate-400 mb-1.5">Departamento origen</label>
+            <select value={origen} onChange={(e) => setOrigen(e.target.value)} disabled={deptosCargando} className="w-full bg-[#0a0f1f] text-slate-200 text-base border border-amber-500/20 rounded-lg px-3 py-2.5 focus:outline-none focus:border-amber-500/50 disabled:opacity-50">
               {deptos.map((d) => <option key={d} value={d}>{d}</option>)}
             </select>
           </div>
           <div>
-            <label className="block text-sm text-slate-400 mb-1.5">Departamento destino</label>
-            <select value={destino} onChange={(e) => setDestino(e.target.value)} disabled={deptosCargando} className="w-full bg-[#0a0f1f] text-slate-200 text-sm border border-amber-500/20 rounded-lg px-3 py-2.5 focus:outline-none focus:border-amber-500/50 disabled:opacity-50">
+            <label className="block text-base text-slate-400 mb-1.5">Departamento destino</label>
+            <select value={destino} onChange={(e) => setDestino(e.target.value)} disabled={deptosCargando} className="w-full bg-[#0a0f1f] text-slate-200 text-base border border-amber-500/20 rounded-lg px-3 py-2.5 focus:outline-none focus:border-amber-500/50 disabled:opacity-50">
               {deptos.map((d) => <option key={d} value={d}>{d}</option>)}
             </select>
           </div>
@@ -829,7 +829,7 @@ function SimMigracion() {
         <button
           onClick={run}
           disabled={loading}
-          className="w-full md:w-auto px-6 py-2.5 bg-gradient-to-b from-amber-400 to-amber-600 text-[#0a0f1f] font-bold text-sm rounded-lg hover:from-amber-300 hover:to-amber-500 transition-all disabled:opacity-50 flex items-center justify-center gap-2"
+          className="w-full md:w-auto px-6 py-2.5 bg-[#d4af37] text-[#0a0f1f] font-bold text-base rounded-lg hover:shadow-lg hover:shadow-[#d4af37]/30 transition-all disabled:opacity-50 flex items-center justify-center gap-2"
         >
           {loading ? <>Comparando...</> : <>Comparar departamentos</>}
         </button>
@@ -841,14 +841,14 @@ function SimMigracion() {
         <>
           {/* Score */}
           <div className="plate card p-5 text-center">
-            <p className="text-sm text-slate-400 uppercase tracking-wider mb-2">Score de atractivo territorial</p>
+            <p className="text-base text-slate-400 uppercase tracking-wider mb-2">Score de atractivo territorial</p>
             <div className="relative inline-block">
               <p className={`text-5xl font-bold font-display ${result.score_atractivo >= 65 ? 'text-green-400' : result.score_atractivo >= 45 ? 'text-amber-400' : 'text-rose-400'}`}>
                 {result.score_atractivo.toFixed(0)}
               </p>
               <span className="text-xl text-slate-500">/100</span>
             </div>
-            <p className="text-sm text-slate-300 mt-3 max-w-xl mx-auto">{result.veredicto}</p>
+            <p className="text-base text-slate-300 mt-3 max-w-xl mx-auto">{result.veredicto}</p>
           </div>
 
           {/* Comparación lado a lado */}
@@ -895,7 +895,7 @@ function DeptoCard({ titulo, data, color }: { titulo: string; data: Record<strin
 function DeltaCard({ label, value, cop, positive }: { label: string; value: string; cop?: number; positive: boolean }) {
   return (
     <div className="plate card p-4 text-center">
-      <p className="text-sm text-slate-400 uppercase tracking-wider mb-1">{label}</p>
+      <p className="text-base text-slate-400 uppercase tracking-wider mb-1">{label}</p>
       <p className={`text-2xl font-bold font-display ${positive ? 'text-green-400' : 'text-rose-400'}`}>{value}</p>
       {cop != null && <p className={`text-xs mt-1 ${positive ? 'text-green-400/70' : 'text-rose-400/70'}`}>{cop > 0 ? '+' : ''}{formatCOP(cop)}</p>}
     </div>
@@ -964,7 +964,7 @@ function SimReskilling() {
         <button
           onClick={run}
           disabled={loading}
-          className="w-full md:w-auto px-6 py-2.5 bg-gradient-to-b from-amber-400 to-amber-600 text-[#0a0f1f] font-bold text-sm rounded-lg hover:from-amber-300 hover:to-amber-500 transition-all disabled:opacity-50 flex items-center justify-center gap-2"
+          className="w-full md:w-auto px-6 py-2.5 bg-[#d4af37] text-[#0a0f1f] font-bold text-base rounded-lg hover:shadow-lg hover:shadow-[#d4af37]/30 transition-all disabled:opacity-50 flex items-center justify-center gap-2"
         >
           {loading ? <>Analizando...</> : <>Calcular brecha de habilidades</>}
         </button>
@@ -977,7 +977,7 @@ function SimReskilling() {
           {/* Overlap */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div className="plate card p-5 text-center">
-              <p className="text-sm text-slate-400 uppercase tracking-wider mb-2">Overlap de habilidades</p>
+              <p className="text-base text-slate-400 uppercase tracking-wider mb-2">Overlap de habilidades</p>
               <p className={`text-5xl font-bold font-display ${result.overlap_pct >= 70 ? 'text-green-400' : result.overlap_pct >= 40 ? 'text-amber-400' : 'text-rose-400'}`}>
                 {result.overlap_pct.toFixed(0)}%
               </p>
@@ -988,8 +988,8 @@ function SimReskilling() {
             </div>
             <div className="plate card p-5 md:col-span-2 flex items-center">
               <div className="flex-1">
-                <p className="text-sm text-slate-400 uppercase tracking-wider mb-1">Veredicto</p>
-                <p className="text-sm text-slate-300">{result.veredicto}</p>
+                <p className="text-base text-slate-400 uppercase tracking-wider mb-1">Veredicto</p>
+                <p className="text-base text-slate-300">{result.veredicto}</p>
               </div>
             </div>
           </div>
@@ -1058,13 +1058,13 @@ function OcupacionInput({ label, query, setQuery, seleccionado, opciones, onSele
 }) {
   return (
     <div className="relative">
-      <label className="block text-sm text-slate-400 mb-1.5">{label}</label>
+      <label className="block text-base text-slate-400 mb-1.5">{label}</label>
       <input
         type="text"
         value={query}
         onChange={(e) => setQuery(e.target.value)}
         placeholder="Escribe: developer, nurse, accountant..."
-        className="w-full bg-[#0a0f1f] text-slate-200 text-sm border border-amber-500/20 rounded-lg px-3 py-2.5 focus:outline-none focus:border-amber-500/50"
+        className="w-full bg-[#0a0f1f] text-slate-200 text-base border border-amber-500/20 rounded-lg px-3 py-2.5 focus:outline-none focus:border-amber-500/50"
       />
       {query.length > 0 && query.length < 2 && !seleccionado && (
         <p className="text-xs text-slate-500 mt-1">Escribe al menos 2 caracteres</p>
@@ -1073,10 +1073,10 @@ function OcupacionInput({ label, query, setQuery, seleccionado, opciones, onSele
         <p className="text-xs text-slate-500 mt-1">Buscando ocupaciones...</p>
       )}
       {opciones.length > 0 && !seleccionado && (
-        <div className="mt-1 max-h-48 overflow-y-auto bg-[#0a0f1f] border border-amber-500/20 rounded-lg shadow-xl absolute z-10 left-0 right-0">
+        <div className="mt-1 max-h-48 overflow-y-auto bg-[#0a0f1f] border border-amber-500/20 rounded-lg shadow-xl absolute z-50 left-0 right-0">
           <div className="px-3 py-1 text-xs text-slate-500 border-b border-white/[0.04]">{opciones.length} ocupaciones encontradas</div>
           {opciones.slice(0, 15).map((o) => (
-            <button key={o} onClick={() => onSelect(o)} className="block w-full text-left px-3 py-2 text-sm text-slate-300 hover:bg-amber-500/10 hover:text-gold-400 transition-colors">
+            <button key={o} onClick={() => onSelect(o)} className="block w-full text-left px-3 py-2 text-base text-slate-300 hover:bg-amber-500/10 hover:text-gold-400 transition-colors">
               {o}
             </button>
           ))}
@@ -1133,8 +1133,8 @@ function SimDemanda() {
     <div className="space-y-5">
       <div className="plate card p-5 space-y-5">
         <div>
-          <label className="block text-sm text-slate-400 mb-1.5">Sector</label>
-          <select value={sector} onChange={(e) => setSector(e.target.value)} className="w-full bg-[#0a0f1f] text-slate-200 text-sm border border-amber-500/20 rounded-lg px-3 py-2.5 focus:outline-none focus:border-amber-500/50">
+          <label className="block text-base text-slate-400 mb-1.5">Sector</label>
+          <select value={sector} onChange={(e) => setSector(e.target.value)} className="w-full bg-[#0a0f1f] text-slate-200 text-base border border-amber-500/20 rounded-lg px-3 py-2.5 focus:outline-none focus:border-amber-500/50">
             {sectores.map((s) => <option key={s.codigo} value={s.codigo}>{s.nombre}</option>)}
           </select>
         </div>
@@ -1146,7 +1146,7 @@ function SimDemanda() {
         <button
           onClick={run}
           disabled={loading}
-          className="w-full md:w-auto px-6 py-2.5 bg-gradient-to-b from-amber-400 to-amber-600 text-[#0a0f1f] font-bold text-sm rounded-lg hover:from-amber-300 hover:to-amber-500 transition-all disabled:opacity-50 flex items-center justify-center gap-2"
+          className="w-full md:w-auto px-6 py-2.5 bg-[#d4af37] text-[#0a0f1f] font-bold text-base rounded-lg hover:shadow-lg hover:shadow-[#d4af37]/30 transition-all disabled:opacity-50 flex items-center justify-center gap-2"
         >
           {loading ? <>Simulando...</> : <>Simular escenario</>}
         </button>
@@ -1187,7 +1187,7 @@ function SimDemanda() {
           </div>
 
           <div className="plate card p-5 border-amber-500/20">
-            <p className="text-sm text-slate-300">{result.veredicto}</p>
+            <p className="text-base text-slate-300">{result.veredicto}</p>
           </div>
         </>
       )}
@@ -1201,7 +1201,7 @@ function Slider({ label, value, min, max, step, suffix, onChange, color }: {
   return (
     <div>
       <div className="flex justify-between items-baseline mb-2">
-        <label className="text-sm text-slate-400">{label}</label>
+        <label className="text-base text-slate-400">{label}</label>
         <span className="text-lg font-bold font-display" style={{ color }}>{value > 0 ? '+' : ''}{value}{suffix}</span>
       </div>
       <input
@@ -1272,39 +1272,39 @@ function SimDecision() {
       <div className="plate card p-5 space-y-4">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
           <div>
-            <label className="block text-sm text-slate-400 mb-1.5">Edad</label>
+            <label className="block text-base text-slate-400 mb-1.5">Edad</label>
             <input type="number" value={edad} onChange={(e) => setEdad(parseInt(e.target.value) || 18)} min={16} max={60}
-              className="w-full bg-[#0a0f1f] text-slate-200 text-sm border border-amber-500/20 rounded-lg px-3 py-2.5 focus:outline-none focus:border-amber-500/50" />
+              className="w-full bg-[#0a0f1f] text-slate-200 text-base border border-amber-500/20 rounded-lg px-3 py-2.5 focus:outline-none focus:border-amber-500/50" />
           </div>
           <div>
-            <label className="block text-sm text-slate-400 mb-1.5">Nivel educativo actual</label>
-            <select value={nivel} onChange={(e) => setNivel(e.target.value)} className="w-full bg-[#0a0f1f] text-slate-200 text-sm border border-amber-500/20 rounded-lg px-3 py-2.5 focus:outline-none focus:border-amber-500/50">
+            <label className="block text-base text-slate-400 mb-1.5">Nivel educativo actual</label>
+            <select value={nivel} onChange={(e) => setNivel(e.target.value)} className="w-full bg-[#0a0f1f] text-slate-200 text-base border border-amber-500/20 rounded-lg px-3 py-2.5 focus:outline-none focus:border-amber-500/50">
               {['Bachiller', 'Tecnico', 'Tecnologo', 'Universitario'].map((n) => <option key={n} value={n}>{n}</option>)}
             </select>
           </div>
           <div>
-            <label className="block text-sm text-slate-400 mb-1.5">Departamento</label>
-            <select value={departamento} onChange={(e) => setDepartamento(e.target.value)} disabled={deptosCargando} className="w-full bg-[#0a0f1f] text-slate-200 text-sm border border-amber-500/20 rounded-lg px-3 py-2.5 focus:outline-none focus:border-amber-500/50 disabled:opacity-50">
+            <label className="block text-base text-slate-400 mb-1.5">Departamento</label>
+            <select value={departamento} onChange={(e) => setDepartamento(e.target.value)} disabled={deptosCargando} className="w-full bg-[#0a0f1f] text-slate-200 text-base border border-amber-500/20 rounded-lg px-3 py-2.5 focus:outline-none focus:border-amber-500/50 disabled:opacity-50">
               {deptos.map((d) => <option key={d} value={d}>{d}</option>)}
             </select>
           </div>
           <div>
-            <label className="block text-sm text-slate-400 mb-1.5">Sector de interés</label>
-            <select value={sector} onChange={(e) => setSector(e.target.value)} className="w-full bg-[#0a0f1f] text-slate-200 text-sm border border-amber-500/20 rounded-lg px-3 py-2.5 focus:outline-none focus:border-amber-500/50">
+            <label className="block text-base text-slate-400 mb-1.5">Sector de interés</label>
+            <select value={sector} onChange={(e) => setSector(e.target.value)} className="w-full bg-[#0a0f1f] text-slate-200 text-base border border-amber-500/20 rounded-lg px-3 py-2.5 focus:outline-none focus:border-amber-500/50">
               {SECTORES_INTERES.map((s) => <option key={s} value={s}>{s}</option>)}
             </select>
           </div>
         </div>
         <div>
-          <label className="block text-sm text-slate-400 mb-1.5">Capital disponible para emprender (COP)</label>
+          <label className="block text-base text-slate-400 mb-1.5">Capital disponible para emprender (COP)</label>
           <input type="number" value={capital} onChange={(e) => setCapital(parseInt(e.target.value) || 0)} min={0} step={500000}
             placeholder="0"
-            className="w-full md:w-1/2 bg-[#0a0f1f] text-slate-200 text-sm border border-amber-500/20 rounded-lg px-3 py-2.5 focus:outline-none focus:border-amber-500/50" />
+            className="w-full md:w-1/2 bg-[#0a0f1f] text-slate-200 text-base border border-amber-500/20 rounded-lg px-3 py-2.5 focus:outline-none focus:border-amber-500/50" />
         </div>
         <button
           onClick={run}
           disabled={loading}
-          className="w-full md:w-auto px-6 py-2.5 bg-gradient-to-b from-amber-400 to-amber-600 text-[#0a0f1f] font-bold text-sm rounded-lg hover:from-amber-300 hover:to-amber-500 transition-all disabled:opacity-50 flex items-center justify-center gap-2"
+          className="w-full md:w-auto px-6 py-2.5 bg-[#d4af37] text-[#0a0f1f] font-bold text-base rounded-lg hover:shadow-lg hover:shadow-[#d4af37]/30 transition-all disabled:opacity-50 flex items-center justify-center gap-2"
         >
           {loading ? <>Simulando...</> : <>Comparar trayectorias</>}
         </button>
@@ -1316,13 +1316,13 @@ function SimDecision() {
         <>
           {/* Mejor opción */}
           <div className="plate card p-5 text-center border-amber-500/30">
-            <p className="text-sm text-slate-400 uppercase tracking-wider mb-2">Mejor opción según ingreso acumulado a 10 años</p>
+            <p className="text-base text-slate-400 uppercase tracking-wider mb-2">Mejor opción según ingreso acumulado a 10 años</p>
             <div className="flex items-center justify-center gap-3">
               <p className="text-3xl font-bold font-display" style={{ color: opcionesOrden.find((o) => o.key === result.mejor_opcion)?.color }}>
                 {opcionesOrden.find((o) => o.key === result.mejor_opcion)?.label}
               </p>
             </div>
-            <p className="text-sm text-slate-300 mt-3 max-w-xl mx-auto">{result.veredicto}</p>
+            <p className="text-base text-slate-300 mt-3 max-w-xl mx-auto">{result.veredicto}</p>
           </div>
 
           {/* Comparación de ingreso acumulado */}
@@ -1332,7 +1332,7 @@ function SimDecision() {
               const isMejor = result.mejor_opcion === o.key
               return (
                 <div key={o.key} className={`plate card p-4 text-center ${isMejor ? 'border-2' : ''}`} style={isMejor ? { borderColor: o.color + '60' } : {}}>
-                  <p className="text-sm text-slate-400 uppercase tracking-wider">{o.label}</p>
+                  <p className="text-base text-slate-400 uppercase tracking-wider">{o.label}</p>
                   <p className="text-xl font-bold font-display mt-1" style={{ color: o.color }}>{formatCOP(val)}</p>
                   <p className="text-xs text-slate-500 mt-1">Ingreso acumulado 10 años</p>
                 </div>
@@ -1383,7 +1383,7 @@ function SimDecision() {
                   <div className="flex items-center gap-2 mb-2" style={{ color: o.color }}>
                     <span className="font-bold text-sm" style={{ color: o.color }}>{o.label}</span>
                   </div>
-                  <p className="text-sm text-slate-400">{data.descripcion}</p>
+                  <p className="text-base text-slate-400">{data.descripcion}</p>
                   {o.key === 'estudiar' && <p className="text-xs text-slate-500 mt-2">Años de inversión: {data.anos_inversion}</p>}
                   {o.key === 'trabajar' && <p className="text-xs text-slate-500 mt-2">Crecimiento: {data.crecimiento_anual_pct}% anual</p>}
                   {o.key === 'emprender' && <p className="text-xs text-slate-500 mt-2">Prob. de éxito: {data.prob_exito_pct}%</p>}
@@ -1440,16 +1440,16 @@ function SimViabilidad() {
   return (
     <div className="space-y-4">
       <div className="plate card p-5">
-        <h3 className="text-sm font-semibold text-gold-400 uppercase tracking-wider mb-4">Evaluar viabilidad de un programa académico</h3>
-        <p className="text-sm text-slate-400 mb-4">Cruza oferta educativa (SNIES) con demanda laboral (SPE/APE) e ingresos de graduados (OLE) para calcular un score de viabilidad 0-100.</p>
+        <h3 className="text-base font-semibold text-gold-400 uppercase tracking-wider mb-4">Evaluar viabilidad de un programa académico</h3>
+        <p className="text-base text-slate-400 mb-4">Cruza oferta educativa (SNIES) con demanda laboral (SPE/APE) e ingresos de graduados (OLE) para calcular un score de viabilidad 0-100.</p>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div>
-            <label className="text-sm text-slate-400 mb-1 block">Programa académico</label>
-            <input type="text" value={programaQuery} onChange={(e) => { setProgramaQuery(e.target.value); setPrograma('') }} placeholder="Busca tu programa..." className="bg-white/[0.03] border border-white/0.08 rounded-lg px-3 py-2 text-sm text-slate-300 focus:border-amber-500/40 outline-none w-full" />
+            <label className="text-base text-slate-400 mb-1 block">Programa académico</label>
+            <input type="text" value={programaQuery} onChange={(e) => { setProgramaQuery(e.target.value); setPrograma('') }} placeholder="Busca tu programa..." className="bg-white/[0.03] border border-white/0.08 rounded-lg px-3 py-2 text-base text-slate-300 focus:border-amber-500/40 outline-none w-full" />
             {programas.length > 0 && !programa && (
-              <div className="plate card mt-1 max-h-48 overflow-y-auto border-amber-500/20 absolute z-20 w-full">
+              <div className="plate card mt-1 max-h-48 overflow-y-auto border-amber-500/20 absolute z-50 w-full">
                 {programas.map((p) => (
-                  <button key={p} onClick={() => { setPrograma(p); setProgramaQuery(p); setProgramas([]) }} className="block w-full text-left px-3 py-2 text-sm text-slate-300 hover:bg-amber-500/10 hover:text-gold-400 transition-colors">
+                  <button key={p} onClick={() => { setPrograma(p); setProgramaQuery(p); setProgramas([]) }} className="block w-full text-left px-3 py-2 text-base text-slate-300 hover:bg-amber-500/10 hover:text-gold-400 transition-colors">
                     {p}
                   </button>
                 ))}
@@ -1457,14 +1457,14 @@ function SimViabilidad() {
             )}
           </div>
           <div>
-            <label className="text-sm text-slate-400 mb-1 block">Departamento</label>
-            <select value={departamento} onChange={(e) => setDepartamento(e.target.value)} className="bg-white/[0.03] border border-white/0.08 rounded-lg px-2 py-1.5 text-sm text-slate-300 focus:border-amber-500/40 outline-none w-full">
+            <label className="text-base text-slate-400 mb-1 block">Departamento</label>
+            <select value={departamento} onChange={(e) => setDepartamento(e.target.value)} className="bg-white/[0.03] border border-white/0.08 rounded-lg px-2 py-1.5 text-base text-slate-300 focus:border-amber-500/40 outline-none w-full">
               {deptos.map((d) => <option key={d}>{d}</option>)}
             </select>
           </div>
           <div>
-            <label className="text-sm text-slate-400 mb-1 block">Nivel</label>
-            <select value={nivel} onChange={(e) => setNivel(e.target.value)} className="bg-white/[0.03] border border-white/0.08 rounded-lg px-2 py-1.5 text-sm text-slate-300 focus:border-amber-500/40 outline-none w-full">
+            <label className="text-base text-slate-400 mb-1 block">Nivel</label>
+            <select value={nivel} onChange={(e) => setNivel(e.target.value)} className="bg-white/[0.03] border border-white/0.08 rounded-lg px-2 py-1.5 text-base text-slate-300 focus:border-amber-500/40 outline-none w-full">
               <option>Técnico</option>
               <option>Profesional</option>
               <option>Especialización</option>
@@ -1472,7 +1472,7 @@ function SimViabilidad() {
             </select>
           </div>
         </div>
-        <button onClick={run} disabled={loading} className="mt-4 px-6 py-2.5 rounded-lg font-semibold text-sm transition-all bg-gold-400 text-[#0a0f1f] hover:bg-gold-400/90 disabled:opacity-40">
+        <button onClick={run} disabled={loading} className="mt-4 px-6 py-2.5 rounded-lg font-semibold text-base transition-all bg-gold-400 text-[#0a0f1f] hover:bg-gold-400/90 disabled:opacity-40">
           {loading ? 'Evaluando...' : 'Evaluar viabilidad'}
         </button>
         {error && <p className="text-rose-400 text-sm mt-3">{error}</p>}
@@ -1484,7 +1484,7 @@ function SimViabilidad() {
             <div className="flex items-center gap-4">
               <div className="text-center">
                 <div className={`text-4xl font-bold font-display ${scoreColor(result.score_viabilidad)}`}>{result.score_viabilidad}</div>
-                <div className="text-sm text-slate-400 mt-1">/ 100</div>
+                <div className="text-base text-slate-400 mt-1">/ 100</div>
               </div>
               <div>
                 <div className="flex items-center gap-2 mb-2">
@@ -1494,7 +1494,7 @@ function SimViabilidad() {
                     'bg-rose-500/20 text-rose-400'
                   }`}>{result.nivel_riesgo === 'bajo' ? '✔ Viable' : result.nivel_riesgo === 'medio' ? '⚠ Moderado' : '✘ Riesgo'}</span>
                 </div>
-                <p className="text-sm text-slate-200 leading-relaxed">{result.recomendacion}</p>
+                <p className="text-base text-slate-200 leading-relaxed">{result.recomendacion}</p>
               </div>
             </div>
           </div>
@@ -1508,7 +1508,7 @@ function SimViabilidad() {
           </div>
           {result.indicadores.sectores_demandantes?.length > 0 && (
             <div className="plate card p-5">
-              <h3 className="text-sm font-semibold text-gold-400 uppercase tracking-wider mb-3">Sectores demandantes</h3>
+              <h3 className="text-base font-semibold text-gold-400 uppercase tracking-wider mb-3">Sectores demandantes</h3>
               <div className="flex flex-wrap gap-2">
                 {result.indicadores.sectores_demandantes.map((s: any) => (
                   <span key={s.sector} className="px-3 py-1.5 rounded-lg bg-amber-500/10 border border-amber-500/20 text-xs text-slate-300">
@@ -1548,14 +1548,14 @@ function SimPriorizacion() {
   return (
     <div className="space-y-4">
       <div className="plate card p-5">
-        <h3 className="text-sm font-semibold text-gold-400 uppercase tracking-wider mb-4">Priorización territorial de inversión</h3>
-        <p className="text-sm text-slate-400 mb-4">Ranking de departamentos por urgencia de intervención laboral. Score compuesto: desempleo, informalidad, desempeño DNP, ingreso y proyecciones.</p>
+        <h3 className="text-base font-semibold text-gold-400 uppercase tracking-wider mb-4">Priorización territorial de inversión</h3>
+        <p className="text-base text-slate-400 mb-4">Ranking de departamentos por urgencia de intervención laboral. Score compuesto: desempleo, informalidad, desempeño DNP, ingreso y proyecciones.</p>
         <div className="flex items-end gap-4">
           <div>
-            <label className="text-sm text-slate-400 mb-1 block">Presupuesto disponible (millones COP)</label>
-            <input type="number" value={presupuesto} onChange={(e) => setPresupuesto(Number(e.target.value))} min={100} max={100000} step={100} className="bg-white/[0.03] border border-white/0.08 rounded-lg px-3 py-2 text-sm text-slate-300 focus:border-amber-500/40 outline-none w-40" />
+            <label className="text-base text-slate-400 mb-1 block">Presupuesto disponible (millones COP)</label>
+            <input type="number" value={presupuesto} onChange={(e) => setPresupuesto(Number(e.target.value))} min={100} max={100000} step={100} className="bg-white/[0.03] border border-white/0.08 rounded-lg px-3 py-2 text-base text-slate-300 focus:border-amber-500/40 outline-none w-40" />
           </div>
-          <button onClick={run} disabled={loading} className="px-6 py-2.5 rounded-lg font-semibold text-sm transition-all bg-gold-400 text-[#0a0f1f] hover:bg-gold-400/90 disabled:opacity-40">
+          <button onClick={run} disabled={loading} className="px-6 py-2.5 rounded-lg font-semibold text-base transition-all bg-gold-400 text-[#0a0f1f] hover:bg-gold-400/90 disabled:opacity-40">
             {loading ? 'Calculando...' : 'Calcular priorización'}
           </button>
         </div>
@@ -1566,7 +1566,7 @@ function SimPriorizacion() {
         <>
           {result.recomendaciones_inversion?.length > 0 && (
             <div className="plate card p-5 border-amber-500/20">
-              <h3 className="text-sm font-semibold text-gold-400 uppercase tracking-wider mb-3">Top 3 — Recomendaciones de inversión</h3>
+              <h3 className="text-base font-semibold text-gold-400 uppercase tracking-wider mb-3">Top 3 — Recomendaciones de inversión</h3>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
                 {result.recomendaciones_inversion.map((rec: any, i: number) => (
                   <div key={i} className="plate card p-4 border-amber-500/30 bg-amber-500/5">
@@ -1580,18 +1580,18 @@ function SimPriorizacion() {
           )}
 
           <div className="plate card p-5">
-            <h3 className="text-sm font-semibold text-gold-400 uppercase tracking-wider mb-3">Ranking completo — {result.total_departamentos} departamentos</h3>
+            <h3 className="text-base font-semibold text-gold-400 uppercase tracking-wider mb-3">Ranking completo — {result.total_departamentos} departamentos</h3>
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
                 <thead>
                   <tr className="border-b border-white/[0.08] text-left">
-                    <th className="py-2 px-3 text-sm text-slate-400 font-medium">#</th>
-                    <th className="py-2 px-3 text-sm text-slate-400 font-medium">Departamento</th>
-                    <th className="py-2 px-3 text-sm text-slate-400 font-medium text-right">Score</th>
-                    <th className="py-2 px-3 text-sm text-slate-400 font-medium">Urgencia</th>
-                    <th className="py-2 px-3 text-sm text-slate-400 font-medium text-right">Desempleo</th>
-                    <th className="py-2 px-3 text-sm text-slate-400 font-medium text-right">Informalidad</th>
-                    <th className="py-2 px-3 text-sm text-slate-400 font-medium text-right">DNP</th>
+                    <th className="py-2 px-3 text-base text-slate-400 font-medium">#</th>
+                    <th className="py-2 px-3 text-base text-slate-400 font-medium">Departamento</th>
+                    <th className="py-2 px-3 text-base text-slate-400 font-medium text-right">Score</th>
+                    <th className="py-2 px-3 text-base text-slate-400 font-medium">Urgencia</th>
+                    <th className="py-2 px-3 text-base text-slate-400 font-medium text-right">Desempleo</th>
+                    <th className="py-2 px-3 text-base text-slate-400 font-medium text-right">Informalidad</th>
+                    <th className="py-2 px-3 text-base text-slate-400 font-medium text-right">DNP</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -1634,7 +1634,7 @@ function KpiCard({ label, value, sub, accent }: { label: string; value: string; 
   const color = accent === 'gold' ? 'text-gold-400' : accent === 'green' ? 'text-green-400' : accent === 'rose' ? 'text-rose-400' : 'text-white'
   return (
     <div className="plate card p-4 text-center">
-      <p className="text-sm text-slate-400 uppercase tracking-wider mb-1">{label}</p>
+      <p className="text-base text-slate-400 uppercase tracking-wider mb-1">{label}</p>
       <p className={`text-xl font-bold font-display ${color}`}>{value}</p>
       {sub && <p className="text-xs text-slate-500 mt-1">{sub}</p>}
     </div>
@@ -1644,7 +1644,7 @@ function KpiCard({ label, value, sub, accent }: { label: string; value: string; 
 function Row({ label, value }: { label: string; value: string }) {
   return (
     <div className="flex justify-between items-baseline">
-      <span className="text-sm text-slate-400">{label}</span>
+      <span className="text-base text-slate-400">{label}</span>
       <span className="text-sm font-semibold text-slate-200">{value}</span>
     </div>
   )
