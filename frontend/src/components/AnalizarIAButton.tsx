@@ -23,7 +23,7 @@ export default function AnalizarIAButton({
   return (
     <button
       onClick={() => openChat({ dashboard, widgetTitle, widgetType, filters, data })}
-      className={`inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-gold-400 bg-gold-500/10 border border-gold-500/30 rounded-lg hover:bg-gold-500/20 hover:border-gold-500/50 transition-all ${className}`}
+      className={`inline-flex items-center gap-2 px-4 py-2 text-sm font-semibold text-rose-300 bg-rose-500/15 border border-rose-400/40 rounded-lg hover:bg-rose-500/25 hover:border-rose-400/60 hover:shadow-[0_0_12px_rgba(244,63,94,0.25)] transition-all ${className}`}
       title="Analizar con IA"
     >
       <img src={albaChatBotSvg} alt="ALBA IA" className="inline-block" style={{ width: 32, height: 32 }} />

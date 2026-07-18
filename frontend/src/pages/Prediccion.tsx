@@ -112,7 +112,7 @@ const TABS: { key: string; label: string }[] = [
 const pctFmt = (n: number) => `${n > 0 ? '+' : ''}${n.toFixed(1)}%`
 
 const tooltipStyle = {
-  contentStyle: { background: '#0a0f1f', border: '1px solid rgba(212,175,55,0.35)', borderRadius: '10px', color: '#e9ecf5', fontSize: '13px' },
+  contentStyle: { background: '#0a0f1f', border: '1px solid rgba(212,175,55,0.35)', borderRadius: '10px', color: '#e9ecf5', fontSize: '15px' },
   itemStyle: { color: '#e9ecf5' },
   labelStyle: { color: '#d4af37', fontWeight: 700 },
 }
@@ -260,8 +260,8 @@ export default function Prediccion() {
                       <div className="flex items-start gap-3">
                         
                         <div>
-                          <p className="text-sm text-slate-200 font-semibold mb-1">¿Qué muestran estas cifras?</p>
-                          <p className="text-xs text-slate-400 leading-relaxed">
+                          <p className="text-base text-slate-200 font-semibold mb-1">¿Qué muestran estas cifras?</p>
+                          <p className="text-base text-slate-400 leading-relaxed">
                             Empleo por macrosector según la GEIH del DANE. La proyección a 10 años combina el crecimiento base del empleo y la tendencia sectorial reciente.
                           </p>
                         </div>
@@ -283,7 +283,7 @@ export default function Prediccion() {
                           <span className="text-sm text-gold-400 uppercase tracking-wider">GEIH + Chronos T5</span>
                         </div>
                       </div>
-                      <p className="text-xs text-slate-500 mb-4">
+                      <p className="text-base text-slate-500 mb-4">
                         10 macrosectores colombianos. Ordenados por crecimiento esperado {anioBase}-2035.
                       </p>
                       <ResponsiveContainer width="100%" height={380}>
@@ -314,15 +314,15 @@ export default function Prediccion() {
                           <p className="text-2xl font-bold text-white mb-4 font-display">{s.sector}</p>
                           <div className="space-y-4">
                             <div className="flex flex-col">
-                              <p className="text-sm text-slate-200 uppercase tracking-wider mb-1 font-semibold">Empleados en {anioBase}</p>
+                              <p className="text-base text-slate-200 uppercase tracking-wider mb-1 font-semibold">Empleados en {anioBase}</p>
                               <p className="text-3xl font-bold text-gold-400 font-display">{Math.round(s.empleo_actual).toLocaleString('es-CO')}</p>
                             </div>
                             <div className="flex flex-col">
-                              <p className="text-sm text-slate-200 uppercase tracking-wider mb-1 font-semibold">Proyección 2035</p>
+                              <p className="text-base text-slate-200 uppercase tracking-wider mb-1 font-semibold">Proyección 2035</p>
                               <p className="text-3xl font-bold text-gold-400 font-display">{Math.round(s.empleo_10y).toLocaleString('es-CO')}</p>
                             </div>
                             <div className="pt-4 border-t border-gold-500/20">
-                              <p className="text-sm text-slate-200 uppercase tracking-wider mb-1 font-semibold">Crecimiento</p>
+                              <p className="text-base text-slate-200 uppercase tracking-wider mb-1 font-semibold">Crecimiento</p>
                               <p className="text-2xl font-bold" style={{ color: COLORS[i % COLORS.length] }}>
                                 +{s.variacion_10y_pct}%
                               </p>
@@ -344,10 +344,10 @@ export default function Prediccion() {
                             data={lineData}
                             filters={{ anioBase, periodoHistorico }}
                           />
-                          <span className="text-sm text-slate-500">{anioInicioHistorico}-2035</span>
+                          <span className="text-base text-slate-500">{anioInicioHistorico}-2035</span>
                         </div>
                       </div>
-                      <p className="text-xs text-slate-500 mb-4">
+                      <p className="text-base text-slate-500 mb-4">
                         Línea sólida: histórico GEIH ({periodoHistorico}). Línea punteada después de {anioBase}: proyección. Top 6 sectores por empleo.
                       </p>
                       <ResponsiveContainer width="100%" height={380}>
@@ -408,8 +408,8 @@ export default function Prediccion() {
                 <div className="flex items-start gap-3">
                   
                   <div>
-                    <p className="text-sm text-slate-200 font-semibold mb-1">¿Qué muestran estas cifras?</p>
-                    <p className="text-xs text-slate-400 leading-relaxed">
+                    <p className="text-base text-slate-200 font-semibold mb-1">¿Qué muestran estas cifras?</p>
+                    <p className="text-base text-slate-400 leading-relaxed">
                       Profesiones con mayor proyección de demanda laboral. El crecimiento es de demanda, no salarial. Fuentes: O*NET, ESCO y WEF Future of Jobs.
                     </p>
                   </div>
@@ -430,7 +430,7 @@ export default function Prediccion() {
                     <span className="text-sm text-gold-400 uppercase tracking-wider">O*NET + ESCO + WEF</span>
                   </div>
                 </div>
-                <p className="text-xs text-slate-500 mb-4">
+                <p className="text-base text-slate-500 mb-4">
                   Top 10 profesiones ordenadas por crecimiento esperado de demanda 2025-2035.
                 </p>
                 <ResponsiveContainer width="100%" height={380}>
@@ -464,12 +464,12 @@ export default function Prediccion() {
                     <h3 className="font-bold text-white text-lg mb-3 pr-10">{p.profesion}</h3>
                     <div className="space-y-2">
                       <div>
-                        <p className="text-sm text-slate-200 font-semibold mb-1">Crecimiento de demanda</p>
+                        <p className="text-base text-slate-200 font-semibold mb-1">Crecimiento de demanda</p>
                         <p className="text-2xl font-bold text-green-400 font-display">+{p.crecimiento_10a_pct}%</p>
-                        <p className="text-xs text-slate-400">en 10 años (2025-2035)</p>
+                        <p className="text-base text-slate-400">en 10 años (2025-2035)</p>
                       </div>
                       <div className="pt-2 border-t border-gold-500/20">
-                        <p className="text-sm text-slate-200 font-semibold mb-1">Salario mensual 2025</p>
+                        <p className="text-base text-slate-200 font-semibold mb-1">Salario mensual 2025</p>
                         <p className="text-xl font-bold text-gold-400 font-display">${Math.round(p.salario_mensual_cop).toLocaleString("es-CO")}</p>
                       </div>
                     </div>
@@ -493,13 +493,13 @@ export default function Prediccion() {
                     <span className="text-sm text-gold-400 uppercase tracking-wider font-semibold">{data.profesiones.length} profesiones</span>
                   </div>
                 </div>
-                <p className="text-sm text-slate-500 mb-4">
+                <p className="text-base text-slate-500 mb-4">
                   Crecimiento de <strong className="text-slate-300">demanda laboral</strong> proyectado, no salarial.
                 </p>
                 <div className="overflow-x-auto">
                   <table className="w-full text-sm text-left">
                     <thead>
-                      <tr className="text-xs text-slate-400 uppercase tracking-wider border-b border-white/[0.08]">
+                      <tr className="text-base text-slate-400 uppercase tracking-wider border-b border-white/[0.08]">
                         <th className="px-3 py-3">Profesión</th>
                         <th className="px-3 py-3">Demanda</th>
                         <th className="px-3 py-3 text-right">Crec. 10 años</th>
@@ -548,8 +548,8 @@ export default function Prediccion() {
                 <div className="flex items-start gap-3">
                   
                   <div>
-                    <p className="text-sm text-slate-200 font-semibold mb-1">¿Qué muestran estas cifras?</p>
-                    <p className="text-xs text-slate-400 leading-relaxed">
+                    <p className="text-base text-slate-200 font-semibold mb-1">¿Qué muestran estas cifras?</p>
+                    <p className="text-base text-slate-400 leading-relaxed">
                       Habilidades más demandadas para el futuro laboral. Puntuación de 0 a 100 según el WEF Future of Jobs Report, adaptado al contexto colombiano.
                     </p>
                   </div>
@@ -572,7 +572,7 @@ export default function Prediccion() {
                     <span className="text-sm text-gold-400 uppercase tracking-wider font-semibold">WEF Future of Jobs</span>
                   </div>
                 </div>
-                <p className="text-sm text-slate-500 mb-4">
+                <p className="text-base text-slate-500 mb-4">
                   Puntuación 0–100. Más alta = más importante para el futuro laboral.
                 </p>
                 <ResponsiveContainer width="100%" height={420}>
@@ -608,24 +608,24 @@ export default function Prediccion() {
                 <div className="plate card p-4 text-center">
                   <div className="w-3 h-3 rounded-full mx-auto mb-2" style={{ backgroundColor: COLORS.alta }} />
                   <p className="text-sm font-bold text-green-400 mb-1">Alta (85+)</p>
-                  <p className="text-xs text-slate-500">Crítico para el futuro</p>
-                  <p className="text-xs text-slate-400 mt-2">
+                  <p className="text-base text-slate-500">Crítico para el futuro</p>
+                  <p className="text-base text-slate-400 mt-2">
                     {data.habilidades.filter(h => h.demanda >= 85).length} habilidades
                   </p>
                 </div>
                 <div className="plate card p-4 text-center">
                   <div className="w-3 h-3 rounded-full mx-auto mb-2" style={{ backgroundColor: COLORS.media }} />
                   <p className="text-sm font-bold text-amber-400 mb-1">Media (70–84)</p>
-                  <p className="text-xs text-slate-500">Muy relevante</p>
-                  <p className="text-xs text-slate-400 mt-2">
+                  <p className="text-base text-slate-500">Muy relevante</p>
+                  <p className="text-base text-slate-400 mt-2">
                     {data.habilidades.filter(h => h.demanda >= 70 && h.demanda < 85).length} habilidades
                   </p>
                 </div>
                 <div className="plate card p-4 text-center">
                   <div className="w-3 h-3 rounded-full mx-auto mb-2" style={{ backgroundColor: COLORS.baja }} />
                   <p className="text-sm font-bold text-rose-400 mb-1">Baja (&lt;70)</p>
-                  <p className="text-xs text-slate-500">Importante de reforzar</p>
-                  <p className="text-xs text-slate-400 mt-2">
+                  <p className="text-base text-slate-500">Importante de reforzar</p>
+                  <p className="text-base text-slate-400 mt-2">
                     {data.habilidades.filter(h => h.demanda < 70).length} habilidades
                   </p>
                 </div>
@@ -647,13 +647,13 @@ export default function Prediccion() {
                     <span className="text-sm text-gold-400 uppercase tracking-wider font-semibold">{data.habilidades.length} habilidades</span>
                   </div>
                 </div>
-                <p className="text-sm text-slate-500 mb-4">
+                <p className="text-base text-slate-500 mb-4">
                   Todas las habilidades evaluadas según su importancia para el mercado laboral futuro.
                 </p>
                 <div className="overflow-x-auto">
                   <table className="w-full text-sm text-left">
                     <thead>
-                      <tr className="text-xs text-slate-400 uppercase tracking-wider border-b border-white/[0.08]">
+                      <tr className="text-base text-slate-400 uppercase tracking-wider border-b border-white/[0.08]">
                         <th className="px-3 py-3">#</th>
                         <th className="px-3 py-3">Habilidad</th>
                         <th className="px-3 py-3">Nivel</th>
@@ -698,8 +698,8 @@ export default function Prediccion() {
                 <div className="flex items-start gap-3">
                   
                   <div>
-                    <p className="text-sm text-slate-200 font-semibold mb-1">¿Qué muestran estas cifras?</p>
-                    <p className="text-xs text-slate-400 leading-relaxed">
+                    <p className="text-base text-slate-200 font-semibold mb-1">¿Qué muestran estas cifras?</p>
+                    <p className="text-base text-slate-400 leading-relaxed">
                       Proyección salarial mensual por profesión en pesos colombianos. Basada en GEIH del DANE con crecimiento real anual del 3.5%.
                     </p>
                   </div>
@@ -722,7 +722,7 @@ export default function Prediccion() {
                     <span className="text-sm text-gold-400 uppercase tracking-wider font-semibold">GEIH + 3.5% anual</span>
                   </div>
                 </div>
-                <p className="text-xs text-slate-500 mb-4">
+                <p className="text-base text-slate-500 mb-4">
                   Top 10 profesiones ordenadas por salario mensual en 2025. Proyección a 2035 con crecimiento real del 3.5% anual.
                 </p>
                 <ResponsiveContainer width="100%" height={380}>
@@ -753,15 +753,15 @@ export default function Prediccion() {
                       <p className="text-sm font-bold text-white mb-2">{p.profesion}</p>
                       <div className="space-y-2">
                         <div>
-                          <p className="text-xs text-slate-500 mb-1">Salario 2025</p>
+                          <p className="text-base text-slate-500 mb-1">Salario 2025</p>
                           <p className="text-base font-bold text-gold-400 font-display">${Math.round(p.salario_mensual_cop).toLocaleString("es-CO")}</p>
                         </div>
                         <div>
-                          <p className="text-xs text-slate-500 mb-1">Salario 2035</p>
+                          <p className="text-base text-slate-500 mb-1">Salario 2035</p>
                           <p className="text-base font-bold text-white font-display">${Math.round(p.salario_10a_cop).toLocaleString("es-CO")}</p>
                         </div>
                         <div className="pt-2 border-t border-gold-500/20">
-                          <p className="text-xs text-slate-500 mb-1">Crecimiento</p>
+                          <p className="text-base text-slate-500 mb-1">Crecimiento</p>
                           <p className="text-base font-bold text-green-400">
                             +{crecSalarial10.toFixed(1)}%
                           </p>
@@ -788,13 +788,13 @@ export default function Prediccion() {
                     <span className="text-sm text-gold-400 uppercase tracking-wider font-semibold">Ordenado por salario 2025</span>
                   </div>
                 </div>
-                <p className="text-sm text-slate-500 mb-4">
+                <p className="text-base text-slate-500 mb-4">
                   Todas las profesiones con proyección salarial a 5 y 10 años.
                 </p>
                 <div className="overflow-x-auto">
                   <table className="w-full text-sm text-left">
                     <thead>
-                      <tr className="text-xs text-slate-400 uppercase tracking-wider border-b border-white/[0.08]">
+                      <tr className="text-base text-slate-400 uppercase tracking-wider border-b border-white/[0.08]">
                         <th className="px-3 py-3">Profesión</th>
                         <th className="px-3 py-3 text-right">Salario 2025</th>
                         <th className="px-3 py-3 text-right">Salario 2030</th>
@@ -812,7 +812,7 @@ export default function Prediccion() {
                             <tr key={i} className="hover:bg-white/[0.02] transition-colors">
                               <td className="px-3 py-3">
                                 <div className="font-semibold text-slate-200">{p.profesion}</div>
-                                <div className="text-xs text-slate-500">{p.sector}</div>
+                                <div className="text-base text-slate-500">{p.sector}</div>
                               </td>
                               <td className="px-3 py-3 text-right text-slate-300">${Math.round(p.salario_mensual_cop).toLocaleString("es-CO")}</td>
                               <td className="px-3 py-3 text-right text-slate-300">${Math.round(p.salario_5a_cop).toLocaleString("es-CO")}</td>
@@ -843,13 +843,13 @@ export default function Prediccion() {
                       <span className="text-sm text-green-400 uppercase tracking-wider font-semibold">{salariosReales.length} ocupaciones</span>
                     </div>
                   </div>
-                  <p className="text-xs text-slate-500 mb-4">
+                  <p className="text-base text-slate-500 mb-4">
                     Datos oficiales de la Gran Encuesta Integrada de Hogares (GEIH) del DANE — {salariosReales[0]?.periodo}.
                   </p>
                   <div className="overflow-x-auto">
                     <table className="w-full text-sm text-left">
                       <thead>
-                        <tr className="text-xs text-slate-400 uppercase tracking-wider border-b border-white/[0.08]">
+                        <tr className="text-base text-slate-400 uppercase tracking-wider border-b border-white/[0.08]">
                           <th className="px-3 py-3">Ocupación</th>
                           <th className="px-3 py-3 text-right">Salario promedio</th>
                           <th className="px-3 py-3 text-right">Salario mediano</th>

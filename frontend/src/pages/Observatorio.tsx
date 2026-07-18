@@ -20,7 +20,7 @@ function cleanDepto(name: string): string {
 }
 
 const chartTooltip = {
-  contentStyle: { background: '#0a0f1f', border: '1px solid rgba(212,175,55,0.3)', borderRadius: '10px', color: '#e9ecf5', fontSize: 13 },
+  contentStyle: { background: '#0a0f1f', border: '1px solid rgba(212,175,55,0.3)', borderRadius: '10px', color: '#e9ecf5', fontSize: 15 },
   itemStyle: { color: '#e9ecf5' },
   labelStyle: { color: '#d4af37', fontWeight: 700 },
 }
@@ -291,7 +291,7 @@ export default function Observatorio() {
               data={top5}
             />
           </div>
-          <p className="text-sm text-slate-300 -mt-3 mb-3">Nuevas empresas registradas por año (2020-2025)</p>
+          <p className="text-base text-slate-300 -mt-3 mb-3">Nuevas empresas registradas por año (2020-2025)</p>
           <ResponsiveContainer width="100%" height={320}>
             <LineChart data={histData} margin={{ left: 10, right: 20, top: 10, bottom: 5 }}>
               <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.04)" />
@@ -322,14 +322,14 @@ export default function Observatorio() {
         </div>
         <div className="mb-3 pb-2 border-b border-gold-500/20 pr-28">
           <h2 className="text-xl font-bold text-white font-display">Actividades económicas en alza</h2>
-          <p className="text-sm text-slate-300 mt-1">Crecimiento real de empleo por sector (GEIH 2022-2025)</p>
+          <p className="text-base text-slate-300 mt-1">Crecimiento real de empleo por sector (GEIH 2022-2025)</p>
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
           {spe.slice(0, 8).map((o: any, i: number) => (
             <div key={i} className="flex items-center gap-3 bg-white/[0.02] rounded-lg p-3 border border-cyan-500/20">
               <span className="w-7 h-7 rounded-full bg-dark-800 border border-cyan-500/30 flex items-center justify-center text-xs text-cyan-400 flex-shrink-0">{i + 1}</span>
               <div className="min-w-0 flex-1">
-                <p className="text-sm text-slate-200 font-medium truncate">{o.ocupacion}</p>
+                <p className="text-base text-slate-200 font-medium truncate">{o.ocupacion}</p>
                 <p className="text-cyan-400 font-bold text-sm">+{Number(o.variacion_pct).toFixed(0)}%</p>
               </div>
             </div>
@@ -392,7 +392,7 @@ export default function Observatorio() {
               data={topSalarios}
             />
           </div>
-          <p className="text-xs text-slate-500 mb-2">Salario promedio mensual (GEIH) · solo deptos con +50 mil ocupados</p>
+          <p className="text-base text-slate-500 mb-2">Salario promedio mensual (GEIH) · solo deptos con +50 mil ocupados</p>
           <div className="space-y-1">
             {topSalarios.map((d: any, i: number) => (
               <div key={i} className="flex justify-between items-center py-1.5 border-b border-white/[0.04] text-sm">
@@ -416,7 +416,7 @@ export default function Observatorio() {
               data={bottomSalarios}
             />
           </div>
-          <p className="text-xs text-slate-500 mb-2">Salario promedio mensual (GEIH) · solo deptos con +50 mil ocupados</p>
+          <p className="text-base text-slate-500 mb-2">Salario promedio mensual (GEIH) · solo deptos con +50 mil ocupados</p>
           <div className="space-y-1">
             {bottomSalarios.map((d: any, i: number) => (
               <div key={i} className="flex justify-between items-center py-1.5 border-b border-white/[0.04] text-sm">
@@ -515,7 +515,7 @@ export default function Observatorio() {
           </div>
           <div className="mb-3 pb-2 border-b border-gold-500/20 pr-28">
             <h2 className="text-xl font-bold text-white font-display">Sectores formales</h2>
-            <p className="text-sm text-slate-300 mt-1">
+            <p className="text-base text-slate-300 mt-1">
               {formalList.length > 0 ? `${compactNum(formalList.reduce((a: number, s: any) => a + (s.cotizantes || 0), 0))} cotizantes activos en PILA` : 'Personas cotizantes por actividad económica (PILA)'}
             </p>
           </div>
@@ -550,7 +550,7 @@ export default function Observatorio() {
           <div className="flex items-center justify-between mb-3 pb-2 border-b border-gold-500/20">
             <div>
               <h2 className="text-2xl font-bold text-white font-display">Brecha: oferta educativa vs demanda laboral</h2>
-              <p className="text-sm text-slate-300 mt-1">
+              <p className="text-base text-slate-300 mt-1">
                 Compara cuántos estudiantes se forman en cada área contra cuántos empleos reales hay.
               </p>
             </div>
@@ -564,13 +564,13 @@ export default function Observatorio() {
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
             <div className="bg-red-500/10 border border-red-500/20 rounded-lg p-3">
-              <p className="text-sm text-slate-200">
+              <p className="text-base text-slate-200">
                 <span className="text-red-400 font-bold">Sobre-formación (rojo):</span> hay más graduados que empleos disponibles. 
                 Más difícil conseguir trabajo en esa área.
               </p>
             </div>
             <div className="bg-cyan-500/10 border border-cyan-500/20 rounded-lg p-3">
-              <p className="text-sm text-slate-200">
+              <p className="text-base text-slate-200">
                 <span className="text-cyan-400 font-bold">Oportunidad (cyan):</span> hay más empleos que graduados. 
                 Buena opción para estudiar o buscar trabajo.
               </p>
@@ -588,23 +588,23 @@ export default function Observatorio() {
                 {brecha.top_sobre_oferta?.map((b: any) => (
                   <div key={b.categoria} className="bg-white/[0.02] rounded-lg p-3 border border-red-900/20">
                     <div className="flex justify-between items-center mb-2">
-                      <span className="text-sm text-slate-200 font-bold">{b.categoria?.replace(/_/g, ' ')}</span>
+                      <span className="text-base text-slate-200 font-bold">{b.categoria?.replace(/_/g, ' ')}</span>
                       <span className="text-sm font-bold text-red-400">+{b.desajuste?.toFixed(1)}%</span>
                     </div>
                     <div className="space-y-1">
                       <div className="flex items-center gap-2">
-                        <span className="text-[10px] text-blue-400 w-10">Oferta</span>
+                        <span className="text-xs text-blue-400 w-10">Oferta</span>
                         <div className="flex-1 h-2 bg-dark-900 rounded-full overflow-hidden">
                           <div className="h-full bg-blue-500 rounded-full" style={{ width: `${b.oferta_share}%` }} />
                         </div>
-                        <span className="text-xs text-blue-400 font-bold w-8 text-right">{b.oferta_share?.toFixed(0)}%</span>
+                        <span className="text-sm text-blue-400 font-bold w-8 text-right">{b.oferta_share?.toFixed(0)}%</span>
                       </div>
                       <div className="flex items-center gap-2">
-                        <span className="text-[10px] text-amber-400 w-10">Demanda</span>
+                        <span className="text-xs text-amber-400 w-10">Demanda</span>
                         <div className="flex-1 h-2 bg-dark-900 rounded-full overflow-hidden">
                           <div className="h-full bg-amber-500 rounded-full" style={{ width: `${b.demanda_share}%` }} />
                         </div>
-                        <span className="text-xs text-amber-400 font-bold w-8 text-right">{b.demanda_share?.toFixed(0)}%</span>
+                        <span className="text-sm text-amber-400 font-bold w-8 text-right">{b.demanda_share?.toFixed(0)}%</span>
                       </div>
                     </div>
                   </div>
@@ -622,23 +622,23 @@ export default function Observatorio() {
                 {brecha.top_sub_oferta?.map((b: any) => (
                   <div key={b.categoria} className="bg-white/[0.02] rounded-lg p-3 border border-cyan-900/20">
                     <div className="flex justify-between items-center mb-2">
-                      <span className="text-sm text-slate-200 font-bold">{b.categoria?.replace(/_/g, ' ')}</span>
+                      <span className="text-base text-slate-200 font-bold">{b.categoria?.replace(/_/g, ' ')}</span>
                       <span className="text-sm font-bold text-cyan-400">{b.desajuste?.toFixed(1)}%</span>
                     </div>
                     <div className="space-y-1">
                       <div className="flex items-center gap-2">
-                        <span className="text-[10px] text-blue-400 w-10">Oferta</span>
+                        <span className="text-xs text-blue-400 w-10">Oferta</span>
                         <div className="flex-1 h-2 bg-dark-900 rounded-full overflow-hidden">
                           <div className="h-full bg-blue-500 rounded-full" style={{ width: `${b.oferta_share}%` }} />
                         </div>
-                        <span className="text-xs text-blue-400 font-bold w-8 text-right">{b.oferta_share?.toFixed(0)}%</span>
+                        <span className="text-sm text-blue-400 font-bold w-8 text-right">{b.oferta_share?.toFixed(0)}%</span>
                       </div>
                       <div className="flex items-center gap-2">
-                        <span className="text-[10px] text-amber-400 w-10">Demanda</span>
+                        <span className="text-xs text-amber-400 w-10">Demanda</span>
                         <div className="flex-1 h-2 bg-dark-900 rounded-full overflow-hidden">
                           <div className="h-full bg-amber-500 rounded-full" style={{ width: `${b.demanda_share}%` }} />
                         </div>
-                        <span className="text-xs text-amber-400 font-bold w-8 text-right">{b.demanda_share?.toFixed(0)}%</span>
+                        <span className="text-sm text-amber-400 font-bold w-8 text-right">{b.demanda_share?.toFixed(0)}%</span>
                       </div>
                     </div>
                   </div>
@@ -718,7 +718,7 @@ export default function Observatorio() {
                     <td className="py-2.5 px-3 text-slate-500 font-mono text-xs">{i + 1}</td>
                     <td className="py-2.5 px-3">
                       <div className="flex items-center gap-3">
-                        <span className="text-sm text-slate-200 font-medium">{cleanDepto(d.departamento)}</span>
+                        <span className="text-base text-slate-200 font-medium">{cleanDepto(d.departamento)}</span>
                         <div className="flex-1 h-3 bg-white/[0.06] rounded-full overflow-hidden hidden sm:block max-w-[220px]">
                           <div className="h-full rounded-full transition-all" style={{ width: `${d.indice_prioridad}%`, background: `linear-gradient(90deg, ${barColor}, ${barColor}dd)` }} />
                         </div>
@@ -728,13 +728,13 @@ export default function Observatorio() {
                       <span className="font-bold font-display text-base" style={{ color: barColor }}>{d.indice_prioridad}</span>
                     </td>
                     <td className="py-2.5 px-3 text-right">
-                      <span className="text-[10px] uppercase tracking-wider font-bold px-2 py-0.5 rounded" style={{ backgroundColor: `${barColor}30`, color: barColor }}>{d.nivel}</span>
+                      <span className="text-xs uppercase tracking-wider font-bold px-2 py-0.5 rounded" style={{ backgroundColor: `${barColor}30`, color: barColor }}>{d.nivel}</span>
                     </td>
                   </tr>
                   {sel && desglose.length > 0 && (
                     <tr>
                       <td colSpan={4} className="py-2.5 px-6 bg-amber-500/[0.04] border-b border-amber-500/10">
-                        <div className="text-[11px] text-slate-400 space-y-1">
+                        <div className="text-xs text-slate-400 space-y-1">
                           {desglose.filter(Boolean).map((line: string, j: number) => (
                             <div key={j} className="flex items-center gap-2">
                               <span className="w-1 h-1 rounded-full bg-amber-500/60 flex-shrink-0" />
