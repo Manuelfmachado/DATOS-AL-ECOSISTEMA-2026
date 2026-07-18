@@ -653,11 +653,11 @@ export default function Observatorio() {
       {/* 6. Prioridad de intervención departamental */}
       {/* ================================================================ */}
       {prior?.departamentos && (
-        <div className="bg-[#0a0f1f] border border-white/[0.06] rounded-xl p-5">
+        <div className="bg-[#0a0f1f] border border-[#d4af37]/40 rounded-xl p-5">
           <div className="flex items-center justify-between mb-3 pb-2 border-b border-gold-500/20">
             <div>
               <h2 className="text-2xl font-bold text-white font-display">Prioridad de intervención por departamento</h2>
-              <p className="text-sm text-slate-300 mt-1">
+              <p className="text-base text-slate-300 mt-1">
                 Puntaje 0-100 que mide qué departamentos más necesitan ayuda.
               </p>
             </div>
@@ -719,7 +719,7 @@ export default function Observatorio() {
                     <td className="py-2.5 px-3">
                       <div className="flex items-center gap-3">
                         <span className="text-sm text-slate-200 font-medium">{cleanDepto(d.departamento)}</span>
-                        <div className="flex-1 h-1.5 bg-white/[0.06] rounded-full overflow-hidden hidden sm:block max-w-[120px]">
+                        <div className="flex-1 h-3 bg-white/[0.06] rounded-full overflow-hidden hidden sm:block max-w-[220px]">
                           <div className="h-full rounded-full transition-all" style={{ width: `${d.indice_prioridad}%`, background: `linear-gradient(90deg, ${barColor}, ${barColor}dd)` }} />
                         </div>
                       </div>
