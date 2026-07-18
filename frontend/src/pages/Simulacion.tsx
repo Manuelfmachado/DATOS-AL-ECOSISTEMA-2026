@@ -1582,40 +1582,50 @@ function SimPriorizacion() {
           <div className="plate card p-5">
             <h3 className="text-base font-semibold text-gold-400 uppercase tracking-wider mb-3">Ranking completo — {result.total_departamentos} departamentos</h3>
             <div className="overflow-x-auto">
-              <table className="w-full text-sm">
+              <table className="w-full text-base">
                 <thead>
                   <tr className="border-b border-white/[0.08] text-left">
-                    <th className="py-2 px-3 text-base text-slate-400 font-medium">#</th>
-                    <th className="py-2 px-3 text-base text-slate-400 font-medium">Departamento</th>
-                    <th className="py-2 px-3 text-base text-slate-400 font-medium text-right">Score</th>
-                    <th className="py-2 px-3 text-base text-slate-400 font-medium">Urgencia</th>
-                    <th className="py-2 px-3 text-base text-slate-400 font-medium text-right">Desempleo</th>
-                    <th className="py-2 px-3 text-base text-slate-400 font-medium text-right">Informalidad</th>
-                    <th className="py-2 px-3 text-base text-slate-400 font-medium text-right">DNP</th>
+                    <th className="py-3 px-3 text-base text-slate-300 font-semibold">#</th>
+                    <th className="py-3 px-3 text-base text-slate-300 font-semibold">Departamento</th>
+                    <th className="py-3 px-3 text-base text-slate-300 font-semibold">Score</th>
+                    <th className="py-3 px-3 text-base text-slate-300 font-semibold">Urgencia</th>
+                    <th className="py-3 px-3 text-base text-slate-300 font-semibold text-right">Desempleo</th>
+                    <th className="py-3 px-3 text-base text-slate-300 font-semibold text-right">Informalidad</th>
+                    <th className="py-3 px-3 text-base text-slate-300 font-semibold text-right">DNP</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {result.ranking?.slice(0, 15).map((d: any, i: number) => (
-                    <tr key={i} className={`border-b border-white/[0.04] hover:bg-white/[0.02] ${i < 3 ? 'bg-amber-500/5' : ''}`}>
-                      <td className="py-2.5 px-3 text-slate-400">{i + 1}</td>
-                      <td className="py-2.5 px-3 text-slate-200 font-medium">{d.nombre}</td>
-                      <td className="py-2.5 px-3 text-right font-bold text-gold-400">{d.score_prioridad}</td>
-                      <td className="py-2.5 px-3">
-                        <span className={`px-2 py-0.5 rounded text-xs font-bold ${
-                          d.nivel_urgencia === 'Crítico' ? 'bg-rose-500/20 text-rose-400' :
-                          d.nivel_urgencia === 'Alta' ? 'bg-amber-500/20 text-amber-400' :
-                          d.nivel_urgencia === 'Media' ? 'bg-blue-500/20 text-blue-400' :
-                          'bg-green-500/20 text-green-400'
-                        }`}>{d.nivel_urgencia}</span>
+                  {result.ranking?.slice(0, 20).map((d: any, i: number) => {
+                    const urgColor = d.nivel_urgencia === 'Crítico' ? '#ef4444' : d.nivel_urgencia === 'Alta' ? '#f59e0b' : d.nivel_urgencia === 'Media' ? '#3b82f6' : '#22c55e'
+                    return (
+                    <tr key={i} className={`border-b border-white/[0.04] hover:bg-white/[0.03] transition-colors ${i < 3 ? 'bg-amber-500/5' : ''}`}>
+                      <td className="py-3 px-3 text-slate-400 font-mono">{i + 1}</td>
+                      <td className="py-3 px-3 text-slate-200 font-medium">{d.nombre}</td>
+                      <td className="py-3 px-3">
+                        <div className="flex items-center gap-2">
+                          <div className="w-20 h-2.5 bg-white/[0.06] rounded-full overflow-hidden">
+                            <div className="h-full rounded-full" style={{ width: `${d.score_prioridad}%`, backgroundColor: urgColor }} />
+                          </div>
+                          <span className="font-bold text-gold-400 text-sm">{d.score_prioridad}</span>
+                        </div>
                       </td>
-                      <td className="py-2.5 px-3 text-right text-slate-300">{d.tasa_desempleo?.toFixed(1)}%</td>
-                      <td className="py-2.5 px-3 text-right text-slate-300">{d.tasa_informalidad?.toFixed(0)}%</td>
-                      <td className="py-2.5 px-3 text-right text-slate-300">{d.dnp_desempeno?.toFixed(0) || '—'}</td>
+                      <td className="py-3 px-3">
+                        <span className="px-2.5 py-1 rounded text-sm font-bold" style={{ backgroundColor: `${urgColor}25`, color: urgColor }}>
+                          {d.nivel_urgencia}
+                        </span>
+                      </td>
+                      <td className="py-3 px-3 text-right text-slate-300 font-semibold">{d.tasa_desempleo != null ? `${d.tasa_desempleo.toFixed(1)}%` : '—'}</td>
+                      <td className="py-3 px-3 text-right text-slate-300 font-semibold">{d.tasa_informalidad != null ? `${d.tasa_informalidad.toFixed(0)}%` : '—'}</td>
+                      <td className="py-3 px-3 text-right text-slate-300 font-semibold">{d.dnp_desempeno != null ? d.dnp_desempeno.toFixed(0) : '—'}</td>
                     </tr>
-                  ))}
+                    )
+                  })}
                 </tbody>
               </table>
             </div>
+            {result.ranking?.length > 20 && (
+              <p className="text-base text-slate-500 mt-3 text-center">Mostrando 20 de {result.total_departamentos} departamentos</p>
+            )}
           </div>
 
           <div className="text-xs text-slate-500">{result.metodologia}</div>

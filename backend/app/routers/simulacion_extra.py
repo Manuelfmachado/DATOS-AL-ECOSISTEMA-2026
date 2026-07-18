@@ -16,6 +16,30 @@ DATA = Path(__file__).resolve().parents[2] / "data" / "processed"
 
 SMMLV_2026 = 1_750_000
 
+# Mapeo de códigos DANE (DIVIPOLA) a nombres de departamentos
+DANE_DEPTO: dict[str, str] = {
+    "05": "ANTIOQUIA", "08": "ATLANTICO", "11": "BOGOTA D.C.", "13": "BOLIVAR",
+    "15": "BOYACA", "17": "CALDAS", "18": "CAQUETA", "19": "CAUCA",
+    "20": "CESAR", "23": "CORDOBA", "25": "CUNDINAMARCA", "27": "CHOCO",
+    "41": "HUILA", "44": "LA GUAJIRA", "47": "MAGDALENA", "50": "META",
+    "52": "NARINO", "54": "NORTE DE SANTANDER", "63": "QUINDIO",
+    "66": "RISARALDA", "68": "SANTANDER", "70": "SUCRE", "73": "TOLIMA",
+    "76": "VALLE DEL CAUCA", "81": "ARAUCA", "85": "CASANARE",
+    "86": "PUTUMAYO", "88": "ARCHIPIELAGO DE SAN ANDRES",
+    "91": "AMAZONAS", "94": "GUAINIA", "95": "GUAVIARE",
+    "97": "VAUPES", "99": "VICHADA",
+}
+
+# Sinónimos de nombres de departamentos para fusionar duplicados
+DEPTO_SINONIMOS: dict[str, str] = {
+    "ARCHIPIELAGO DE SAN ANDRES": "SAN ANDRES Y PROVIDENCIA",
+    "ARCHIPIELAGO DE SAN ANDRES, PROVIDENCIA Y SANTA CATALINA": "SAN ANDRES Y PROVIDENCIA",
+    "ARCHIPIELAGO DE SAN ANDRES Y PROVIDENCIA": "SAN ANDRES Y PROVIDENCIA",
+    "BOGOTA D.C": "BOGOTA D.C.",
+    "BOGOTA, D.C.": "BOGOTA D.C.",
+    "BOGOTA": "BOGOTA D.C.",
+}
+
 RANGO_INGRESO_MEDIO_SMMLV: dict[str, float] = {
     "1 SMMLV": 1.0, "Entre 1 y 1,5 SMMLV": 1.25,
     "Entre 1,5 y 2,5 SMMLV": 2.0, "Entre 2,5 y 4 SMMLV": 3.25,
@@ -47,6 +71,12 @@ def _norm(s: str) -> str:
     s = s.upper().strip()
     s = "".join(c for c in unicodedata.normalize("NFD", s) if unicodedata.category(c) != "Mn")
     return s
+
+
+def _norm_depto(s: str) -> str:
+    """Normaliza un nombre de departamento y fusiona sinónimos."""
+    n = _norm(s)
+    return DEPTO_SINONIMOS.get(n, n)
 
 
 def _load_csv(name: str) -> pd.DataFrame:
@@ -311,7 +341,7 @@ def priorizacion_territorial(req: PriorizacionRequest):
 
     # GEIH resumen departamento
     for _, row in geih_depto.iterrows():
-        depto = _norm(str(row.get("DEPARTAMENTO", "")))
+        depto = _norm_depto(str(row.get("DEPARTAMENTO", "")))
         if not depto or depto in ("NACIONAL", "TOTAL"):
             continue
         if depto not in deptos:
@@ -325,7 +355,7 @@ def priorizacion_territorial(req: PriorizacionRequest):
 
     # GEIH desempleo (calculado: no_ocupados / (ocupados + no_ocupados))
     for _, row in geih_desempleo.iterrows():
-        depto = _norm(str(row.get("DEPARTAMENTO", "")))
+        depto = _norm_depto(str(row.get("DEPARTAMENTO", "")))
         if not depto:
             continue
         if depto not in deptos:
@@ -342,19 +372,19 @@ def priorizacion_territorial(req: PriorizacionRequest):
 
     # DNP desempeño
     for _, row in dnp.iterrows():
-        depto = _norm(str(row.get("DEPARTAMENTO", row.get("DPTO", ""))))
+        depto = _norm_depto(str(row.get("DEPARTAMENTO", row.get("DPTO", ""))))
         if not depto:
             continue
         if depto not in deptos:
             deptos[depto] = {}
         try:
-            deptos[depto]["dnp_desempeno"] = float(row.get("PROMEDIO_DESEMPENO", row.get("DESEMPENO", 0)) or 0)
+            deptos[depto]["dnp_desempeno"] = round(float(row.get("PROMEDIO_DESEMPENO", row.get("DESEMPENO", 0)) or 0), 1)
         except (ValueError, TypeError):
             continue
 
     # SNIES matrícula
     for _, row in snies_depto.iterrows():
-        depto = _norm(str(row.get("DEPARTAMENTO", "")))
+        depto = _norm_depto(str(row.get("DEPARTAMENTO", "")))
         if not depto:
             continue
         if depto not in deptos:
@@ -364,10 +394,13 @@ def priorizacion_territorial(req: PriorizacionRequest):
         except (ValueError, TypeError):
             continue
 
-    # Informalidad (promedio últimos meses)
+    # Informalidad (promedio últimos meses) - DPTO usa códigos DANE
     inf_agg: dict[str, list] = {}
     for _, row in informalidad.iterrows():
-        depto = _norm(str(row.get("DEPARTAMENTO", "")))
+        dpto_code = str(row.get("DPTO", "")).strip()
+        depto = _norm_depto(DANE_DEPTO.get(dpto_code, "")) if dpto_code else ""
+        if not depto:
+            depto = _norm_depto(str(row.get("DEPARTAMENTO", "")))
         if not depto:
             continue
         try:
@@ -379,15 +412,20 @@ def priorizacion_territorial(req: PriorizacionRequest):
             continue
 
     for depto, vals in inf_agg.items():
+        inf_val = round(float(np.mean(vals)), 1)
         if depto in deptos:
-            deptos[depto]["tasa_informalidad"] = float(np.mean(vals))
+            deptos[depto]["tasa_informalidad"] = inf_val
         else:
-            deptos[depto] = {"tasa_informalidad": float(np.mean(vals))}
+            deptos[depto] = {"tasa_informalidad": inf_val}
 
     # EMICRON
     for _, row in emicron.iterrows():
-        depto = _norm(str(row.get("DEPARTAMENTO", "")))
-        if not depto:
+        dpto_raw = str(row.get("DPTO", row.get("DEPARTAMENTO", ""))).strip()
+        # Padding a 2 dígitos (5 -> 05, 8 -> 08)
+        if dpto_raw.isdigit() and len(dpto_raw) < 2:
+            dpto_raw = dpto_raw.zfill(2)
+        depto = _norm_depto(DANE_DEPTO.get(dpto_raw, "")) if dpto_raw else ""
+        if not depto or depto in ("NACIONAL", "TOTAL"):
             continue
         if depto not in deptos:
             deptos[depto] = {}
