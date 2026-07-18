@@ -859,7 +859,7 @@ export default function Prediccion() {
                       </thead>
                       <tbody className="divide-y divide-white/[0.04]">
                         {salariosReales.map((s, i) => (
-                          <tr key={i} className="hover:bg-white/[0.02] transition-colors">
+                          <tr key={i} className={`${i % 2 === 0 ? 'bg-white/[0.01]' : ''} hover:bg-amber-500/10 transition-colors cursor-default`}>
                             <td className="px-3 py-3 font-semibold text-slate-200">{s.oficio_nombre || s.oficio_codigo}</td>
                             <td className="px-3 py-3 text-right text-gold-400 font-semibold">${Math.round(s.salario_promedio).toLocaleString('es-CO')}</td>
                             <td className="px-3 py-3 text-right text-slate-300">${Math.round(s.salario_mediano).toLocaleString('es-CO')}</td>
