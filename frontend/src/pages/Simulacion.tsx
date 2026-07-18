@@ -275,14 +275,11 @@ function SimQuePasaSi() {
   const [departamento, setDepartamento] = useState('Bogotá D.C.')
   const [edad, setEdad] = useState(22)
 
-  // Scenario toggles
+  // Scenario toggles — simplificado: solo comparar con migración o posgrado
   const [enabled, setEnabled] = useState<Set<string>>(new Set(['base']))
+  const [compararTipo, setCompararTipo] = useState<'migracion' | 'posgrado'>('migracion')
   const [migracionDest, setMigracionDest] = useState('Antioquia')
   const [posgradoNivel, setPosgradoNivel] = useState('Maestria')
-  const [reskillingOcup, setReskillingOcup] = useState('CIENCIA DE DATOS')
-  const [emprenderSector, setEmprenderSector] = useState('Servicios')
-  const [emprenderCapital, setEmprenderCapital] = useState(20000000)
-  const [trabajarNivel, setTrabajarNivel] = useState('Bachiller')
 
   const [result, setResult] = useState<QuePasaSiResponse | null>(null)
   const [loading, setLoading] = useState(false)
@@ -303,10 +300,8 @@ function SimQuePasaSi() {
   const toggle = (tipo: string) => {
     setEnabled((prev) => {
       const next = new Set(prev)
-      if (next.has(tipo)) {
-        if (tipo === 'base') return prev // base always on
-        next.delete(tipo)
-      } else next.add(tipo)
+      if (next.has(tipo)) next.delete(tipo)
+      else next.add(tipo)
       return next
     })
   }
@@ -314,23 +309,10 @@ function SimQuePasaSi() {
   const run = async () => {
     if (!programa) { setError('Selecciona un programa académico'); return }
     setLoading(true); setError(''); setResult(null)
-    const escenarios: any[] = []
-    enabled.forEach((tipo) => {
-      switch (tipo) {
-        case 'migracion':
-          escenarios.push({ tipo, departamento_destino: migracionDest }); break
-        case 'posgrado':
-          escenarios.push({ tipo, nivel: posgradoNivel }); break
-        case 'reskilling':
-          escenarios.push({ tipo, ocupacion_destino: reskillingOcup }); break
-        case 'emprender':
-          escenarios.push({ tipo, sector_interes: emprenderSector, capital_disponible_cop: emprenderCapital }); break
-        case 'trabajar':
-          escenarios.push({ tipo, nivel_actual: trabajarNivel }); break
-        default:
-          escenarios.push({ tipo: 'base' })
-      }
-    })
+    const escenarios: any[] = [{ tipo: 'base' }]
+    if (enabled.has('comparar')) {
+      escenarios.push({ tipo: compararTipo, ...(compararTipo === 'migracion' ? { departamento_destino: migracionDest } : { nivel: posgradoNivel }) })
+    }
     try {
       const r = await api.post('/simulacion/que-pasa-si', { programa, departamento, edad, escenarios })
       setResult(r.data)
@@ -415,58 +397,42 @@ function SimQuePasaSi() {
         </div>
       </div>
 
-      {/* Escenarios */}
+      {/* Escenarios simplificado */}
       <div className="plate card p-5">
         <h3 className="text-base font-semibold text-gold-400 uppercase tracking-wider mb-4">¿Y si...?</h3>
         <div className="space-y-2">
-          {toggleRow('base', 'Sigo mi plan actual', 'border-amber-500/40', <span className="text-xs text-slate-500">Tu trayectoria base</span>, true)}
-          {toggleRow('migracion', 'Me mudo a...', 'border-blue-500/40',
-            <select value={migracionDest} onChange={(e) => setMigracionDest(e.target.value)} className={selectStyles} disabled={!enabled.has('migracion')}>
-              {deptos.filter((d) => d !== departamento).map((d) => <option key={d}>{d}</option>)}
-            </select>
-          )}
-          {toggleRow('posgrado', 'Estudio un...', 'border-green-500/40',
-            <select value={posgradoNivel} onChange={(e) => setPosgradoNivel(e.target.value)} className={selectStyles} disabled={!enabled.has('posgrado')}>
-              <option>Especializacion</option>
-              <option>Maestria</option>
-              <option>Doctorado</option>
-            </select>
-          )}
-          {toggleRow('reskilling', 'Hago reskilling a...', 'border-purple-500/40',
-            <div className="flex-1">
-              <select
-                value={reskillingOcup}
-                onChange={(e) => setReskillingOcup(e.target.value)}
-                disabled={!enabled.has('reskilling')}
-                className={`${selectStyles} w-full`}
-              >
-                {OCUP_SUGERIDAS.map((o) => <option key={o} value={o}>{o}</option>)}
-              </select>
-            </div>
-          )}
-          {toggleRow('emprender', 'Emprendo un negocio', 'border-orange-500/40',
-            <div className="flex items-center gap-2">
-              <select value={emprenderSector} onChange={(e) => setEmprenderSector(e.target.value)} className={selectStyles} disabled={!enabled.has('emprender')}>
-                {SECTORES_INTERES.map((s) => <option key={s}>{s}</option>)}
-              </select>
-              <span className="text-xs text-slate-500">Capital:</span>
-              <input
-                type="number"
-                value={emprenderCapital / 1_000_000}
-                onChange={(e) => setEmprenderCapital(Number(e.target.value) * 1_000_000)}
-                min={0} max={500} step={1}
-                className={selectStyles} style={{ width: 80 }}
-                disabled={!enabled.has('emprender')}
-              />
-              <span className="text-xs text-slate-500">M COP</span>
-            </div>
-          )}
-          {toggleRow('trabajar', 'Solo trabajo ya', 'border-slate-500/40',
-            <select value={trabajarNivel} onChange={(e) => setTrabajarNivel(e.target.value)} className={selectStyles} disabled={!enabled.has('trabajar')}>
-              {NIVELES_EDUCATIVOS.map((n) => <option key={n}>{n}</option>)}
-            </select>
-          )}
+          <div className="flex items-center gap-3 px-4 py-3 rounded-lg border border-amber-500/40 bg-amber-500/5">
+            <input type="checkbox" checked disabled className="accent-amber-500 w-4 h-4 rounded" />
+            <span className="text-base text-slate-300 font-medium min-w-[180px]">Sigo mi plan actual</span>
+            <span className="text-sm text-slate-500">{programa || 'Tu trayectoria base'}</span>
+          </div>
+          <label className={`flex items-center gap-3 px-4 py-3 rounded-lg border transition-all cursor-pointer ${
+            enabled.has('comparar')
+              ? 'border-blue-500/40 bg-blue-500/5'
+              : 'border-transparent bg-white/[0.02] opacity-60 hover:opacity-90'
+          }`}>
+            <input type="checkbox" checked={enabled.has('comparar')} onChange={() => toggle('comparar')} className="accent-blue-500 w-4 h-4 rounded" />
+            <span className="text-base text-slate-300 font-medium min-w-[180px]">Comparar con otro escenario</span>
+          </label>
         </div>
+        {enabled.has('comparar') && (
+          <div className="mt-3 ml-7 grid grid-cols-1 md:grid-cols-2 gap-3">
+            <div>
+              <label className="text-sm text-slate-400 mb-1 block">Me mudo a...</label>
+              <select value={migracionDest} onChange={(e) => { setMigracionDest(e.target.value); setCompararTipo('migracion') }} className={`${selectStyles} w-full`}>
+                {deptos.filter((d) => d !== departamento).map((d) => <option key={d}>{d}</option>)}
+              </select>
+            </div>
+            <div>
+              <label className="text-sm text-slate-400 mb-1 block">O estudio un...</label>
+              <select value={posgradoNivel} onChange={(e) => { setPosgradoNivel(e.target.value); setCompararTipo('posgrado') }} className={`${selectStyles} w-full`}>
+                <option>Especializacion</option>
+                <option>Maestria</option>
+                <option>Doctorado</option>
+              </select>
+            </div>
+          </div>
+        )}
 
         <div className="mt-5">
           <button
@@ -474,7 +440,7 @@ function SimQuePasaSi() {
             disabled={loading || !programa}
             className="px-6 py-2.5 rounded-lg font-semibold text-base transition-all bg-gold-400 text-[#0a0f1f] hover:bg-gold-400/90 disabled:opacity-40"
           >
-            {loading ? 'Simulando...' : 'Simular'}
+            {loading ? 'Proyectando...' : 'Proyectar mi carrera'}
           </button>
           {error && <p className="text-rose-400 text-sm mt-3">{error}</p>}
         </div>
