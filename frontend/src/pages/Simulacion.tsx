@@ -434,18 +434,14 @@ function SimQuePasaSi() {
           )}
           {toggleRow('reskilling', 'Hago reskilling a...', 'border-purple-500/40',
             <div className="flex-1">
-              <input
-                type="text"
+              <select
                 value={reskillingOcup}
-                onChange={(e) => setReskillingOcup(e.target.value.toUpperCase())}
+                onChange={(e) => setReskillingOcup(e.target.value)}
                 disabled={!enabled.has('reskilling')}
-                placeholder="Ocupación..."
-                list="ocup-datalist"
                 className={`${selectStyles} w-full`}
-              />
-              <datalist id="ocup-datalist">
-                {OCUP_SUGERIDAS.map((o) => <option key={o} value={o} />)}
-              </datalist>
+              >
+                {OCUP_SUGERIDAS.map((o) => <option key={o} value={o}>{o}</option>)}
+              </select>
             </div>
           )}
           {toggleRow('emprender', 'Emprendo un negocio', 'border-orange-500/40',
@@ -1407,15 +1403,28 @@ function SimDecision() {
 
 function SimViabilidad() {
   const { deptos } = useDepartamentos()
+  const [programaQuery, setProgramaQuery] = useState('')
   const [programa, setPrograma] = useState('')
+  const [programas, setProgramas] = useState<string[]>([])
   const [departamento, setDepartamento] = useState('Bogotá D.C.')
   const [nivel, setNivel] = useState('Profesional')
   const [result, setResult] = useState<any>(null)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
 
+  useEffect(() => {
+    const t = setTimeout(() => {
+      if (programaQuery.length >= 2) {
+        api.get('/simulacion/trayectoria/programas', { params: { q: programaQuery, limit: 20 } })
+          .then((r) => setProgramas(r.data.programas))
+          .catch(() => setProgramas([]))
+      } else setProgramas([])
+    }, 300)
+    return () => clearTimeout(t)
+  }, [programaQuery])
+
   const run = async () => {
-    if (!programa.trim()) { setError('Ingresa el nombre del programa'); return }
+    if (!programa.trim()) { setError('Selecciona un programa académico'); return }
     setLoading(true); setError(''); setResult(null)
     try {
       const r = await api.post('/simulacion/viabilidad-programa', { programa: programa.trim(), departamento, nivel })
@@ -1436,7 +1445,16 @@ function SimViabilidad() {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div>
             <label className="text-sm text-slate-400 mb-1 block">Programa académico</label>
-            <input type="text" value={programa} onChange={(e) => setPrograma(e.target.value)} placeholder="Ej: Ingeniería de Software" className="bg-white/[0.03] border border-white/0.08 rounded-lg px-3 py-2 text-sm text-slate-300 focus:border-amber-500/40 outline-none w-full" />
+            <input type="text" value={programaQuery} onChange={(e) => { setProgramaQuery(e.target.value); setPrograma('') }} placeholder="Busca tu programa..." className="bg-white/[0.03] border border-white/0.08 rounded-lg px-3 py-2 text-sm text-slate-300 focus:border-amber-500/40 outline-none w-full" />
+            {programas.length > 0 && !programa && (
+              <div className="plate card mt-1 max-h-48 overflow-y-auto border-amber-500/20 absolute z-20 w-full">
+                {programas.map((p) => (
+                  <button key={p} onClick={() => { setPrograma(p); setProgramaQuery(p); setProgramas([]) }} className="block w-full text-left px-3 py-2 text-sm text-slate-300 hover:bg-amber-500/10 hover:text-gold-400 transition-colors">
+                    {p}
+                  </button>
+                ))}
+              </div>
+            )}
           </div>
           <div>
             <label className="text-sm text-slate-400 mb-1 block">Departamento</label>
