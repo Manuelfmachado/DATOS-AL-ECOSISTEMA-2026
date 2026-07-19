@@ -268,7 +268,7 @@ export default function Simulacion() {
           }`}
         >
           <div className="flex items-center gap-3 mb-3">
-            <span className="text-3xl">🗺️</span>
+            <img src="/icons/viaje-inicio.svg" alt="viaje" className="w-9 h-9" />
             <div>
               <p className={`text-base font-bold ${tab === 'viaje' ? 'text-[#d4af37]' : 'text-white'}`}>El viaje de una decisión</p>
               <p className="text-sm text-slate-400">Una pantalla, tres públicos</p>
@@ -288,7 +288,7 @@ export default function Simulacion() {
           }`}
         >
           <div className="flex items-center gap-3 mb-3">
-            <span className="text-3xl">🎓</span>
+            <img src="/icons/estudiante.svg" alt="estudiante" className="w-9 h-9" />
             <div>
               <p className={`text-base font-bold ${tab === 'que-pasa-si' ? 'text-[#d4af37]' : 'text-white'}`}>Soy estudiante</p>
               <p className="text-sm text-slate-400">Mi futuro laboral</p>
@@ -308,7 +308,7 @@ export default function Simulacion() {
           }`}
         >
           <div className="flex items-center gap-3 mb-3">
-            <span className="text-3xl">🏛️</span>
+            <img src="/icons/universidad.svg" alt="universidad" className="w-9 h-9" />
             <div>
               <p className={`text-base font-bold ${tab === 'viabilidad' ? 'text-[#d4af37]' : 'text-white'}`}>Soy universidad</p>
               <p className="text-sm text-slate-400">Portafolio académico</p>
@@ -328,7 +328,7 @@ export default function Simulacion() {
           }`}
         >
           <div className="flex items-center gap-3 mb-3">
-            <span className="text-3xl">🏛️</span>
+            <img src="/icons/gobierno.svg" alt="gobierno" className="w-9 h-9" />
             <div>
               <p className={`text-base font-bold ${tab === 'priorizacion' ? 'text-[#d4af37]' : 'text-white'}`}>Soy gobierno</p>
               <p className="text-sm text-slate-400">Planificador territorial</p>

@@ -142,10 +142,40 @@ CIIU2_NOMBRES: dict[int, str] = {
 }
 
 
+def _fix_mojibake(s: str) -> str:
+    """Reconstruye texto UTF-8 que fue malinterpretado como Latin-1.
+    Maneja 'CaquetÃ¡' (UTF-8 de 'Caquetá' codificado como latin-1) y reverso.
+    Idempotente: si el string ya es UTF-8 correcto, lo deja igual."""
+    if not s:
+        return s
+    # Caso 1: mojibake UTF-8 como latin-1 (común cuando axios/envío mezcla encodings)
+    # Patrón: secuencias como "Ã¡", "Ã©", "Ã³", "Ã±", "Ã­", "Ãº", "Ã" sola
+    mojibake_map = {
+        "Ã¡": "á", "Ã©": "é", "Ã­": "í", "Ã³": "ó", "Ãº": "ú", "Ã±": "ñ",
+        "Ã¼": "ü", "Â¿": "¿", "Â¡": "¡", "â€™": "'", 'â€œ': '"', 'â€': '"',
+        "Ã": "Á", "Ã‰": "É", "Ã": "Í", "Ã" "Â³": "ó",
+    }
+    out = s
+    for bad, good in mojibake_map.items():
+        out = out.replace(bad, good)
+    # Si quedó una "Ã" suelta (mayúscula A con tilde, U+00C3), reintentar como latin-1→utf-8
+    if "Ã" in out:
+        try:
+            # Out tiene el byte U+00C3 que en latin-1 es 0xC3; combinado con el siguiente char...
+            # Estrategia general: si todavía hay Ã, intenta encodear como latin-1 y decodear utf-8
+            candidate = out.encode("latin-1", errors="ignore").decode("utf-8", errors="ignore")
+            if candidate and "Ã" not in candidate and len(candidate) <= len(out) + 5:
+                out = candidate
+        except Exception:
+            pass
+    return out
+
+
 def _norm(s: str) -> str:
     if not s:
         return ""
-    s = str(s).upper().strip()
+    s = _fix_mojibake(str(s))
+    s = s.upper().strip()
     s = "".join(c for c in unicodedata.normalize("NFD", s) if unicodedata.category(c) != "Mn")
     return s
 
