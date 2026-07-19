@@ -6,6 +6,7 @@ import {
 import AnalizarIAButton from '../components/AnalizarIAButton'
 import api from '../services/api'
 import { formatCOP, formatCOPCompact } from '../utils/format'
+import { formatCOP, formatCOPCompact, formatNumber } from '../utils/format'
 
 type Tab = 'universidades' | 'gobierno' | 'estudiantes'
 
@@ -59,6 +60,7 @@ interface FuturoResult {
     mediana: number[]
     p10: number[]
     p90: number[]
+    ingreso_acumulado_10a: number
     descripcion: string
     profesion_chronos: string
   }[]
@@ -91,11 +93,27 @@ const TAB_CONFIG: { id: Tab; title: string; subtitle: string; description: strin
     icon: '▥',
   },
   {
+  {
+    id: 'universidades',
+    title: 'Universidades',
+    subtitle: 'Alineación curricular',
+    description: 'Primero: evalúa apertura o actualización de programas con SNIES, OLE, SPE/APE, GEIH y crecimiento proyectado.',
+    icon: '🏫',
+  },
+  {
+    id: 'gobierno',
+    title: 'Gobierno',
+    subtitle: 'Intervención por objetivo',
+    description: 'Segundo: prioriza territorios según desempleo, informalidad, desempeño municipal y presupuesto público disponible.',
+    icon: '🏛️',
+  },
+  {
     id: 'estudiantes',
     title: 'Futuros estudiantes',
     subtitle: 'Explora carrera',
     description: 'Tercero: explora salarios, crecimiento y alertas de saturación con métricas observables y supuestos visibles.',
     icon: '◈',
+    icon: '🎓',
   },
 ]
 
@@ -147,6 +165,7 @@ export default function Simulacion() {
   return (
     <div className="animate-fade-in space-y-5">
       <header>
+        <p className="text-sm uppercase tracking-[0.3em] text-gold-400/80">Módulo depurado</p>
         <h1 className="text-5xl font-bold text-gold-400 font-display">Simulación</h1>
         <p className="text-lg text-slate-300 mt-2 max-w-4xl">
           Tres simulaciones sólidas, accionables y sustentadas en datos reales: alineación curricular, intervención territorial y exploración de carrera.
@@ -162,6 +181,7 @@ export default function Simulacion() {
           >
             <div className="flex items-start gap-3">
               <span className="text-3xl text-gold-400 leading-none">{item.icon}</span>
+              <span className="text-3xl">{item.icon}</span>
               <div>
                 <h2 className={`text-lg font-bold ${tab === item.id ? 'text-[#d4af37]' : 'text-white'}`}>{item.title}</h2>
                 <p className="text-sm font-semibold text-slate-300">{item.subtitle}</p>
@@ -222,6 +242,10 @@ function Universidades() {
         description="Evalúa si un programa está alineado con la demanda territorial. La decisión combina oferta educativa local, ingresos de egresados, demanda SPE/APE, tejido empresarial y crecimiento sectorial."
       >
         <ProgramaInput query={programaQuery} selectedPrograma={programa} setQuery={setProgramaQuery} setPrograma={setPrograma} programas={programas} setProgramas={setProgramas} />
+        title="🏫 Universidades — Alineación curricular"
+        description="Evalúa si un programa está alineado con la demanda territorial. La decisión combina oferta educativa local, ingresos de egresados, demanda SPE/APE, tejido empresarial y crecimiento sectorial."
+      >
+        <ProgramaInput query={programaQuery} setQuery={setProgramaQuery} setPrograma={setPrograma} programas={programas} setProgramas={setProgramas} />
         <SelectField label="Departamento" value={departamento} onChange={setDepartamento} options={deptos} />
         <SelectField label="Nivel" value={nivel} onChange={setNivel} options={['Técnico', 'Profesional', 'Especialización', 'Maestría']} />
         <ActionButton onClick={run} loading={loading} label="Evaluar alineación" loadingLabel="Evaluando…" />
@@ -317,6 +341,10 @@ function Gobierno() {
       })
     } catch (e: any) {
       setError(e?.response?.data?.detail || e?.message || 'No se pudo calcular la intervención territorial.')
+      const r = await api.post('/simulacion/priorizacion-territorial', { presupuesto_cop: presupuesto * 1_000_000 })
+      setResult(r.data)
+    } catch (e: any) {
+      setError(e.response?.data?.detail || 'No se pudo calcular la intervención territorial.')
     } finally {
       setLoading(false)
     }
@@ -326,6 +354,7 @@ function Gobierno() {
     <section className="space-y-4">
       <FormCard
         title="Gobierno — Intervención por objetivo"
+        title="🏛️ Gobierno — Intervención por objetivo"
         description="Convierte indicadores territoriales en una lista priorizada de intervención: desempleo, informalidad, DNP/MDM, acción recomendada e inversión sugerida."
       >
         <div>
@@ -351,6 +380,7 @@ function Gobierno() {
 
           <div className="plate card p-5">
             <WidgetHeader title="Prioridad de intervención por departamento" dashboard="simulacion" data={result} />
+            <WidgetHeader title="Ranking de intervención territorial" dashboard="simulacion" data={result} />
             <ResponsiveContainer width="100%" height={320}>
               <BarChart data={result.ranking.slice(0, 10)} layout="vertical" margin={{ left: 28, right: 28 }}>
                 <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.06)" />
@@ -367,6 +397,7 @@ function Gobierno() {
               <thead>
                 <tr className="border-b border-white/10 text-left text-slate-300">
                   <th className="py-3 px-2">#</th><th className="py-3 px-2">Departamento</th><th className="py-3 px-2">Score</th><th className="py-3 px-2">Nivel</th><th className="py-3 px-2 text-right">Desempleo</th><th className="py-3 px-2 text-right">Informalidad</th><th className="py-3 px-2 text-right">DNP</th><th className="py-3 px-2">Acción</th>
+                  <th className="py-3 px-2">#</th><th className="py-3 px-2">Departamento</th><th className="py-3 px-2">Urgencia</th><th className="py-3 px-2 text-right">Desempleo</th><th className="py-3 px-2 text-right">Informalidad</th><th className="py-3 px-2 text-right">DNP</th><th className="py-3 px-2">Acción</th>
                 </tr>
               </thead>
               <tbody>
@@ -435,6 +466,10 @@ function FuturosEstudiantes() {
         description="Muestra datos comprensibles de salario y crecimiento para una carrera en un territorio. La decisión queda explicada con fuentes, salarios, crecimiento y alertas; no se muestran marcadores sintéticos."
       >
         <ProgramaInput query={programaQuery} selectedPrograma={programa} setQuery={setProgramaQuery} setPrograma={setPrograma} programas={programas} setProgramas={setProgramas} />
+        title="🎓 Futuros estudiantes — Explora carrera"
+        description="Muestra datos comprensibles de salario y crecimiento para una carrera en un territorio. La decisión queda explicada con fuentes, salarios, crecimiento y alertas; no se muestran marcadores sintéticos."
+      >
+        <ProgramaInput query={programaQuery} setQuery={setProgramaQuery} setPrograma={setPrograma} programas={programas} setProgramas={setProgramas} />
         <SelectField label="Departamento donde quieres trabajar" value={departamento} onChange={setDepartamento} options={deptos} />
         <ActionButton onClick={run} loading={loading} label="Explorar carrera" loadingLabel="Explorando…" />
         {error && <p className="text-rose-400 text-sm md:col-span-4">{error}</p>}
@@ -446,6 +481,7 @@ function FuturosEstudiantes() {
             ['Salario inicial', formatCOP(base.salario_inicial_cop), '/mes', 'gold'],
             ['Salario a 5 años', formatCOP(base.mediana[4] || 0), '/mes', 'gold'],
             ['Crecimiento anual', `${base.crecimiento_anual_pct > 0 ? '+' : ''}${base.crecimiento_anual_pct}%`, 'proyectado', base.crecimiento_anual_pct >= 0 ? 'green' : 'rose'],
+            ['Acumulado 10 años', formatCOP(base.ingreso_acumulado_10a), 'ingreso total', 'blue'],
           ]} />
 
           <div className="plate card p-5">
@@ -487,6 +523,12 @@ function ProgramaInput({ query, selectedPrograma, setQuery, setPrograma, program
       <label className="text-sm text-slate-400 mb-1 block">Programa académico</label>
       <input value={query} onChange={(e) => { setQuery(e.target.value); setPrograma('') }} onBlur={() => window.setTimeout(() => setProgramas([]), 150)} placeholder="Busca por nombre del programa…" className={fieldClass} />
       {programas.length > 0 && query !== selectedPrograma && (
+function ProgramaInput({ query, setQuery, setPrograma, programas, setProgramas }: { query: string; setQuery: (v: string) => void; setPrograma: (v: string) => void; programas: string[]; setProgramas: (v: string[]) => void }) {
+  return (
+    <div className="relative md:col-span-2">
+      <label className="text-sm text-slate-400 mb-1 block">Programa académico</label>
+      <input value={query} onChange={(e) => { setQuery(e.target.value); setPrograma('') }} placeholder="Busca por nombre del programa…" className={fieldClass} />
+      {programas.length > 0 && (
         <div className="absolute z-50 mt-1 max-h-56 w-full overflow-y-auto rounded-lg border border-gold-400/30 bg-[#0a0f1f] shadow-2xl">
           {programas.map((p) => (
             <button key={p} type="button" onClick={() => { setPrograma(p); setQuery(p); setProgramas([]) }} className="block w-full px-3 py-2 text-left text-sm text-slate-300 hover:bg-gold-400/10 hover:text-gold-400">
