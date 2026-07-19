@@ -3,6 +3,7 @@ import {
   BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer,
   CartesianGrid, Cell,
 } from 'recharts'
+import { School, Landmark, GraduationCap } from 'lucide-react'
 import AnalizarIAButton from '../components/AnalizarIAButton'
 import api from '../services/api'
 import { formatCOP, formatNumber } from '../utils/format'
@@ -86,27 +87,27 @@ const DEPTOS_FALLBACK = [
   'Vaupés', 'Vichada',
 ]
 
-const TAB_CONFIG: { id: Tab; title: string; subtitle: string; description: string; icon: string }[] = [
+const TAB_CONFIG: { id: Tab; title: string; subtitle: string; description: string; icon: ReactNode }[] = [
   {
     id: 'universidades',
     title: 'Universidades',
     subtitle: 'Alineación curricular',
     description: 'Primero: evalúa apertura o actualización de programas con SNIES, OLE, SPE/APE, GEIH y crecimiento proyectado.',
-    icon: '🏫',
+    icon: <School className="w-8 h-8 text-gold-400" />,
   },
   {
     id: 'gobierno',
     title: 'Gobierno',
     subtitle: 'Intervención por objetivo',
     description: 'Segundo: prioriza territorios según desempleo, informalidad, desempeño municipal y presupuesto público disponible.',
-    icon: '🏛️',
+    icon: <Landmark className="w-8 h-8 text-gold-400" />,
   },
   {
     id: 'estudiantes',
     title: 'Futuros estudiantes',
     subtitle: 'Explora carrera',
     description: 'Tercero: explora salarios, crecimiento y alertas de saturación con métricas observables y supuestos visibles.',
-    icon: '🎓',
+    icon: <GraduationCap className="w-8 h-8 text-gold-400" />,
   },
 ]
 
@@ -159,7 +160,7 @@ export default function Simulacion() {
   return (
     <div className="animate-fade-in space-y-5">
       <header>
-        <p className="text-sm uppercase tracking-[0.3em] text-gold-400/80">Módulo depurado</p>
+        <p className="text-sm uppercase tracking-[0.3em] text-gold-400/80">Simulación de escenarios</p>
         <h1 className="text-5xl font-bold text-gold-400 font-display">Simulación</h1>
         <p className="text-lg text-slate-300 mt-2 max-w-4xl">
           Tres simulaciones sólidas, accionables y sustentadas en datos reales: alineación curricular, intervención territorial y exploración de carrera.
@@ -174,7 +175,7 @@ export default function Simulacion() {
             className={`plate card p-5 text-left transition-all ${tab === item.id ? 'border-[#d4af37]/80 shadow-[0_0_18px_rgba(212,175,55,0.20)]' : 'hover:border-white/[0.12]'}`}
           >
             <div className="flex items-start gap-3">
-              <span className="text-3xl">{item.icon}</span>
+              <div className="mt-1">{item.icon}</div>
               <div>
                 <h2 className={`text-lg font-bold ${tab === item.id ? 'text-[#d4af37]' : 'text-white'}`}>{item.title}</h2>
                 <p className="text-sm font-semibold text-slate-300">{item.subtitle}</p>
@@ -232,7 +233,7 @@ function Universidades() {
   return (
     <section className="space-y-4">
       <FormCard
-        title="🏫 Universidades — Alineación curricular"
+        title="Universidades — Alineación curricular"
         description="Evalúa si el pensum de un programa cubre las habilidades esenciales que exige el mercado laboral (ESCO) y verifica la coincidencia con las vacantes del SPE/APE SENA."
       >
         <div className="md:col-span-2">
@@ -340,7 +341,7 @@ function Gobierno() {
   return (
     <section className="space-y-4">
       <FormCard
-        title="🏛️ Gobierno — Intervención por objetivo"
+        title="Gobierno — Intervención por objetivo"
         description="Prioriza sectores en un departamento según tu objetivo (reducir desempleo, sectores emergentes, etc). Combina empleo GEIH, crecimiento Chronos, déficit SENA y base formal PILA."
       >
         <SelectField label="Departamento" value={departamento} onChange={setDepartamento} options={deptos} />
@@ -442,7 +443,7 @@ function FuturosEstudiantes() {
   return (
     <section className="space-y-4">
       <FormCard
-        title="🎓 Futuros estudiantes — Explora carrera"
+        title="Futuros estudiantes — Explora carrera"
         description="Muestra datos reales de salarios, habilidades a desarrollar, salidas laborales y dónde estudiar un programa específico sin scores mágicos."
       >
         <div className="md:col-span-2">

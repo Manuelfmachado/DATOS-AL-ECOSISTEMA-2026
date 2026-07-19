@@ -323,7 +323,51 @@ async def alineacion_curricular(req: AlineacionRequest):
     esencial_set_norm = {_norm(h) for h in top_esenciales}
 
     # 3. Normalizar pensum usuario
-    pensum_norm = {_norm(h) for h in req.pensum if h.strip()}
+    pensum_es = req.pensum.copy()
+    
+    # Diccionario de fallback básico para español -> ESCO inglés (por si la API de Gemini falla)
+    fallback_dict = {
+        "analisis de datos": ["data analysis", "analyse data", "data analytics"],
+        "logistica": ["logistics", "supply chain", "manage logistics"],
+        "mecanica": ["mechanics", "mechanical engineering", "machinery"],
+        "programacion": ["programming", "develop software", "write code"],
+        "desarrollo web": ["web development", "web design"],
+        "bases de datos": ["databases", "sql", "manage data"],
+        "matematicas": ["mathematics", "calculate", "math"],
+        "estadistica": ["statistics", "statistical analysis"],
+        "ingles": ["english", "foreign language"],
+        "administracion": ["management", "business administration", "manage staff"],
+        "finanzas": ["finance", "financial analysis", "accounting"],
+        "seguridad": ["safety", "security", "safety measures", "health and safety"],
+        "diseño": ["design", "design principles", "blueprints"],
+        "proyectos": ["project management", "manage schedule of tasks"],
+        "liderazgo": ["leadership", "lead a team", "manage a team"]
+    }
+
+    # Intentar traducir el pensum al inglés para hacer match con ESCO
+    if is_gemini_available() and pensum_es:
+        try:
+            sys_prompt = "Traduce esta lista de materias o competencias del español al inglés técnico de ESCO. Devuelve SOLO un JSON con el formato: {\"traducciones\": [\"item1\", \"item2\"]}. No agregues markdown ni comillas fuera del JSON."
+            usr_prompt = json.dumps(pensum_es, ensure_ascii=False)
+            res = call_gemini_text(sys_prompt, usr_prompt, temperature=0.1)
+            # Limpiar posible markdown
+            if res.startswith("```json"): res = res[7:]
+            if res.startswith("```"): res = res[3:]
+            if res.endswith("```"): res = res[:-3]
+            traduccion = json.loads(res.strip())
+            if "traducciones" in traduccion and isinstance(traduccion["traducciones"], list):
+                pensum_es.extend(traduccion["traducciones"])
+        except Exception as e:
+            print("DEBUG AC: Error traduciendo pensum:", e)
+            
+    # Agregar traducciones del fallback dictionary si hacen match con algo ingresado
+    for item in req.pensum:
+        item_norm = _norm(item).lower()
+        for k, v in fallback_dict.items():
+            if _norm(k).lower() in item_norm or item_norm in _norm(k).lower():
+                pensum_es.extend(v)
+            
+    pensum_norm = {_norm(h) for h in pensum_es if h.strip()}
 
     # Matching: contamos una esencial como cubierta si alguna palabra del pensum la contiene
     # (mejor que igualdad exacta porque ESCO usa frases largas)
@@ -331,12 +375,28 @@ async def alineacion_curricular(req: AlineacionRequest):
     faltantes: list[str] = []
     for h in top_esenciales:
         hn = _norm(h)
-        matched = any(pn in hn or hn in pn for pn in pensum_norm if len(pn) >= 3)
+        matched = any(pn in hn or hn in pn for pn in pensum_norm if len(pn) >= 4)
         (cubiertas if matched else faltantes).append(h)
 
     total_esenciales = len(top_esenciales)
     total_cubiertas = len(cubiertas)
     indice_alineacion = round(total_cubiertas / total_esenciales * 100, 1) if total_esenciales else 0.0
+
+    # Traducir faltantes al español para mostrar en UI
+    faltantes_es = faltantes[:15].copy()
+    if is_gemini_available() and faltantes_es:
+        try:
+            sys_prompt = "Traduce esta lista de competencias de ESCO del inglés al español. Devuelve SOLO un JSON con formato: {\"traducciones\": [\"item1\", \"item2\"]}. No uses markdown."
+            usr_prompt = json.dumps(faltantes_es, ensure_ascii=False)
+            res = call_gemini_text(sys_prompt, usr_prompt, temperature=0.1)
+            if res.startswith("```json"): res = res[7:]
+            if res.startswith("```"): res = res[3:]
+            if res.endswith("```"): res = res[:-3]
+            traduccion = json.loads(res.strip())
+            if "traducciones" in traduccion and len(traduccion["traducciones"]) == len(faltantes_es):
+                faltantes_es = traduccion["traducciones"]
+        except Exception as e:
+            print("DEBUG AC: Error traduciendo faltantes:", e)
 
     # 4. Coincidencia con vacantes SPE/APE (proxy de demanda laboral real)
     spe_match_pct = 0.0
@@ -397,7 +457,7 @@ async def alineacion_curricular(req: AlineacionRequest):
         "total_faltantes": len(faltantes),
         "coincidencia_vacantes_spe_pct": spe_match_pct,
         "competencias_cubiertas": cubiertas[:20],
-        "competencias_faltan": faltantes[:20],
+        "competencias_faltan": faltantes_es,
         "cursos_sena_recomendados": sena_sugeridos,
         "metodologia": (
             "Índice = |competencias_del_pensum que coinciden con habilidades ESCO esenciales| "

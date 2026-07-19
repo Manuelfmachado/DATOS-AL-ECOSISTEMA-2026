@@ -43,6 +43,10 @@ LIVE_MODEL = os.getenv("GEMINI_LIVE_MODEL", "gemini-live-2.5-flash-native-audio"
 
 
 def _get_client() -> genai.Client:
+    # Si hay API key, preferimos AI Studio (mÃ¡s simple y no requiere service account).
+    if GOOGLE_API_KEY:
+        return genai.Client(api_key=GOOGLE_API_KEY)
+    
     # Priorizar Vertex AI (ADC con service account) si hay proyecto configurado
     if GOOGLE_CLOUD_PROJECT:
         try:
@@ -60,9 +64,6 @@ def _get_client() -> genai.Client:
                 f"Error: {e}"
             )
             raise RuntimeError(msg)
-    # Fallback a AI Studio con API key
-    if GOOGLE_API_KEY:
-        return genai.Client(api_key=GOOGLE_API_KEY)
     raise RuntimeError("GOOGLE_CLOUD_PROJECT (con service account) o GOOGLE_API_KEY deben estar configurados")
 
 
