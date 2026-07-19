@@ -5,7 +5,7 @@ import {
 } from 'recharts'
 import AnalizarIAButton from '../components/AnalizarIAButton'
 import api from '../services/api'
-import { formatCOP, formatCOPCompact, formatNumber } from '../utils/format'
+import { formatCOP, formatCOPCompact } from '../utils/format'
 
 type Tab = 'universidades' | 'gobierno' | 'estudiantes'
 
@@ -59,7 +59,6 @@ interface FuturoResult {
     mediana: number[]
     p10: number[]
     p90: number[]
-    ingreso_acumulado_10a: number
     descripcion: string
     profesion_chronos: string
   }[]
