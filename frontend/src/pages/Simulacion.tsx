@@ -277,7 +277,7 @@ function Universidades() {
 
           <div className="plate card p-5 grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
-              <WidgetHeader title="Competencias Faltantes" dashboard="simulacion" data={result} />
+              <h3 className="text-lg font-semibold text-gold-400 mb-2">Competencias Faltantes</h3>
               <ul className="list-disc pl-5 text-sm text-slate-300 space-y-1">
                 {result.competencias_faltan.slice(0, 8).map((c, i) => <li key={i}>{c}</li>)}
               </ul>
