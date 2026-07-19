@@ -5,6 +5,7 @@ import {
 } from 'recharts'
 import AnalizarIAButton from '../components/AnalizarIAButton'
 import api from '../services/api'
+import { formatCOP, formatCOPCompact } from '../utils/format'
 import { formatCOP, formatCOPCompact, formatNumber } from '../utils/format'
 
 type Tab = 'universidades' | 'gobierno' | 'estudiantes'
@@ -82,6 +83,21 @@ const TAB_CONFIG: { id: Tab; title: string; subtitle: string; description: strin
     title: 'Universidades',
     subtitle: 'Alineación curricular',
     description: 'Primero: evalúa apertura o actualización de programas con SNIES, OLE, SPE/APE, GEIH y crecimiento proyectado.',
+    icon: '▦',
+  },
+  {
+    id: 'gobierno',
+    title: 'Gobierno',
+    subtitle: 'Intervención por objetivo',
+    description: 'Segundo: prioriza territorios según desempleo, informalidad, desempeño municipal y presupuesto público disponible.',
+    icon: '▥',
+  },
+  {
+  {
+    id: 'universidades',
+    title: 'Universidades',
+    subtitle: 'Alineación curricular',
+    description: 'Primero: evalúa apertura o actualización de programas con SNIES, OLE, SPE/APE, GEIH y crecimiento proyectado.',
     icon: '🏫',
   },
   {
@@ -96,6 +112,7 @@ const TAB_CONFIG: { id: Tab; title: string; subtitle: string; description: strin
     title: 'Futuros estudiantes',
     subtitle: 'Explora carrera',
     description: 'Tercero: explora salarios, crecimiento y alertas de saturación con métricas observables y supuestos visibles.',
+    icon: '◈',
     icon: '🎓',
   },
 ]
@@ -163,6 +180,7 @@ export default function Simulacion() {
             className={`plate card p-5 text-left transition-all ${tab === item.id ? 'border-[#d4af37]/80 shadow-[0_0_18px_rgba(212,175,55,0.20)]' : 'hover:border-white/[0.12]'}`}
           >
             <div className="flex items-start gap-3">
+              <span className="text-3xl text-gold-400 leading-none">{item.icon}</span>
               <span className="text-3xl">{item.icon}</span>
               <div>
                 <h2 className={`text-lg font-bold ${tab === item.id ? 'text-[#d4af37]' : 'text-white'}`}>{item.title}</h2>
@@ -197,6 +215,7 @@ function Universidades() {
       setError('Selecciona un programa académico de la lista.')
       return
     }
+    setProgramas([])
     setLoading(true)
     setError('')
     setResult(null)
@@ -219,6 +238,10 @@ function Universidades() {
   return (
     <section className="space-y-4">
       <FormCard
+        title="Universidades — Alineación curricular"
+        description="Evalúa si un programa está alineado con la demanda territorial. La decisión combina oferta educativa local, ingresos de egresados, demanda SPE/APE, tejido empresarial y crecimiento sectorial."
+      >
+        <ProgramaInput query={programaQuery} selectedPrograma={programa} setQuery={setProgramaQuery} setPrograma={setPrograma} programas={programas} setProgramas={setProgramas} />
         title="🏫 Universidades — Alineación curricular"
         description="Evalúa si un programa está alineado con la demanda territorial. La decisión combina oferta educativa local, ingresos de egresados, demanda SPE/APE, tejido empresarial y crecimiento sectorial."
       >
@@ -282,6 +305,42 @@ function Gobierno() {
     setError('')
     setResult(null)
     try {
+      const dashboard = await fetch('/dashboard.json')
+        .then((res) => res.ok ? res.json() : Promise.reject(new Error('dashboard estático no disponible')))
+        .catch(() => api.get('/observatorio/dashboard').then((res) => res.data))
+      const departamentos = dashboard?.prioridad?.departamentos || []
+      const ranking = departamentos.map((d: any) => {
+        const score = Number(d.indice_prioridad ?? 0)
+        const informalidad = d.tasa_formalidad != null ? Math.max(0, 100 - Number(d.tasa_formalidad)) : null
+        return {
+          nombre: d.departamento,
+          score_prioridad: score,
+          nivel_urgencia: score >= 70 ? 'Urgente' : score >= 50 ? 'Atención' : 'Estable',
+          tasa_desempleo: d.tasa_desempleo ?? null,
+          tasa_informalidad: informalidad,
+          dnp_desempeno: d.dnp_desempeno ?? null,
+          accion_recomendada: score >= 70
+            ? 'Priorizar programas integrales de empleo, formación pertinente y formalización.'
+            : score >= 50
+              ? 'Hacer seguimiento e intervenciones focalizadas por brechas laborales.'
+              : 'Mantener monitoreo preventivo y reforzar sectores con potencial.',
+        }
+      })
+      const top3 = ranking.slice(0, 3).map((d: any) => ({
+        departamento: d.nombre,
+        inversion_sugerida_cop: Math.round((presupuesto * 1_000_000 / 3) / 1_000_000) * 1_000_000,
+        accion: d.accion_recomendada,
+      }))
+      setResult({
+        presupuesto_cop: presupuesto * 1_000_000,
+        total_departamentos: ranking.length,
+        ranking,
+        recomendaciones_inversion: top3,
+        metodologia: dashboard?.prioridad?.nota || 'Índice compuesto del Observatorio: ≥70 urgente, 50-69 atención, <50 estable.',
+        fuentes: ['GEIH', 'DNP/MDM', 'RUES', 'Observatorio ALBA'],
+      })
+    } catch (e: any) {
+      setError(e?.response?.data?.detail || e?.message || 'No se pudo calcular la intervención territorial.')
       const r = await api.post('/simulacion/priorizacion-territorial', { presupuesto_cop: presupuesto * 1_000_000 })
       setResult(r.data)
     } catch (e: any) {
@@ -294,6 +353,7 @@ function Gobierno() {
   return (
     <section className="space-y-4">
       <FormCard
+        title="Gobierno — Intervención por objetivo"
         title="🏛️ Gobierno — Intervención por objetivo"
         description="Convierte indicadores territoriales en una lista priorizada de intervención: desempleo, informalidad, DNP/MDM, acción recomendada e inversión sugerida."
       >
@@ -319,6 +379,7 @@ function Gobierno() {
           </div>
 
           <div className="plate card p-5">
+            <WidgetHeader title="Prioridad de intervención por departamento" dashboard="simulacion" data={result} />
             <WidgetHeader title="Ranking de intervención territorial" dashboard="simulacion" data={result} />
             <ResponsiveContainer width="100%" height={320}>
               <BarChart data={result.ranking.slice(0, 10)} layout="vertical" margin={{ left: 28, right: 28 }}>
@@ -335,6 +396,7 @@ function Gobierno() {
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b border-white/10 text-left text-slate-300">
+                  <th className="py-3 px-2">#</th><th className="py-3 px-2">Departamento</th><th className="py-3 px-2">Score</th><th className="py-3 px-2">Nivel</th><th className="py-3 px-2 text-right">Desempleo</th><th className="py-3 px-2 text-right">Informalidad</th><th className="py-3 px-2 text-right">DNP</th><th className="py-3 px-2">Acción</th>
                   <th className="py-3 px-2">#</th><th className="py-3 px-2">Departamento</th><th className="py-3 px-2">Urgencia</th><th className="py-3 px-2 text-right">Desempleo</th><th className="py-3 px-2 text-right">Informalidad</th><th className="py-3 px-2 text-right">DNP</th><th className="py-3 px-2">Acción</th>
                 </tr>
               </thead>
@@ -343,6 +405,7 @@ function Gobierno() {
                   <tr key={d.nombre} className="border-b border-white/5 text-slate-300">
                     <td className="py-3 px-2 text-slate-500">{i + 1}</td>
                     <td className="py-3 px-2 font-semibold text-white">{d.nombre}</td>
+                    <td className="py-3 px-2 font-bold text-gold-400">{d.score_prioridad}</td>
                     <td className="py-3 px-2"><span className="rounded bg-gold-400/10 px-2 py-1 text-gold-400 font-semibold">{d.nivel_urgencia}</span></td>
                     <td className="py-3 px-2 text-right">{d.tasa_desempleo != null ? `${d.tasa_desempleo.toFixed(1)}%` : '—'}</td>
                     <td className="py-3 px-2 text-right">{d.tasa_informalidad != null ? `${d.tasa_informalidad.toFixed(0)}%` : '—'}</td>
@@ -376,6 +439,7 @@ function FuturosEstudiantes() {
       setError('Selecciona una carrera o programa de la lista.')
       return
     }
+    setProgramas([])
     setLoading(true)
     setError('')
     setResult(null)
@@ -398,6 +462,10 @@ function FuturosEstudiantes() {
   return (
     <section className="space-y-4">
       <FormCard
+        title="Futuros estudiantes — Explora carrera"
+        description="Muestra datos comprensibles de salario y crecimiento para una carrera en un territorio. La decisión queda explicada con fuentes, salarios, crecimiento y alertas; no se muestran marcadores sintéticos."
+      >
+        <ProgramaInput query={programaQuery} selectedPrograma={programa} setQuery={setProgramaQuery} setPrograma={setPrograma} programas={programas} setProgramas={setProgramas} />
         title="🎓 Futuros estudiantes — Explora carrera"
         description="Muestra datos comprensibles de salario y crecimiento para una carrera en un territorio. La decisión queda explicada con fuentes, salarios, crecimiento y alertas; no se muestran marcadores sintéticos."
       >
@@ -449,6 +517,12 @@ function FormCard({ title, description, children }: { title: string; description
   )
 }
 
+function ProgramaInput({ query, selectedPrograma, setQuery, setPrograma, programas, setProgramas }: { query: string; selectedPrograma: string; setQuery: (v: string) => void; setPrograma: (v: string) => void; programas: string[]; setProgramas: (v: string[]) => void }) {
+  return (
+    <div className="relative md:col-span-2">
+      <label className="text-sm text-slate-400 mb-1 block">Programa académico</label>
+      <input value={query} onChange={(e) => { setQuery(e.target.value); setPrograma('') }} onBlur={() => window.setTimeout(() => setProgramas([]), 150)} placeholder="Busca por nombre del programa…" className={fieldClass} />
+      {programas.length > 0 && query !== selectedPrograma && (
 function ProgramaInput({ query, setQuery, setPrograma, programas, setProgramas }: { query: string; setQuery: (v: string) => void; setPrograma: (v: string) => void; programas: string[]; setProgramas: (v: string[]) => void }) {
   return (
     <div className="relative md:col-span-2">
