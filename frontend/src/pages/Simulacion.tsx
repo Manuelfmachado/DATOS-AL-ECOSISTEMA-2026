@@ -1,70 +1,80 @@
-import { useEffect, useMemo, useState, type ReactNode } from 'react'
+import { useEffect, useState, type ReactNode } from 'react'
 import {
-  BarChart, Bar, Line, XAxis, YAxis, Tooltip, ResponsiveContainer,
-  CartesianGrid, Cell, Area, ComposedChart,
+  BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer,
+  CartesianGrid, Cell,
 } from 'recharts'
 import AnalizarIAButton from '../components/AnalizarIAButton'
 import api from '../services/api'
-import { formatCOP, formatCOPCompact, formatNumber } from '../utils/format'
+import { formatCOP, formatNumber } from '../utils/format'
 
 type Tab = 'universidades' | 'gobierno' | 'estudiantes'
 
-interface ViabilidadResult {
+interface AlineacionResult {
   programa: string
-  departamento: string
-  nivel: string
-  score_viabilidad: number
-  nivel_riesgo: string
-  sin_oferta_local: boolean
-  recomendacion: string
-  indicadores: {
-    salario_estimado_cop: number
-    salario_mercado_cop: number
-    demanda_score: number
-    saturacion_oferta_pct: number
-    crecimiento_proyectado_anual_pct: number
-    matriculados_competencia: number
-    sectores_demandantes?: { sector: string; empresas: number }[]
-  }
-  fuentes?: string[]
-}
-
-interface PriorizacionResult {
-  presupuesto_cop: number
-  total_departamentos: number
-  ranking: {
-    nombre: string
-    score_prioridad: number
-    nivel_urgencia: string
-    tasa_desempleo: number | null
-    tasa_informalidad: number | null
-    dnp_desempeno: number | null
-    accion_recomendada: string
+  pensum_ingresado: string[]
+  ocupaciones_afines: string[]
+  indice_alineacion_curricular: number
+  cobertura_esco_pct: number
+  total_esenciales: number
+  total_cubiertas: number
+  total_faltantes: number
+  coincidencia_vacantes_spe_pct: number
+  competencias_cubiertas: string[]
+  competencias_faltan: string[]
+  cursos_sena_recomendados: {
+    programa: string
+    area: string
+    duracion_horas: string
+    costo_cop: string
+    institucion: string
+    departamento: string
   }[]
-  recomendaciones_inversion: { departamento: string; inversion_sugerida_cop: number; accion: string }[]
   metodologia: string
-  fuentes?: string[]
+  fuentes: string[]
 }
 
-interface FuturoResult {
-  programa: string
+interface IntervencionResult {
   departamento: string
-  edad: number
-  nivel_detectado: string
-  escenarios: {
-    label: string
-    salario_inicial_cop: number
-    crecimiento_anual_pct: number
-    anos: number[]
-    mediana: number[]
-    p10: number[]
-    p90: number[]
-    ingreso_acumulado_10a: number
-    descripcion: string
-    profesion_chronos: string
+  objetivo: string
+  objetivo_label: string
+  beneficiarios: number
+  periodo_empleo: string
+  pesos_objetivo: Record<string, number>
+  top_oportunidades: {
+    rama_ciiu: number
+    sector: string
+    empleo_depto: number
+    demanda_pct: number
+    crecimiento_proyectado_pct: number
+    deficit_talento_pct: number
+    compatibilidad_economica_pct: number
+    score: number
+    beneficiarios_estimados: number
+    justificacion: string
   }[]
-  veredicto: string
-  alerta_saturacion?: { riesgo: string; mensaje: string; detalle: string }
+  ranking_completo: any[]
+  metodologia: string
+  fuentes: string[]
+}
+
+interface ExploraResult {
+  programa: string
+  ocupaciones_afines: string[]
+  habilidades_desarrollaras: { habilidad: string; frecuencia_en_ocupaciones: number }[]
+  salidas_laborales: string[]
+  demanda_laboral_sectores: { rama_ciiu: number; sector: string; empleo_nacional: number }[]
+  salario_esperado: {
+    rango_modal: string | null
+    mediana_cop: number | null
+    egresados_anuales_nacional: number
+  }
+  donde_estudiarla: {
+    institucion: string
+    programa: string
+    departamento: string
+    matriculados: number
+  }[]
+  fuentes: string[]
 }
 
 const DEPTOS_FALLBACK = [
@@ -101,6 +111,7 @@ const TAB_CONFIG: { id: Tab; title: string; subtitle: string; description: strin
 ]
 
 const fieldClass = 'w-full rounded-lg border border-white/10 bg-white/[0.03] px-3 py-2 text-base text-slate-200 outline-none transition focus:border-gold-400/60'
+const textareaClass = 'w-full rounded-lg border border-white/10 bg-white/[0.03] px-3 py-2 text-base text-slate-200 outline-none transition focus:border-gold-400/60 min-h-[100px] resize-y'
 
 const tooltipStyle = {
   contentStyle: { background: '#0a0f1f', border: '1px solid rgba(212,175,55,0.35)', borderRadius: 10, color: '#e9ecf5' },
@@ -111,7 +122,7 @@ function useDepartamentos() {
   const [deptos, setDeptos] = useState(DEPTOS_FALLBACK)
 
   useEffect(() => {
-    api.get('/simulacion/trayectoria/departamentos')
+    api.get('/simulacion/departamentos')
       .then((r) => {
         const departamentos = r.data?.departamentos
         if (Array.isArray(departamentos) && departamentos.length > 0) setDeptos(departamentos)
@@ -131,8 +142,8 @@ function useProgramas(query: string) {
         setProgramas([])
         return
       }
-      api.get('/simulacion/trayectoria/programas', { params: { q: query, limit: 20 } })
-        .then((r) => setProgramas(r.data?.programas || []))
+      api.get('/simulacion/programas', { params: { q: query, limit: 20 } })
+        .then((r) => setProgramas(r.data?.programas.map((p: any) => p.programa) || []))
         .catch(() => setProgramas([]))
     }, 250)
 
@@ -182,26 +193,29 @@ export default function Simulacion() {
 }
 
 function Universidades() {
-  const deptos = useDepartamentos()
   const [programaQuery, setProgramaQuery] = useState('')
   const [programa, setPrograma] = useState('')
-  const [departamento, setDepartamento] = useState('Bogotá D.C.')
-  const [nivel, setNivel] = useState('Profesional')
-  const [result, setResult] = useState<ViabilidadResult | null>(null)
+  const [pensumText, setPensumText] = useState('')
+  const [result, setResult] = useState<AlineacionResult | null>(null)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const { programas, setProgramas } = useProgramas(programaQuery)
 
   const run = async () => {
     if (!programa.trim()) {
-      setError('Selecciona un programa académico de la lista.')
+      setError('Selecciona un programa académico.')
+      return
+    }
+    const pensum = pensumText.split('\n').map(l => l.trim()).filter(l => l.length > 0)
+    if (pensum.length === 0) {
+      setError('Ingresa al menos una competencia del pensum actual.')
       return
     }
     setLoading(true)
     setError('')
     setResult(null)
     try {
-      const r = await api.post('/simulacion/viabilidad-programa', { programa: programa.trim(), departamento, nivel })
+      const r = await api.post('/simulacion/alineacion-curricular', { programa: programa.trim(), pensum })
       setResult(r.data)
     } catch (e: any) {
       setError(e.response?.data?.detail || 'No se pudo evaluar la alineación curricular.')
@@ -211,22 +225,32 @@ function Universidades() {
   }
 
   const chartData = result ? [
-    { name: 'Demanda laboral', value: result.indicadores.demanda_score },
-    { name: 'Saturación oferta', value: result.sin_oferta_local ? 0 : result.indicadores.saturacion_oferta_pct },
-    { name: 'Crecimiento anual', value: Math.max(0, result.indicadores.crecimiento_proyectado_anual_pct * 10) },
+    { name: 'Cobertura ESCO', value: result.cobertura_esco_pct },
+    { name: 'Coincidencia SPE', value: result.coincidencia_vacantes_spe_pct },
   ] : []
 
   return (
     <section className="space-y-4">
       <FormCard
         title="🏫 Universidades — Alineación curricular"
-        description="Evalúa si un programa está alineado con la demanda territorial. La decisión combina oferta educativa local, ingresos de egresados, demanda SPE/APE, tejido empresarial y crecimiento sectorial."
+        description="Evalúa si el pensum de un programa cubre las habilidades esenciales que exige el mercado laboral (ESCO) y verifica la coincidencia con las vacantes del SPE/APE SENA."
       >
-        <ProgramaInput query={programaQuery} setQuery={setProgramaQuery} setPrograma={setPrograma} programas={programas} setProgramas={setProgramas} />
-        <SelectField label="Departamento" value={departamento} onChange={setDepartamento} options={deptos} />
-        <SelectField label="Nivel" value={nivel} onChange={setNivel} options={['Técnico', 'Profesional', 'Especialización', 'Maestría']} />
-        <ActionButton onClick={run} loading={loading} label="Evaluar alineación" loadingLabel="Evaluando…" />
-        {error && <p className="text-rose-400 text-sm md:col-span-4">{error}</p>}
+        <div className="md:col-span-2">
+          <ProgramaInput query={programaQuery} setQuery={setProgramaQuery} setPrograma={setPrograma} programas={programas} setProgramas={setProgramas} />
+        </div>
+        <div className="md:col-span-2">
+          <label className="text-sm text-slate-400 mb-1 block">Pensum actual (una competencia por línea)</label>
+          <textarea 
+            value={pensumText} 
+            onChange={(e) => setPensumText(e.target.value)} 
+            placeholder="Ej: Análisis de algoritmos&#10;Bases de datos SQL&#10;Desarrollo web" 
+            className={textareaClass}
+          />
+        </div>
+        <div className="md:col-span-4">
+          <ActionButton onClick={run} loading={loading} label="Evaluar alineación" loadingLabel="Evaluando…" />
+          {error && <p className="text-rose-400 text-sm mt-2">{error}</p>}
+        </div>
       </FormCard>
 
       {result && (
@@ -235,35 +259,54 @@ function Universidades() {
             <div>
               <p className="text-xs uppercase tracking-widest text-gold-400">Resultado curricular</p>
               <h3 className="text-2xl font-bold text-white mt-1">{result.programa}</h3>
-              <p className="text-sm text-slate-300 mt-2 max-w-3xl">{result.recomendacion}</p>
+              <p className="text-sm text-slate-300 mt-2 max-w-3xl">El programa cubre {result.total_cubiertas} de {result.total_esenciales} habilidades esenciales identificadas.</p>
             </div>
             <div className="text-center rounded-2xl border border-gold-400/40 bg-gold-400/10 px-6 py-4">
-              <div className="text-5xl font-bold font-display text-gold-400">{result.score_viabilidad}</div>
-              <p className="text-xs text-slate-400 uppercase tracking-wider">índice de viabilidad</p>
+              <div className="text-5xl font-bold font-display text-gold-400">{result.indice_alineacion_curricular}%</div>
+              <p className="text-xs text-slate-400 uppercase tracking-wider">índice de alineación</p>
             </div>
           </div>
 
           <KpiGrid items={[
-            ['Salario estimado', formatCOP(result.indicadores.salario_estimado_cop), '/mes', 'gold'],
-            ['Demanda laboral', `${result.indicadores.demanda_score}%`, 'SPE/APE', 'green'],
-            ['Oferta local', result.sin_oferta_local ? 'Sin oferta' : `${result.indicadores.matriculados_competencia.toLocaleString('es-CO')} matriculados`, result.sin_oferta_local ? 'oportunidad' : 'competencia', result.sin_oferta_local ? 'gold' : 'blue'],
-            ['Crecimiento', `${result.indicadores.crecimiento_proyectado_anual_pct > 0 ? '+' : ''}${result.indicadores.crecimiento_proyectado_anual_pct}%`, 'anual', 'gold'],
+            ['Habilidades esenciales', `${result.total_esenciales}`, 'ESCO', 'blue'],
+            ['Cobertura del pensum', `${result.total_cubiertas}`, `Faltan ${result.total_faltantes}`, result.total_cubiertas >= result.total_esenciales / 2 ? 'green' : 'rose'],
+            ['Match con SPE', `${result.coincidencia_vacantes_spe_pct}%`, 'demanda local', 'gold'],
+            ['Ocupaciones afines', `${result.ocupaciones_afines.length}`, 'encontradas', 'gold'],
           ]} />
 
+          <div className="plate card p-5 grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+              <WidgetHeader title="Competencias Faltantes" dashboard="simulacion" data={result} />
+              <ul className="list-disc pl-5 text-sm text-slate-300 space-y-1">
+                {result.competencias_faltan.slice(0, 8).map((c, i) => <li key={i}>{c}</li>)}
+              </ul>
+            </div>
+            <div>
+              <h3 className="text-lg font-semibold text-gold-400 mb-2">Cursos SENA Recomendados</h3>
+              <ul className="space-y-2">
+                {result.cursos_sena_recomendados.map((c, i) => (
+                  <li key={i} className="text-sm text-slate-300 bg-white/5 p-2 rounded">
+                    <strong>{c.programa}</strong> ({c.duracion_horas}h) - {c.departamento}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </div>
+
           <div className="plate card p-5">
-            <WidgetHeader title="Variables que explican la decisión" dashboard="simulacion" data={result} />
+            <WidgetHeader title="Resumen de Indicadores" dashboard="simulacion" data={result} />
             <ResponsiveContainer width="100%" height={260}>
               <BarChart data={chartData}>
                 <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.06)" />
                 <XAxis dataKey="name" tick={{ fill: '#cbd5e1', fontSize: 12 }} />
-                <YAxis tick={{ fill: '#94a3b8', fontSize: 12 }} />
+                <YAxis tick={{ fill: '#94a3b8', fontSize: 12 }} domain={[0, 100]} />
                 <Tooltip {...tooltipStyle} />
-                <Bar dataKey="value" radius={[6, 6, 0, 0]}>
+                <Bar dataKey="value" radius={[6, 6, 0, 0]} maxBarSize={60}>
                   {chartData.map((_, i) => <Cell key={i} fill={i === 1 ? '#f59e0b' : '#d4af37'} />)}
                 </Bar>
               </BarChart>
             </ResponsiveContainer>
-            <SourceLine fuentes={result.fuentes || ['SNIES', 'OLE/MEN', 'SPE/APE SENA', 'GEIH', 'RUES']} />
+            <SourceLine fuentes={result.fuentes} />
           </div>
         </>
       )}
@@ -272,8 +315,11 @@ function Universidades() {
 }
 
 function Gobierno() {
-  const [presupuesto, setPresupuesto] = useState(1000)
-  const [result, setResult] = useState<PriorizacionResult | null>(null)
+  const deptos = useDepartamentos()
+  const [departamento, setDepartamento] = useState('Bogotá D.C.')
+  const [objetivo, setObjetivo] = useState('sectores_emergentes')
+  const [beneficiarios, setBeneficiarios] = useState(500)
+  const [result, setResult] = useState<IntervencionResult | null>(null)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
 
@@ -282,7 +328,7 @@ function Gobierno() {
     setError('')
     setResult(null)
     try {
-      const r = await api.post('/simulacion/priorizacion-territorial', { presupuesto_cop: presupuesto * 1_000_000 })
+      const r = await api.post('/simulacion/intervencion-gobierno', { departamento, objetivo, beneficiarios })
       setResult(r.data)
     } catch (e: any) {
       setError(e.response?.data?.detail || 'No se pudo calcular la intervención territorial.')
@@ -295,65 +341,71 @@ function Gobierno() {
     <section className="space-y-4">
       <FormCard
         title="🏛️ Gobierno — Intervención por objetivo"
-        description="Convierte indicadores territoriales en una lista priorizada de intervención: desempleo, informalidad, DNP/MDM, acción recomendada e inversión sugerida."
+        description="Prioriza sectores en un departamento según tu objetivo (reducir desempleo, sectores emergentes, etc). Combina empleo GEIH, crecimiento Chronos, déficit SENA y base formal PILA."
       >
+        <SelectField label="Departamento" value={departamento} onChange={setDepartamento} options={deptos} />
+        <SelectField label="Objetivo principal" value={objetivo} onChange={setObjetivo} options={[
+          { value: 'sectores_emergentes', label: 'Impulsar sectores emergentes' },
+          { value: 'reducir_desempleo_juvenil', label: 'Reducir desempleo' },
+          { value: 'emprendimiento', label: 'Fomentar emprendimiento' },
+          { value: 'reducir_informalidad', label: 'Reducir informalidad' },
+        ].map(o => o.value)} renderOptions={[
+          { value: 'sectores_emergentes', label: 'Impulsar sectores emergentes' },
+          { value: 'reducir_desempleo_juvenil', label: 'Reducir desempleo' },
+          { value: 'emprendimiento', label: 'Fomentar emprendimiento' },
+          { value: 'reducir_informalidad', label: 'Reducir informalidad' },
+        ]} />
         <div>
-          <label className="text-sm text-slate-400 mb-1 block">Presupuesto disponible (millones COP)</label>
-          <input type="number" min={100} step={100} value={presupuesto} onChange={(e) => setPresupuesto(Number(e.target.value))} className={fieldClass} />
+          <label className="text-sm text-slate-400 mb-1 block">Beneficiarios estimados</label>
+          <input type="number" min={10} step={10} value={beneficiarios} onChange={(e) => setBeneficiarios(Number(e.target.value))} className={fieldClass} />
         </div>
-        <ActionButton onClick={run} loading={loading} label="Calcular intervención" loadingLabel="Calculando…" />
+        <div className="md:col-span-1 flex items-end">
+          <ActionButton onClick={run} loading={loading} label="Calcular intervención" loadingLabel="Calculando…" />
+        </div>
         {error && <p className="text-rose-400 text-sm md:col-span-4">{error}</p>}
       </FormCard>
 
       {result && (
         <>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-            {result.recomendaciones_inversion?.slice(0, 3).map((rec, i) => (
-              <div key={rec.departamento} className="plate card p-4 border-gold-400/30 bg-gold-400/5">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+            {result.top_oportunidades?.slice(0, 2).map((rec, i) => (
+              <div key={rec.sector} className="plate card p-4 border-gold-400/30 bg-gold-400/5">
                 <p className="text-xs text-gold-400 font-bold uppercase">Prioridad #{i + 1}</p>
-                <h3 className="text-xl font-bold text-white mt-1">{rec.departamento}</h3>
-                <p className="text-2xl font-display font-bold text-gold-400 mt-2">{formatCOPCompact(rec.inversion_sugerida_cop)}</p>
-                <p className="text-sm text-slate-300 mt-2">{rec.accion}</p>
+                <h3 className="text-xl font-bold text-white mt-1">{rec.sector}</h3>
+                <p className="text-2xl font-display font-bold text-gold-400 mt-2">Score: {rec.score}</p>
+                <p className="text-sm text-slate-300 mt-2">{rec.justificacion}</p>
               </div>
             ))}
           </div>
 
-          <div className="plate card p-5">
-            <WidgetHeader title="Ranking de intervención territorial" dashboard="simulacion" data={result} />
-            <ResponsiveContainer width="100%" height={320}>
-              <BarChart data={result.ranking.slice(0, 10)} layout="vertical" margin={{ left: 28, right: 28 }}>
-                <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.06)" />
-                <XAxis type="number" tick={{ fill: '#94a3b8', fontSize: 12 }} />
-                <YAxis dataKey="nombre" type="category" width={145} tick={{ fill: '#cbd5e1', fontSize: 12 }} />
-                <Tooltip {...tooltipStyle} />
-                <Bar dataKey="score_prioridad" fill="#d4af37" radius={[0, 6, 6, 0]} />
-              </BarChart>
-            </ResponsiveContainer>
-          </div>
-
           <div className="plate card p-5 overflow-x-auto">
-            <table className="w-full text-sm">
+            <WidgetHeader title={`Top sectores para ${result.objetivo_label} en ${result.departamento}`} dashboard="simulacion" data={result} />
+            <table className="w-full text-sm mt-3">
               <thead>
                 <tr className="border-b border-white/10 text-left text-slate-300">
-                  <th className="py-3 px-2">#</th><th className="py-3 px-2">Departamento</th><th className="py-3 px-2">Urgencia</th><th className="py-3 px-2 text-right">Desempleo</th><th className="py-3 px-2 text-right">Informalidad</th><th className="py-3 px-2 text-right">DNP</th><th className="py-3 px-2">Acción</th>
+                  <th className="py-3 px-2">#</th>
+                  <th className="py-3 px-2">Sector (CIIU)</th>
+                  <th className="py-3 px-2 text-right">Score</th>
+                  <th className="py-3 px-2 text-right">Empleo (GEIH)</th>
+                  <th className="py-3 px-2 text-right">Crecimiento</th>
+                  <th className="py-3 px-2 text-right">Déficit Talento</th>
                 </tr>
               </thead>
               <tbody>
-                {result.ranking.slice(0, 20).map((d, i) => (
-                  <tr key={d.nombre} className="border-b border-white/5 text-slate-300">
+                {result.top_oportunidades.map((d, i) => (
+                  <tr key={d.rama_ciiu} className="border-b border-white/5 text-slate-300">
                     <td className="py-3 px-2 text-slate-500">{i + 1}</td>
-                    <td className="py-3 px-2 font-semibold text-white">{d.nombre}</td>
-                    <td className="py-3 px-2"><span className="rounded bg-gold-400/10 px-2 py-1 text-gold-400 font-semibold">{d.nivel_urgencia}</span></td>
-                    <td className="py-3 px-2 text-right">{d.tasa_desempleo != null ? `${d.tasa_desempleo.toFixed(1)}%` : '—'}</td>
-                    <td className="py-3 px-2 text-right">{d.tasa_informalidad != null ? `${d.tasa_informalidad.toFixed(0)}%` : '—'}</td>
-                    <td className="py-3 px-2 text-right">{d.dnp_desempeno != null ? d.dnp_desempeno.toFixed(0) : '—'}</td>
-                    <td className="py-3 px-2 max-w-md">{d.accion_recomendada}</td>
+                    <td className="py-3 px-2 font-semibold text-white">{d.sector}</td>
+                    <td className="py-3 px-2 text-right font-bold text-gold-400">{d.score}</td>
+                    <td className="py-3 px-2 text-right">{formatNumber(d.empleo_depto)}</td>
+                    <td className="py-3 px-2 text-right">{d.crecimiento_proyectado_pct > 0 ? '+' : ''}{d.crecimiento_proyectado_pct}%</td>
+                    <td className="py-3 px-2 text-right">{d.deficit_talento_pct}%</td>
                   </tr>
                 ))}
               </tbody>
             </table>
             <p className="text-xs text-slate-500 mt-3">{result.metodologia}</p>
-            <SourceLine fuentes={result.fuentes || ['GEIH', 'DNP/MDM', 'SNIES']} />
+            <SourceLine fuentes={result.fuentes} />
           </div>
         </>
       )}
@@ -362,11 +414,9 @@ function Gobierno() {
 }
 
 function FuturosEstudiantes() {
-  const deptos = useDepartamentos()
   const [programaQuery, setProgramaQuery] = useState('')
   const [programa, setPrograma] = useState('')
-  const [departamento, setDepartamento] = useState('Bogotá D.C.')
-  const [result, setResult] = useState<FuturoResult | null>(null)
+  const [result, setResult] = useState<ExploraResult | null>(null)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const { programas, setProgramas } = useProgramas(programaQuery)
@@ -380,7 +430,7 @@ function FuturosEstudiantes() {
     setError('')
     setResult(null)
     try {
-      const r = await api.post('/simulacion/que-pasa-si', { programa: programa.trim(), departamento, edad: 22, escenarios: [{ tipo: 'base' }] })
+      const r = await api.post('/simulacion/explora-carrera', { programa: programa.trim() })
       setResult(r.data)
     } catch (e: any) {
       setError(e.response?.data?.detail || 'No se pudo explorar la carrera.')
@@ -389,49 +439,74 @@ function FuturosEstudiantes() {
     }
   }
 
-  const base = result?.escenarios?.[0]
-  const chartData = useMemo(() => {
-    if (!base) return []
-    return base.anos.map((ano, i) => ({ ano, mediana: base.mediana[i], p10: base.p10[i], p90: base.p90[i] }))
-  }, [base])
-
   return (
     <section className="space-y-4">
       <FormCard
         title="🎓 Futuros estudiantes — Explora carrera"
-        description="Muestra datos comprensibles de salario y crecimiento para una carrera en un territorio. La decisión queda explicada con fuentes, salarios, crecimiento y alertas; no se muestran marcadores sintéticos."
+        description="Muestra datos reales de salarios, habilidades a desarrollar, salidas laborales y dónde estudiar un programa específico sin scores mágicos."
       >
-        <ProgramaInput query={programaQuery} setQuery={setProgramaQuery} setPrograma={setPrograma} programas={programas} setProgramas={setProgramas} />
-        <SelectField label="Departamento donde quieres trabajar" value={departamento} onChange={setDepartamento} options={deptos} />
-        <ActionButton onClick={run} loading={loading} label="Explorar carrera" loadingLabel="Explorando…" />
+        <div className="md:col-span-2">
+          <ProgramaInput query={programaQuery} setQuery={setProgramaQuery} setPrograma={setPrograma} programas={programas} setProgramas={setProgramas} />
+        </div>
+        <div className="md:col-span-2 flex items-end">
+          <ActionButton onClick={run} loading={loading} label="Explorar carrera" loadingLabel="Explorando…" />
+        </div>
         {error && <p className="text-rose-400 text-sm md:col-span-4">{error}</p>}
       </FormCard>
 
-      {result && base && (
+      {result && (
         <>
           <KpiGrid items={[
-            ['Salario inicial', formatCOP(base.salario_inicial_cop), '/mes', 'gold'],
-            ['Salario a 5 años', formatCOP(base.mediana[4] || 0), '/mes', 'gold'],
-            ['Crecimiento anual', `${base.crecimiento_anual_pct > 0 ? '+' : ''}${base.crecimiento_anual_pct}%`, 'proyectado', base.crecimiento_anual_pct >= 0 ? 'green' : 'rose'],
-            ['Acumulado 10 años', formatCOP(base.ingreso_acumulado_10a), 'ingreso total', 'blue'],
+            ['Salario esperado', result.salario_esperado.mediana_cop ? formatCOP(result.salario_esperado.mediana_cop) : result.salario_esperado.rango_modal || 'No info', '/mes', 'gold'],
+            ['Egresados anuales', formatNumber(result.salario_esperado.egresados_anuales_nacional), 'a nivel nacional', 'blue'],
+            ['Ocupaciones afines', `${result.ocupaciones_afines.length}`, 'identificadas', 'green'],
+            ['Opciones de estudio', `${result.donde_estudiarla.length}`, 'universidades top', 'gold'],
           ]} />
 
-          <div className="plate card p-5">
-            <WidgetHeader title={`Proyección para ${result.programa} en ${result.departamento}`} dashboard="simulacion" data={result} />
-            <ResponsiveContainer width="100%" height={320}>
-              <ComposedChart data={chartData} margin={{ top: 8, right: 28, left: 16, bottom: 8 }}>
-                <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.06)" />
-                <XAxis dataKey="ano" tick={{ fill: '#94a3b8', fontSize: 12 }} />
-                <YAxis tick={{ fill: '#94a3b8', fontSize: 12 }} tickFormatter={(v) => `$${(Number(v) / 1_000_000).toFixed(1)}M`} />
-                <Tooltip {...tooltipStyle} formatter={(v: any) => [formatCOP(Number(v)), 'Salario mensual']} />
-                <Area type="monotone" dataKey="p90" fill="#d4af37" fillOpacity={0.06} stroke="none" />
-                <Area type="monotone" dataKey="p10" fill="#d4af37" fillOpacity={0.06} stroke="none" />
-                <Line type="monotone" dataKey="mediana" stroke="#d4af37" strokeWidth={3} dot={{ r: 4 }} />
-              </ComposedChart>
-            </ResponsiveContainer>
-            <p className="text-sm text-slate-400 mt-3">{result.veredicto}</p>
-            {result.alerta_saturacion && <p className="text-sm text-amber-300 mt-2">{result.alerta_saturacion.mensaje}: {result.alerta_saturacion.detalle}</p>}
-            <SourceLine fuentes={['OLE/MEN', 'GEIH', 'Chronos T5', 'SNIES']} />
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="plate card p-5">
+              <WidgetHeader title="Habilidades que desarrollarás" dashboard="simulacion" data={result} />
+              <ul className="space-y-2 mt-3">
+                {result.habilidades_desarrollaras.map((h, i) => (
+                  <li key={i} className="text-sm text-slate-300 flex justify-between">
+                    <span>{h.habilidad}</span>
+                    <span className="text-slate-500">req. {h.frecuencia_en_ocupaciones}x</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+            
+            <div className="plate card p-5">
+              <h3 className="text-lg font-semibold text-gold-400 mb-3">Principales salidas laborales</h3>
+              <ul className="list-disc pl-5 space-y-1 text-sm text-slate-300">
+                {result.salidas_laborales.map((s, i) => <li key={i}>{s}</li>)}
+              </ul>
+            </div>
+          </div>
+
+          <div className="plate card p-5 overflow-x-auto">
+            <h3 className="text-lg font-semibold text-gold-400 mb-3">¿Dónde estudiar este programa? (SNIES)</h3>
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b border-white/10 text-left text-slate-300">
+                  <th className="py-3 px-2">Institución</th>
+                  <th className="py-3 px-2">Programa</th>
+                  <th className="py-3 px-2">Departamento</th>
+                  <th className="py-3 px-2 text-right">Matriculados</th>
+                </tr>
+              </thead>
+              <tbody>
+                {result.donde_estudiarla.map((d, i) => (
+                  <tr key={i} className="border-b border-white/5 text-slate-300">
+                    <td className="py-3 px-2 font-semibold text-white">{d.institucion}</td>
+                    <td className="py-3 px-2">{d.programa}</td>
+                    <td className="py-3 px-2">{d.departamento}</td>
+                    <td className="py-3 px-2 text-right">{formatNumber(d.matriculados)}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+            <SourceLine fuentes={result.fuentes} />
           </div>
         </>
       )}
@@ -444,14 +519,14 @@ function FormCard({ title, description, children }: { title: string; description
     <div className="plate card p-5">
       <h2 className="text-xl font-bold text-white">{title}</h2>
       <p className="text-sm text-slate-400 mt-1 mb-4 max-w-4xl">{description}</p>
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 items-end">{children}</div>
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 items-start">{children}</div>
     </div>
   )
 }
 
 function ProgramaInput({ query, setQuery, setPrograma, programas, setProgramas }: { query: string; setQuery: (v: string) => void; setPrograma: (v: string) => void; programas: string[]; setProgramas: (v: string[]) => void }) {
   return (
-    <div className="relative md:col-span-2">
+    <div className="relative">
       <label className="text-sm text-slate-400 mb-1 block">Programa académico</label>
       <input value={query} onChange={(e) => { setQuery(e.target.value); setPrograma('') }} placeholder="Busca por nombre del programa…" className={fieldClass} />
       {programas.length > 0 && (
@@ -467,19 +542,22 @@ function ProgramaInput({ query, setQuery, setPrograma, programas, setProgramas }
   )
 }
 
-function SelectField({ label, value, onChange, options }: { label: string; value: string; onChange: (v: string) => void; options: string[] }) {
+function SelectField({ label, value, onChange, options, renderOptions }: { label: string; value: string; onChange: (v: string) => void; options: string[], renderOptions?: { value: string, label: string }[] }) {
   return (
     <div>
       <label className="text-sm text-slate-400 mb-1 block">{label}</label>
       <select value={value} onChange={(e) => onChange(e.target.value)} className={fieldClass}>
-        {options.map((op) => <option key={op} value={op}>{op}</option>)}
+        {renderOptions 
+          ? renderOptions.map((op) => <option key={op.value} value={op.value}>{op.label}</option>)
+          : options.map((op) => <option key={op} value={op}>{op}</option>)
+        }
       </select>
     </div>
   )
 }
 
 function ActionButton({ onClick, loading, label, loadingLabel }: { onClick: () => void; loading: boolean; label: string; loadingLabel: string }) {
-  return <button onClick={onClick} disabled={loading} className="rounded-lg bg-gold-400 px-5 py-2.5 font-semibold text-[#0a0f1f] transition hover:bg-gold-400/90 disabled:opacity-50">{loading ? loadingLabel : label}</button>
+  return <button onClick={onClick} disabled={loading} className="w-full rounded-lg bg-gold-400 px-5 py-2.5 font-semibold text-[#0a0f1f] transition hover:bg-gold-400/90 disabled:opacity-50">{loading ? loadingLabel : label}</button>
 }
 
 function KpiGrid({ items }: { items: [string, string, string, string][] }) {
