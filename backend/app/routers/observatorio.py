@@ -16,6 +16,11 @@ from fastapi import APIRouter, HTTPException, Query
 from app.db.supabase import supabase
 from app.data.ciuo_nombres import obtener_nombre_ciuo
 from app.data.ciiu_nombres import obtener_nombre_ciiu
+from app.data.divipola import (
+    DEPARTAMENTOS_COLOMBIA,
+    obtener_codigo_divipola,
+    obtener_nombre_departamento,
+)
 
 router = APIRouter(prefix="/api/observatorio", tags=["observatorio"])
 
@@ -60,6 +65,61 @@ def _dedup_filas(rows: list, key: str = "departamento") -> list:
         seen.add(k)
         out.append(r)
     return out
+
+
+def _dedup_sectores_geih(rows: list) -> list:
+    """Deduplica filas de geih_empleo_sector_mensual por rama_ciiu.
+    La tabla se cargo multiples veces (3x) acumulando filas repetidas por periodo.
+    Agrega el nombre amigable del sector para no mostrar codigos CIIU al usuario."""
+    seen = set()
+    out = []
+    for s in rows or []:
+        rama = s.get("rama_ciiu")
+        if rama is None or rama in seen:
+            continue
+        seen.add(rama)
+        out.append({
+            "rama_ciiu": rama,
+            "rama_ciiu_nombre": obtener_nombre_ciiu(rama),
+            "empleo": int(s.get("empleo") or 0),
+            "salario_promedio": int(s.get("salario_promedio") or 0),
+        })
+    return out
+
+
+def _dedup_pila(rows: list) -> list:
+    """Deduplica filas de pila_resumen_sector por actividadeconomicadesc.
+    La tabla se cargo multiples veces (4x) acumulando filas repetidas."""
+    seen = set()
+    out = []
+    for r in rows or []:
+        desc = r.get("actividadeconomicadesc")
+        if not desc or desc in seen:
+            continue
+        seen.add(desc)
+        out.append(r)
+    return out
+
+
+def _dedup_spe(rows: list) -> list:
+    """Deduplica filas de spe_ape_inscritos_ocupacion por ocupacion.
+    La tabla se cargo multiples veces (~4x) acumulando filas repetidas."""
+    seen = set()
+    out = []
+    for r in rows or []:
+        occ = r.get("ocupacion")
+        if not occ or occ in seen:
+            continue
+        seen.add(occ)
+        out.append(r)
+    return out
+
+
+def _ultimo_anio_rues(df) -> int:
+    """Devuelve el ultimo anio valido de rues_empresas_nuevas.
+    Filtra anos imposibles (>2030) que aparecen por errores de datos."""
+    anios_validos = df[df["anio_matricula"] <= 2030]["anio_matricula"]
+    return int(anios_validos.max()) if not anios_validos.empty else 0
 
 
 # ============================================================================
@@ -122,46 +182,29 @@ async def get_departamento_detalle(departamento: str):
 @router.get("/departamentos/{departamento}/sectores")
 async def get_departamento_sectores(departamento: str, periodo: str = None):
     """Empleo por sector económico en un departamento (GEIH depto-sector, 95K registros).
-    
+
     Datos oficiales del DANE: empleo desglosado por departamento y rama CIIU.
     """
     try:
-        depto_norm = _norm_depto(departamento)
-        
-        # Mapeo de nombre de departamento a código DIVIPOLA
-        DEPTO_DIVIPOLA = {
-            "BOGOTA": 11, "ANTIOQUIA": 5, "ATLANTICO": 8, "BOLIVAR": 13,
-            "BOYACA": 15, "CALDAS": 17, "CAQUETA": 18, "CASANARE": 19,
-            "CAUCA": 20, "CESAR": 21, "CHOCO": 27, "CORDOBA": 23,
-            "CUNDINAMARCA": 25, "GUAINIA": 94, "GUAVIARE": 95, "HUILA": 41,
-            "LA GUAJIRA": 44, "MAGDALENA": 47, "META": 50, "NARINO": 52,
-            "NORTE DE SANTANDER": 54, "PUTUMAYO": 86, "QUINDIO": 63,
-            "RISARALDA": 66, "ARCHIPIELAGO DE SAN ANDRES": 88, "SANTANDER": 68,
-            "SUCRE": 70, "TOLIMA": 73, "VALLE DEL CAUCA": 76, "VAUPES": 97,
-            "VICHADA": 99, "AMAZONAS": 91,
-        }
-
-        # Lista de departamentos disponibles para el selector
-        DEPTOS_LISTA = sorted([{"nombre": nombre.title(), "codigo": codigo} for nombre, codigo in DEPTO_DIVIPOLA.items()], key=lambda x: x["nombre"])
-        
-        depto_id = DEPTO_DIVIPOLA.get(depto_norm)
+        # Mapeo robusto via modulo divipola: maneja tildes y mayusculas
+        depto_id = obtener_codigo_divipola(departamento)
         if depto_id is None:
             raise HTTPException(status_code=404, detail=f"Departamento '{departamento}' no encontrado")
-        
+
         # Consultar empleo por sector
         query = supabase.table("geih_empleo_depto_sector").select("*").eq("dpto", depto_id)
-        
+
         if not periodo:
             # Usar el periodo más reciente
             latest = supabase.table("geih_empleo_depto_sector").select("periodo").eq("dpto", depto_id).order("periodo", desc=True).limit(1).execute()
             if latest.data:
                 query = query.eq("periodo", latest.data[0].get("periodo"))
-        
+
         r = query.order("empleo", desc=True).limit(50).execute()
-        
+
         if not r.data:
             raise HTTPException(status_code=404, detail=f"No hay datos de empleo por sector para {departamento}")
-        
+
         # Procesar resultados y eliminar duplicados por rama_ciiu
         vistos = set()
         sectores = []
@@ -176,14 +219,15 @@ async def get_departamento_sectores(departamento: str, periodo: str = None):
                 "empleo": int(row.get("empleo") or 0),
                 "periodo": row.get("periodo"),
             })
-        
+
         return {
-            "departamento": depto_norm,
+            "departamento": obtener_nombre_departamento(depto_id),
+            "departamento_codigo": depto_id,
             "fuente": "DANE GEIH - Empleo por departamento y sector",
             "total_sectores": len(sectores),
             "periodo": sectores[0]["periodo"] if sectores else None,
             "sectores": sectores,
-            "departamentos_disponibles": DEPTOS_LISTA,
+            "departamentos_disponibles": DEPARTAMENTOS_COLOMBIA,
         }
     except HTTPException:
         raise
@@ -195,8 +239,10 @@ async def get_departamento_sectores(departamento: str, periodo: str = None):
 async def get_sectores_formales(limit: int = 50):
     """Top sectores por cotizantes formales (PILA)."""
     try:
-        res = supabase.table("pila_resumen_sector").select("*").order("total_cotizantes", desc=True).limit(limit).execute()
-        return {"sectores": res.data}
+        res = supabase.table("pila_resumen_sector").select("*").order("total_cotizantes", desc=True).limit(limit * 4).execute()
+        # Deduplicar (la tabla tiene ~4x filas repetidas por cargas multiples)
+        dedup = _dedup_pila(res.data)[:limit]
+        return {"sectores": dedup}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
@@ -610,22 +656,66 @@ async def get_mapa_metricas():
 # ============================================================================
 
 # Mapeo de nucleo_conocimiento (SNIES) -> categoria macro
+# IMPORTANTE: el orden del diccionario importa porque _categoria_nucleo hace
+# coincidencia de substring y devuelve el primer match.
+# TECNOLOGIA va ANTES que INGENIERIAS para que "Ingeniería de Sistemas" (el
+# programa de tecnología más grande de Colombia) caiga en TECNOLOGIA y no en
+# INGENIERIAS. Las ingenierías tradicionales (civil, mecánica) no tienen las
+# keywords de TECNOLOGIA, así que seguirán en INGENIERIAS correctamente.
+# Se evitan keywords demasiado cortas (ej. "IA") que producen falsos positivos.
 _NUCLEO_TO_CAT = {
-    "TECNOLOGIA": ["SISTEMAS", "TELEMATICA", "ELECTRONICA", "INFORMATICA", "COMPUTACION"],
-    "INGENIERIAS": ["INGENIERIA", "ARQUITECTURA", "CIVIL", "MECANICA", "INDUSTRIAL", "ALIMENTOS", "AGROINDUSTRIAL", "AMBIENTAL"],
-    "SALUD": ["MEDICINA", "ENFERMERIA", "ODONTOLOGIA", "SALUD", "FARMACIA", "BACTERIOLOGIA", "NUTRICION", "OPTOMETRIA"],
-    "EDUCACION": ["EDUCACION", "LICENCIATURA", "PEDAGOGIA", "FILOSOFIA", "HISTORIA", "LINGUISTICA", "IDIOMAS"],
-    "ADMINISTRACION": ["ADMINISTRACION", "ECONOMIA", "CONTADURIA", "FINANZAS", "NEGOCIOS", "MERCADEO", "PUBLICIDAD", "COMERCIO"],
-    "DERECHO": ["DERECHO", "JURISPRUDENCIA", "POLITICA", "RELACIONES INTERNACIONALES"],
-    "ARTES": ["ARTE", "DISENO", "MUSICA", "TEATRO", "CINE", "COMUNICACION SOCIAL", "LITERATURA"],
-    "AGROPECUARIO": ["AGRONOMIA", "ZOOTECNIA", "VETERINARIA", "AGRICOLA", "FORESTAL", "PESQUERA"],
-    "CIENCIAS_BASICAS": ["MATEMATICAS", "FISICA", "QUIMICA", "BIOLOGIA", "GEOLOGIA", "ESTADISTICA", "ECOLOGIA"],
+    "SALUD": ["MEDICINA", "ENFERMERIA", "ODONTOLOGIA", "FARMACIA", "BACTERIOLOGIA",
+              "NUTRICION", "OPTOMETRIA", "FISIOTERAPIA", "TERAPIA OCUPACIONAL",
+              "PSICOLOGIA", "SALUD PUBLICA", "REGULACION SANITARIA",
+              "MEDIO AMBIENTE SANITARIO", "INSTRUMENTACION QUIRURGICA",
+              "TERAPIA RESPIRATORIA", "GERONTOLOGIA", "SALUD OCUPACIONAL",
+              "FONOAUDIOLOGIA", "SALUD"],
+    "TECNOLOGIA": ["INGENIERIA DE SISTEMAS", "INGENIERIA DE SOFTWARE",
+                   "INGENIERIA INFORMATICA", "INGENIERIA DE DATOS",
+                   "INGENIERIA DE TELECOMUNICACIONES",
+                   "TELEMATICA", "SOFTWARE", "CIBERSEGURIDAD",
+                   "INTELIGENCIA ARTIFICIAL", "TELECOMUNICACION",
+                   "INFORMATICA", "COMPUTACION", "CIENCIA DE DATOS",
+                   "DESARROLLO DE SOFTWARE", "SISTEMAS DE INFORMACION",
+                   "REDES DE COMPUTADORES", "DATOS",
+                   "SISTEMAS", "MULTIMEDIA", "TECNOLOG"],
+    "INGENIERIAS": ["INGENIERIA", "ARQUITECTURA", "AGROINDUSTRIAL", "BIOMEDICA",
+                    "BIOTECNOLOGIA", "METALURGIA", "AUTOMOTRIZ",
+                    "CONSTRUCCION", "TOPOGRAFIA", "SANEAMIENTO",
+                    "HIDRAULICA", "GEOLOGIA", "MINAS", "PETROLEO", "NAVAL"],
+    "AGROPECUARIO": ["AGRONOMIA", "ZOOTECNIA", "VETERINARIA",
+                     "FORESTAL", "PESQUERA", "ACUICULTURA"],
+    "CIENCIAS_BASICAS": ["MATEMATICAS", "ESTADISTICA", "BIOQUIMICA",
+                         "MICROBIOLOGIA", "FISICA", "QUIMICA", "BIOLOGIA",
+                         "ECOLOGIA", "OCEANOGRAFIA"],
+    "ADMINISTRACION": ["ADMINISTRACION", "ECONOMIA", "CONTADURIA", "FINANZAS",
+                       "NEGOCIOS", "MERCADEO", "MARKETING", "PUBLICIDAD",
+                       "COMERCIO EXTERIOR", "LOGISTICA", "TURISMO",
+                       "HOTELERIA", "GASTRONOMIA", "COMERCIO",
+                       "GERENCIA", "RELACIONES INDUSTRIALES"],
+    "EDUCACION": ["EDUCACION", "LICENCIATURA", "PEDAGOGIA",
+                  "FILOSOFIA", "TEOLOGIA", "HISTORIA", "LINGUISTICA",
+                  "LENGUAS MODERNAS", "IDIOMAS", "ESPAÑOL", "TRABAJO SOCIAL"],
+    "DERECHO": ["DERECHO", "JURISPRUDENCIA", "POLITICA", "CIENCIA POLITICA",
+                "RELACIONES INTERNACIONALES", "ESTUDIOS POLITICOS"],
+    "GOBIERNO": ["GOBIERNO", "MILITAR", "POLICIAL", "DEFENSA",
+                 "SEGURIDAD Y DEFENSA", "CAMPO MILITAR", "FUERZAS MILITARES"],
+    "ARTES": ["ARTES PLASTICAS", "BELLAS ARTES", "MUSICA", "TEATRO",
+              "DANZA", "CINE", "COMUNICACION SOCIAL", "COMUNICACION AUDIOVISUAL",
+              "LITERATURA", "FOTOGRAFIA", "AUDIOVISUAL", "ANIMACION",
+              "PERIODISMO", "DISENO GRAFICO", "DISENO INDUSTRIAL",
+              "COMUNICACION VISUAL", "ARTES", "DISENO", "DISENIO", "DISEÑO"],
+    "COMUNICACION": ["LENGUAJES", "LINGÜISTICA", "COMUNICACION"],
 }
 
 # Mapeo de CIIU 2 digitos -> categoria macro
+# Debe cubrir todos los códigos con peso en PILA para que no caigan en OTROS
+# (antes el 19% de la demanda quedaba sin clasificar, distorsionando la brecha).
 _CIIU_TO_CAT = {
-    "01": "AGROPECUARIO", "02": "AGROPECUARIO", "03": "AGROPECUARIO", "75": "AGROPECUARIO",
+    # Agropecuario
+    "01": "AGROPECUARIO", "02": "AGROPECUARIO", "03": "AGROPECUARIO",
     "05": "AGROPECUARIO", "07": "AGROPECUARIO", "08": "AGROPECUARIO", "09": "AGROPECUARIO",
+    # Ingenierías: industria manufacturera + construcción + técnicas
     "10": "INGENIERIAS", "11": "INGENIERIAS", "12": "INGENIERIAS",
     "13": "INGENIERIAS", "14": "INGENIERIAS", "15": "INGENIERIAS",
     "16": "INGENIERIAS", "17": "INGENIERIAS", "18": "INGENIERIAS", "19": "INGENIERIAS",
@@ -634,17 +724,58 @@ _CIIU_TO_CAT = {
     "28": "INGENIERIAS", "29": "INGENIERIAS", "30": "INGENIERIAS", "31": "INGENIERIAS",
     "32": "INGENIERIAS", "33": "INGENIERIAS", "41": "INGENIERIAS", "42": "INGENIERIAS",
     "43": "INGENIERIAS", "71": "INGENIERIAS",
-    "62": "TECNOLOGIA", "63": "TECNOLOGIA", "95": "TECNOLOGIA",
-    "86": "SALUD", "87": "SALUD", "88": "SALUD",
+    # Electricidad, gas, agua y saneamiento -> Ingenierías (civil/ambiental)
+    "35": "INGENIERIAS", "36": "INGENIERIAS", "37": "INGENIERIAS", "38": "INGENIERIAS", "39": "INGENIERIAS",
+    # Tecnología / Informática
+    "61": "TECNOLOGIA", "62": "TECNOLOGIA", "63": "TECNOLOGIA", "95": "TECNOLOGIA",
+    # Salud
+    "75": "SALUD", "86": "SALUD", "87": "SALUD", "88": "SALUD",
+    # Educación
     "85": "EDUCACION",
-    "64": "ADMINISTRACION", "65": "ADMINISTRACION", "66": "ADMINISTRACION",
-    "69": "ADMINISTRACION", "70": "ADMINISTRACION", "73": "ADMINISTRACION",
-    "58": "ARTES", "59": "ARTES", "60": "ARTES", "90": "ARTES", "91": "ARTES", "93": "ARTES",
-    "72": "CIENCIAS_BASICAS", "74": "CIENCIAS_BASICAS",
+    # Comercio (al por mayor, menor, vehiculos)
     "45": "ADMINISTRACION", "46": "ADMINISTRACION", "47": "ADMINISTRACION",
+    # Alojamiento y servicios de comida
     "55": "ADMINISTRACION", "56": "ADMINISTRACION",
-    "68": "ADMINISTRACION", "79": "ADMINISTRACION",
+    # Finanzas y seguros
+    "64": "ADMINISTRACION", "65": "ADMINISTRACION", "66": "ADMINISTRACION",
+    # Actividades inmobiliarias -> Administracion
+    "68": "ADMINISTRACION",
+    # Actividades juridicas y de contabilidad -> DERECHO (antes mal mapeadas a Administracion)
+    "69": "DERECHO",
+    # Oficinas principales, consultoria, publicidad -> Administracion
+    "70": "ADMINISTRACION", "73": "ADMINISTRACION",
+    # Actividades de alquiler y agencias de viaje -> Administracion
+    "77": "ADMINISTRACION", "79": "ADMINISTRACION",
+    # Otros servicios personales y hogares como empleadores
     "94": "ADMINISTRACION", "96": "ADMINISTRACION", "97": "ADMINISTRACION", "98": "ADMINISTRACION", "99": "ADMINISTRACION",
+    # Artes / Comunicación / Diseño / Entretenimiento
+    "58": "ARTES", "59": "ARTES", "60": "ARTES", "90": "ARTES", "91": "ARTES", "93": "ARTES",
+    # Ciencias básicas e investigación
+    "72": "CIENCIAS_BASICAS", "74": "CIENCIAS_BASICAS",
+    # Transporte y logística -> Administración (programas de logística caen bajo Administración/Comercio)
+    "49": "ADMINISTRACION", "50": "ADMINISTRACION", "51": "ADMINISTRACION",
+    "52": "ADMINISTRACION", "53": "ADMINISTRACION",
+    # Gobierno y seguridad (administración pública, defensa, seguridad privada)
+    "80": "GOBIERNO", "81": "GOBIERNO", "82": "GOBIERNO", "84": "GOBIERNO",
+    # Actividades de empleo/servicios de apoyo -> Administración
+    "78": "ADMINISTRACION",
+}
+
+# Mapeo CIIU -> sub-categoria (para desglosar el antiguo "OTROS" en grupos mas especificos)
+# Solo aplica a CIIUs que NO tienen match en _CIIU_TO_CAT (los que estaban cayendo a OTROS).
+_CIIU_SUBGRUPO = {
+    # Agropecuario, silvicultura, pesca
+    "1": "AGROPECUARIO", "2": "AGROPECUARIO",
+    "3": "AGROPECUARIO", "4": "AGROPECUARIO",
+    # Mineria y extraccion
+    "5": "MINAS", "6": "MINAS", "7": "MINAS", "8": "MINAS", "9": "MINAS",
+    # Otros codigos sin categoria formativa especifica
+    "34": "OTROS_INDUSTRIA", "40": "OTROS_INDUSTRIA",
+    "44": "OTROS_INDUSTRIA", "48": "OTROS_INDUSTRIA",
+    "54": "OTROS_INDUSTRIA", "57": "OTROS_INDUSTRIA",
+    "67": "OTROS_INDUSTRIA", "76": "OTROS_INDUSTRIA",
+    "83": "OTROS_INDUSTRIA", "89": "OTROS_INDUSTRIA",
+    "92": "OTROS_INDUSTRIA",
 }
 
 
@@ -658,74 +789,27 @@ def _categoria_nucleo(nucleo: str) -> str:
 
 
 def _categoria_ciiu(ciiu_code: str) -> str:
+    """Mapea un codigo CIIU a una macro-categoria.
+    Primero intenta con la tabla principal (_CIIU_TO_CAT).
+    Si no hay match, cae a una sub-categoria mas especifica (manufactura, minas, etc.)
+    para que el 'OTROS' residual sea minimo y util para el usuario."""
     code = str(ciiu_code).strip()
-    if len(code) >= 2 and code[:2].isdigit():
-        return _CIIU_TO_CAT.get(code[:2], "OTROS")
+    # Acepta tanto codigos de 1 digito (1, 2, 5) como de 2 (01, 10) o 4 digitos (0110, 1001)
+    code2 = code[:2] if len(code) >= 1 else code
+    if code2.isdigit():
+        cat = _CIIU_TO_CAT.get(code2)
+        if cat:
+            return cat
+        return _CIIU_SUBGRUPO.get(code2, "OTROS")
     return "OTROS"
 
 
 @router.get("/brecha")
 async def get_brecha_oferta_demanda():
-    """Calcula la brecha entre formacion (SNIES matriculados) y empleo formal (PILA cotizantes).
+    """Brecha entre formación (SNIES) y empleo real (GEIH, no PILA).
     Retorna categorias con su share en oferta y demanda, e indice de desajuste."""
     try:
-        # Oferta: SNIES matriculados por nucleo_conocimiento
-        r_snies = supabase.table("snies_programas_matriculados").select("nucleo_conocimiento, matriculados").execute()
-        oferta = defaultdict(float)
-        for row in _dedup_filas(r_snies.data):
-            cat = _categoria_nucleo(row.get("nucleo_conocimiento", ""))
-            oferta[cat] += row.get("matriculados") or 0
-        total_oferta = sum(oferta.values()) or 1
-
-        # Demanda: PILA por codigo CIIU (2 digitos)
-        r_pila = supabase.table("pila_resumen_sector").select("actividadeconomicadesc, total_cotizantes").execute()
-        # Deduplicar sectores PILA (la tabla tiene filas repetidas por sector)
-        pila_map = {}
-        for row in r_pila.data:
-            desc = row.get("actividadeconomicadesc", "")
-            if desc not in pila_map:
-                pila_map[desc] = row.get("total_cotizantes") or 0
-        demanda = defaultdict(float)
-        for desc, cotizantes in pila_map.items():
-            ciiu = desc.split(" - ")[0].strip() if " - " in desc else desc.split()[0]
-            cat = _categoria_ciiu(ciiu)
-            demanda[cat] += cotizantes
-        total_demanda = sum(demanda.values()) or 1
-
-        # Combinar todas las categorias
-        cats = set(oferta.keys()) | set(demanda.keys())
-        brecha = []
-        for cat in cats:
-            oferta_share = (oferta.get(cat, 0) / total_oferta) * 100
-            demanda_share = (demanda.get(cat, 0) / total_demanda) * 100
-            desajuste = oferta_share - demanda_share  # positivo = sobre-oferta, negativo = sub-oferta
-            brecha.append({
-                "categoria": cat,
-                "oferta_matriculados": round(oferta.get(cat, 0), 0),
-                "demanda_cotizantes": round(demanda.get(cat, 0), 0),
-                "oferta_share": round(oferta_share, 2),
-                "demanda_share": round(demanda_share, 2),
-                "desajuste": round(desajuste, 2),
-                "tipo": "sobre-oferta" if desajuste > 2 else ("sub-oferta" if desajuste < -2 else "equilibrado"),
-            })
-
-        # Ordenar por desajuste absoluto
-        brecha.sort(key=lambda x: abs(x["desajuste"]), reverse=True)
-
-        # Top 5 sobre-oferta y top 5 sub-oferta
-        sobre = sorted([b for b in brecha if b["desajuste"] > 0], key=lambda x: -x["desajuste"])[:5]
-        sub = sorted([b for b in brecha if b["desajuste"] < 0], key=lambda x: x["desajuste"])[:5]
-
-        return {
-            "brecha_categorias": brecha,
-            "top_sobre_oferta": sobre,
-            "top_sub_oferta": sub,
-            "totales": {
-                "matriculados_snies": round(total_oferta, 0),
-                "cotizantes_pila": round(total_demanda, 0),
-            },
-        }
-
+        return _calcular_brecha_oferta_demanda()
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
@@ -765,11 +849,10 @@ async def get_spe_demanda(limit: int = Query(default=20, ge=1, le=100)):
                 supabase.table("spe_ape_inscritos_ocupacion")
                 .select("*")
                 .order("variacion_pct", desc=True, nullsfirst=False)
-                .limit(limit)
+                .limit(limit * 4)
                 .execute()
             )
-            rows = r.data or []
-            # Filtrar los que tienen variacion_pct no nula; completar con inscritos_2020
+            rows = _dedup_spe(r.data or [])
             con_var = [x for x in rows if x.get("variacion_pct") is not None]
             if len(con_var) < limit:
                 restantes = limit - len(con_var)
@@ -777,11 +860,12 @@ async def get_spe_demanda(limit: int = Query(default=20, ge=1, le=100)):
                     supabase.table("spe_ape_inscritos_ocupacion")
                     .select("*")
                     .order("inscritos_2020", desc=True)
-                    .limit(restantes + 50)
+                    .limit((restantes + 50) * 4)
                     .execute()
                 )
-                ids_vistos = {x["id"] for x in con_var}
-                extras = [x for x in r2.data if x["id"] not in ids_vistos][:restantes]
+                rows2 = _dedup_spe(r2.data or [])
+                occ_vistos = {x["ocupacion"] for x in con_var}
+                extras = [x for x in rows2 if x["ocupacion"] not in occ_vistos][:restantes]
                 rows = con_var + extras
             else:
                 rows = con_var[:limit]
@@ -790,10 +874,10 @@ async def get_spe_demanda(limit: int = Query(default=20, ge=1, le=100)):
                 supabase.table("spe_ape_inscritos_ocupacion")
                 .select("*")
                 .order("inscritos_2020", desc=True)
-                .limit(limit)
+                .limit(limit * 4)
                 .execute()
             )
-            rows = r.data
+            rows = _dedup_spe(r.data or [])[:limit]
         return {"ocupaciones_demanda_creciente": rows}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
@@ -1022,9 +1106,9 @@ async def get_resumen_nacional():
         if not r.data:
             raise HTTPException(status_code=404, detail="No hay datos de GEIH")
         ultima = r.data[0]
-        # Top 5 sectores por empleo del ultimo mes
+        # Top sectores por empleo del ultimo mes (top 21 = todos los sectores CIIU de 2 digitos)
         periodo = ultima.get("periodo")
-        r_sec = supabase.table("geih_empleo_sector_mensual").select("*").eq("periodo", periodo).order("empleo", desc=True).limit(5).execute()
+        r_sec = supabase.table("geih_empleo_sector_mensual").select("*").eq("periodo", periodo).order("empleo", desc=True).limit(50).execute()
         empleo_raw = int(ultima.get("empleo_nacional") or 0)
         pea = int(ultima.get("pea_nacional") or 0)
         desempleados = int(ultima.get("desempleados_nacional") or 0)
@@ -1046,10 +1130,7 @@ async def get_resumen_nacional():
             "desocupados_totales": desempleados,
             "tasa_ocupacion_nacional": tasa_ocupacion,
             "ingreso_promedio_nacional": int(ultima.get("salario_promedio_nacional") or 0),
-            "top_sectores_empleo": [
-                {"rama_ciiu": s.get("rama_ciiu"), "empleo": int(s.get("empleo") or 0), "salario_promedio": int(s.get("salario_promedio") or 0)}
-                for s in r_sec.data
-            ],
+            "top_sectores_empleo": _dedup_sectores_geih(r_sec.data),
         }
     except HTTPException:
         raise
@@ -1175,7 +1256,7 @@ async def get_dashboard():
         r = supabase.table("geih_resumen_nacional").select("*").order("ano", desc=True).order("mes", desc=True).limit(1).execute()
         ultima = r.data[0] if r.data else {}
         periodo = ultima.get("periodo")
-        r_sec = supabase.table("geih_empleo_sector_mensual").select("*").eq("periodo", periodo).order("empleo", desc=True).limit(5).execute() if periodo else {"data": []}
+        r_sec = supabase.table("geih_empleo_sector_mensual").select("*").eq("periodo", periodo).order("empleo", desc=True).limit(50).execute() if periodo else {"data": []}
         empleo_raw = int(ultima.get("empleo_nacional") or 0)
         pea = int(ultima.get("pea_nacional") or 0)
         desempleados = int(ultima.get("desempleados_nacional") or 0)
@@ -1192,10 +1273,7 @@ async def get_dashboard():
             "desocupados_totales": desempleados,
             "tasa_ocupacion_nacional": tasa_ocupacion,
             "ingreso_promedio_nacional": int(ultima.get("salario_promedio_nacional") or 0),
-            "top_sectores_empleo": [
-                {"rama_ciiu": s.get("rama_ciiu"), "empleo": int(s.get("empleo") or 0), "salario_promedio": int(s.get("salario_promedio") or 0)}
-                for s in r_sec.data
-            ],
+            "top_sectores_empleo": _dedup_sectores_geih(r_sec.data),
         }
 
         # 2. Tendencia de empleo (CSV local)
@@ -1209,10 +1287,12 @@ async def get_dashboard():
 
         # 5. Brecha oferta-demanda (Supabase)
         brecha = _calcular_brecha_oferta_demanda()
+        # 5b. Indice de oportunidad (GEIH + SPE + RUES)
+        indice = _calcular_indice_oportunidad()
 
-        # 6. Sectores formales (Supabase)
-        r_formal = supabase.table("pila_resumen_sector").select("*").order("total_cotizantes", desc=True).limit(50).execute()
-        formales = {"sectores": r_formal.data or []}
+        # 6. Sectores formales (Supabase) - deduplicados
+        r_formal = supabase.table("pila_resumen_sector").select("*").order("total_cotizantes", desc=True).limit(200).execute()
+        formales = {"sectores": _dedup_pila(r_formal.data)[:50]}
 
         # 7. SPE demanda (Supabase)
         spe = _calcular_spe_demanda(15)
@@ -1277,49 +1357,93 @@ def _calcular_tendencia_empleo():
 
 
 def _calcular_sectores_emergentes():
+    """Sectores emergentes según RUES: top 5 CIIU2 por empresas nuevas 2023-2025.
+
+    Filtros aplicados:
+      - Años 2000-2026 (descarta registros espurios como 2088).
+      - Suma de empresas nuevas en 2023-2025 para cada CIIU2.
+      - Top 5 CIIU2 con más nuevas empresas en ese periodo reciente.
+      - Serie histórica completa (años disponibles) para cada top sector.
+    """
     try:
         df = pd.read_csv(DATA_PROCESSED / "rues_empresas_nuevas.csv")
-        df = df[df["anio_matricula"] <= 2026]
-        df = df[df["anio_matricula"] >= 2018]
+        # Limpiar años espurios
+        df = df[df["anio_matricula"].between(2000, 2026)]
         if df.empty:
             return {"sectores": [], "periodo": ""}
         df["anio"] = df["anio_matricula"].astype(int)
-        df["ciiu"] = df["ciiu2"].astype(str)
-        nombres = {
-            "47": "Comercio", "56": "Alojamiento y comida", "41": "Construccion",
-            "01": "Agricultura", "49": "Transporte", "10": "Alimentos",
-            "26": "Informatica", "62": "Tecnologia", "20": "Quimicos",
-            "21": "Farmaceuticos", "35": "Energia", "28": "Maquinaria",
-            "29": "Vehiculos", "25": "Productos metalicos", "13": "Textiles",
-            "14": "Prendas de vestir", "11": "Bebidas", "42": "Obras civiles",
-            "00": "Sin clasificar", "02": "Silvicultura", "03": "Pesca",
-            "05": "Carbon", "06": "Petroleo", "31": "Muebles", "32": "Otros manuf",
-            "33": "Reparaciones", "43": "Construc especializada", "45": "Comercio vehiculos",
-            "46": "Comercio mayorista", "50": "Transporte agua", "51": "Transporte aereo",
-            "52": "Almacenamiento", "53": "Correo y mensajeria", "68": "Inmobiliarias",
-            "70": "Consultoria", "73": "Publicidad", "82": "Servicios administrativos",
-            "86": "Salud humana", "93": "Deportes y recreacion", "94": "Asociaciones",
-            "96": "Servicios personales",
-        }
-        anual = df.groupby(["anio", "ciiu"])["empresas_nuevas"].sum().reset_index()
-        ultimo_anio = int(anual["anio"].max()) if not anual.empty else 0
-        if ultimo_anio < 2018 or anual.empty:
+        df["ciiu"] = df["ciiu2"].astype(str).str.zfill(2)
+
+        # Ranking por empresas nuevas en 2023-2025
+        reciente = df[df["anio"].between(2023, 2025)]
+        top5 = (
+            reciente.groupby("ciiu")["empresas_nuevas"]
+            .sum()
+            .reset_index()
+            .sort_values("empresas_nuevas", ascending=False)
+            .head(5)
+        )
+        if top5.empty:
             return {"sectores": [], "periodo": ""}
-        top = anual[anual["anio"] == ultimo_anio].nlargest(10, "empresas_nuevas")
+
+        nombres = {
+            "01": "Agricultura", "02": "Silvicultura", "03": "Pesca", "05": "Carbón", "06": "Petróleo",
+            "07": "Minerales metálicos", "08": "Otras minas", "09": "Apoyo a minería",
+            "10": "Alimentos", "11": "Bebidas", "12": "Tabaco", "13": "Textiles",
+            "14": "Prendas de vestir", "15": "Cuero", "16": "Madera", "17": "Papel",
+            "18": "Impresión", "19": "Coque y refinación", "20": "Químicos",
+            "21": "Farmacéuticos", "22": "Caucho y plástico", "23": "Minerales no metálicos",
+            "24": "Metales básicos", "25": "Productos metálicos", "26": "Informática/electrónica",
+            "27": "Equipo eléctrico", "28": "Maquinaria", "29": "Vehículos",
+            "30": "Otros equipos de transporte", "31": "Muebles", "32": "Otros manufacturas",
+            "33": "Reparaciones", "35": "Electricidad", "36": "Agua", "37": "Saneamiento",
+            "38": "Recolección de desechos", "39": "Actividades de saneamiento",
+            "41": "Construcción de edificios", "42": "Obras civiles",
+            "43": "Construcción especializada", "45": "Comercio de vehículos",
+            "46": "Comercio mayorista", "47": "Comercio al por menor",
+            "49": "Transporte terrestre", "50": "Transporte acuático", "51": "Transporte aéreo",
+            "52": "Almacenamiento", "53": "Correo y mensajería", "55": "Alojamiento",
+            "56": "Servicios de comida", "58": "Edición", "59": "Cine y TV",
+            "61": "Telecomunicaciones", "62": "Software", "63": "Información",
+            "64": "Financieros", "65": "Seguros", "66": "Auxiliares financieros",
+            "68": "Inmobiliarias", "69": "Jurídicas y contables", "70": "Consultoría",
+            "71": "Servicios técnicos", "72": "Investigación científica",
+            "73": "Publicidad", "74": "Otras profesionales", "75": "Veterinaria",
+            "77": "Alquiler de maquinaria", "78": "Actividades de empleo",
+            "79": "Agencias de viaje", "80": "Seguridad", "81": "Servicios a edificios",
+            "82": "Administrativos", "84": "Administración pública", "85": "Educación",
+            "86": "Salud humana", "87": "Asistencia social", "88": " residencial?",
+            "90": "Artes", "93": "Deportes", "94": "Asociaciones", "96": "Servicios personales",
+            "97": "Hogares como empleadores", "98": "No clasificable", "99": "No clasificable",
+            "00": "Sin clasificar",
+        }
+
+        anual = df.groupby(["anio", "ciiu"])["empresas_nuevas"].sum().reset_index()
         tendencias = []
-        for _, row_top in top.iterrows():
+        for _, row_top in top5.iterrows():
             sec = str(row_top["ciiu"])
             hist = anual[anual["ciiu"] == sec].sort_values("anio")
-            puntos = [{"ano": int(row["anio"]), "empresas": int(row["empresas_nuevas"])} for row in hist.to_dict("records")]
-            delta = ((puntos[-1]["empresas"] - puntos[0]["empresas"]) / puntos[0]["empresas"]) * 100 if len(puntos) >= 2 else 0
+            puntos = [
+                {"ano": int(row["anio"]), "empresas": int(row["empresas_nuevas"])}
+                for _, row in hist.iterrows()
+            ]
+            delta = 0
+            if len(puntos) >= 2 and puntos[0]["empresas"] > 0:
+                delta = ((puntos[-1]["empresas"] - puntos[0]["empresas"]) / puntos[0]["empresas"]) * 100
             tendencias.append({
                 "sector": nombres.get(sec, f"Sector {sec}"),
                 "ciiu": sec,
-                "empresas_nuevas_ultimo_ano": int(row_top["empresas_nuevas"]),
+                "empresas_nuevas_2023_2025": int(row_top["empresas_nuevas"]),
                 "variacion_pct": round(delta, 1),
+                "variacion_periodo": f"{int(df['anio'].min())}-{int(df['anio'].max())}",
                 "datos": puntos,
             })
-        return {"sectores": sorted(tendencias, key=lambda s: -s["empresas_nuevas_ultimo_ano"]), "periodo": f"{int(df['anio'].min())}-{ultimo_anio}"}
+
+        return {
+            "sectores": sorted(tendencias, key=lambda s: -s["empresas_nuevas_2023_2025"]),
+            "periodo": f"{int(df['anio'].min())}-{int(df['anio'].max())}",
+            "periodo_ranking": "2023-2025",
+        }
     except Exception as e:
         print(f"[Dashboard] sectores-emergentes error: {e}")
         import traceback; traceback.print_exc()
@@ -1332,7 +1456,7 @@ def _calcular_indice_prioridad():
         desempleo = pd.read_csv(DATA_PROCESSED / "geih_desempleo_departamento.csv")
         dnp = pd.read_csv(DATA_PROCESSED / "dnp_desempeno_departamento.csv")
         rues = pd.read_csv(DATA_PROCESSED / "rues_empresas_nuevas.csv")
-        ultimo_anio = int(rues["anio_matricula"].max())
+        ultimo_anio = _ultimo_anio_rues(rues)
         nuevas_total_ultimo = rues[rues["anio_matricula"] == ultimo_anio]["empresas_nuevas"].sum()
 
         # Mapas para cruce
@@ -1398,10 +1522,25 @@ def _calcular_indice_prioridad():
                     f"Territorio pequeño (+{pen_tamano} pts)" if pen_tamano > 0 else "",
                 ],
             })
+        # Año de los datos usados para contextualizar el score
+        anio_datos = None
+        try:
+            anio_datos = int(rues["anio_matricula"].max()) if not rues.empty else None
+        except Exception:
+            pass
+
         return {
             "departamentos": sorted(resultados, key=lambda d: -d["indice_prioridad"]),
             "total_empresas_nuevas_nacional": int(nuevas_total_ultimo),
             "nota": "Indice compuesto: >70 urgente, 50-70 atencion, <50 estable.",
+            "anio_datos": anio_datos,
+            "metodologia": (
+                "Score 0-100 = informalidad×0.25 + desempleo×0.25 + (100 - DNP)×0.20 + "
+                "(100 - educación superior)×0.15 + (100 - ingreso normalizado)×0.05 + "
+                "penalización territorio pequeño (+10). Datos: GEIH (último periodo), DNP/MDM, RUES."
+            ),
+            "variables": ["informalidad", "desempleo", "gestion_publica_dnp", "educacion_superior", "ingreso_promedio", "tamano_territorio"],
+            "pesos": {"informalidad": 0.25, "desempleo": 0.25, "gestion_publica_dnp": 0.20, "educacion_superior": 0.15, "ingreso_promedio": 0.05, "tamano_territorio": 0.10},
         }
     except Exception as e:
         print(f"[Dashboard] indice-prioridad error: {e}")
@@ -1409,6 +1548,12 @@ def _calcular_indice_prioridad():
 
 
 def _calcular_brecha_oferta_demanda():
+    """Brecha entre matriculados SNIES y empleo real GEIH por macro-categoría.
+
+    Reemplaza PILA por GEIH: la demanda laboral se mide con ocupados reales
+    de la última foto GEIH (último mes disponible), clasificados por CIIU a la
+    misma taxonomía macro que los núcleos de conocimiento SNIES.
+    """
     try:
         r_snies = supabase.table("snies_programas_matriculados").select("nucleo_conocimiento, matriculados").execute()
         oferta = defaultdict(float)
@@ -1416,18 +1561,24 @@ def _calcular_brecha_oferta_demanda():
             cat = _categoria_nucleo(row.get("nucleo_conocimiento", ""))
             oferta[cat] += row.get("matriculados") or 0
         total_oferta = sum(oferta.values()) or 1
-        r_pila = supabase.table("pila_resumen_sector").select("actividadeconomicadesc, total_cotizantes").execute()
-        pila_map = {}
-        for row in r_pila.data or []:
-            desc = row.get("actividadeconomicadesc", "")
-            if desc not in pila_map:
-                pila_map[desc] = row.get("total_cotizantes") or 0
+
+        # Demanda: empleo real GEIH del último periodo disponible
+        r_periodo = supabase.table("geih_empleo_sector_mensual").select("periodo").order("periodo", desc=True).limit(1).execute()
+        periodo = r_periodo.data[0]["periodo"] if r_periodo.data else None
         demanda = defaultdict(float)
-        for desc, cotizantes in pila_map.items():
-            ciiu = desc.split(" - ")[0].strip() if " - " in desc else desc.split()[0]
-            cat = _categoria_ciiu(ciiu)
-            demanda[cat] += cotizantes
+        periodo_demanda = periodo
+        if periodo:
+            r_geih = supabase.table("geih_empleo_sector_mensual").select("rama_ciiu, empleo").eq("periodo", periodo).execute()
+            seen = set()
+            for row in r_geih.data or []:
+                rama = row.get("rama_ciiu")
+                if rama is None or rama in seen:
+                    continue
+                seen.add(rama)
+                cat = _categoria_ciiu(rama)
+                demanda[cat] += row.get("empleo") or 0
         total_demanda = sum(demanda.values()) or 1
+
         cats = set(oferta.keys()) | set(demanda.keys())
         brecha = []
         for cat in cats:
@@ -1437,7 +1588,7 @@ def _calcular_brecha_oferta_demanda():
             brecha.append({
                 "categoria": cat,
                 "oferta_matriculados": round(oferta.get(cat, 0), 0),
-                "demanda_cotizantes": round(demanda.get(cat, 0), 0),
+                "demanda_empleo": round(demanda.get(cat, 0), 0),
                 "oferta_share": round(oferta_share, 2),
                 "demanda_share": round(demanda_share, 2),
                 "desajuste": round(desajuste, 2),
@@ -1450,30 +1601,489 @@ def _calcular_brecha_oferta_demanda():
             "brecha_categorias": brecha,
             "top_sobre_oferta": sobre,
             "top_sub_oferta": sub,
-            "totales": {"matriculados_snies": round(total_oferta, 0), "cotizantes_pila": round(total_demanda, 0)},
+            "totales": {
+                "matriculados_snies": round(total_oferta, 0),
+                "empleo_geih": round(total_demanda, 0),
+                "periodo_demanda": periodo_demanda,
+            },
+            "metodologia": "Oferta = matriculados SNIES por nucleo de conocimiento. Demanda = ocupados GEIH del ultimo mes por CIIU, ambos agrupados en macro-categorias. CIIUs sin categoria formativa en SNIES (industria manufacturera, mineria, pesca) se desglosan en sub-grupos para no quedar como OTROS. No usa PILA.",
         }
     except Exception as e:
         print(f"[Dashboard] brecha error: {e}")
-        return {"brecha_categorias": [], "top_sobre_oferta": [], "top_sub_oferta": [], "totales": {"matriculados_snies": 0, "cotizantes_pila": 0}}
+        return {"brecha_categorias": [], "top_sobre_oferta": [], "top_sub_oferta": [], "totales": {"matriculados_snies": 0, "empleo_geih": 0}, "metodologia": ""}
+
+
+# Mapeo de macro-categorias del Indice de Oportunidad (las usamos para cruzar
+# GEIH, SPE y RUES en la misma taxonomia)
+# Usamos las mismas 9 macro-categorias de _NUCLEO_TO_CAT para mantener consistencia
+# con el resto de ALBA (oferta educativa SNIES, brecha, etc.)
+_INDICE_CATEGORIAS = [
+    "ADMINISTRACION", "AGROPECUARIO", "ARTES", "CIENCIAS_BASICAS",
+    "DERECHO", "EDUCACION", "GOBIERNO", "INGENIERIAS",
+    "SALUD", "TECNOLOGIA",
+]
+
+_INDICE_NOMBRES = {
+    "ADMINISTRACION": "Administracion, comercio y servicios",
+    "AGROPECUARIO": "Agropecuario, silvicultura y pesca",
+    "ARTES": "Artes, diseno y entretenimiento",
+    "CIENCIAS_BASICAS": "Ciencias basicas e investigacion",
+    "DERECHO": "Derecho y ciencias politicas",
+    "EDUCACION": "Educacion",
+    "GOBIERNO": "Gobierno, defensa y seguridad",
+    "INGENIERIAS": "Ingenieria, industria y manufactura",
+    "SALUD": "Salud humana y asistencia social",
+    "TECNOLOGIA": "Tecnologia, informacion y datos",
+}
+
+# Mapeo de seccion CIIU del SPE (letras A-U) -> macro-categoria del indice.
+# Como el SPE agrupa por seccion CIIU (letra) y ALBA usa las 10 categorias
+# macro de nucleo de conocimiento, mapeamos las secciones a las categorias
+# mas cercanas. Las que no tienen equivalente (transporte, alojamiento, etc.)
+# se agregan a ADMINISTRACION (la categoria mas amplia del lado SNIES).
+_INDICE_POR_SECCION_SPE = {
+    "A": "AGROPECUARIO",
+    "B": "INGENIERIAS",   # Minas
+    "C": "INGENIERIAS",   # Manufactura
+    "D": "INGENIERIAS",   # Electricidad/gas
+    "E": "INGENIERIAS",   # Agua/saneamiento
+    "F": "INGENIERIAS",   # Construccion
+    "G": "ADMINISTRACION",# Comercio
+    "H": "ADMINISTRACION",# Transporte
+    "I": "ADMINISTRACION",# Alojamiento
+    "J": "TECNOLOGIA",    # Informacion
+    "K": "ADMINISTRACION",# Finanzas
+    "L": "ADMINISTRACION",# Inmobiliarias
+    "M": "ADMINISTRACION",# Profesionales
+    "N": "ADMINISTRACION",# Servicios admin
+    "O": "GOBIERNO",      # Adm publica
+    "P": "EDUCACION",
+    "Q": "SALUD",
+    "R": "ARTES",
+    "S": "ADMINISTRACION",
+    "T": "ADMINISTRACION",
+    "U": "ADMINISTRACION",
+}
+
+
+def _calcular_indice_oportunidad():
+    """Indice de Oportunidad Laboral 0-100 por macro-categoria.
+
+    Combina 3 fuentes oficiales:
+      - Crecimiento de empleo GEIH (2022 -> ultimo periodo disponible)
+      - Crecimiento de vacantes SPE (2019 -> 2023, ultimo ano publicado)
+      - Crecimiento de empresas nuevas RUES (2020 -> ultimo ano)
+
+    Formula:  score = 0.45 * GEIH_norm + 0.30 * SPE_norm + 0.25 * RUES_norm
+    donde _norm = min(100, max(0, (crecimiento_pct + 50) * 1.0))
+    (transforma variacion_pct a un puntaje 0-100 donde -50% = 0, +50% = 100).
+    """
+    try:
+        from collections import defaultdict
+        scores = {}
+
+        # === Componente 1: GEIH 2022-2026 ===
+        r = supabase.table("geih_empleo_sector_mensual").select("rama_ciiu, periodo, empleo").execute()
+        geih_por_cat = defaultdict(lambda: {"inicio": 0, "fin": 0, "inicio_periodo": None, "fin_periodo": None})
+        for row in r.data or []:
+            rama = row.get("rama_ciiu")
+            periodo = row.get("periodo")
+            empleo = float(row.get("empleo") or 0)
+            if rama is None or empleo == 0:
+                continue
+            cat = _categoria_ciiu(rama)
+            if geih_por_cat[cat]["inicio_periodo"] is None or periodo < geih_por_cat[cat]["inicio_periodo"]:
+                geih_por_cat[cat]["inicio_periodo"] = periodo
+                geih_por_cat[cat]["inicio"] = empleo
+            if geih_por_cat[cat]["fin_periodo"] is None or periodo > geih_por_cat[cat]["fin_periodo"]:
+                geih_por_cat[cat]["fin_periodo"] = periodo
+                geih_por_cat[cat]["fin"] = empleo
+
+        geih_crecimiento = {}
+        for cat, v in geih_por_cat.items():
+            if v["inicio"] > 0 and v["fin"] > 0:
+                geih_crecimiento[cat] = ((v["fin"] - v["inicio"]) / v["inicio"]) * 100
+            else:
+                geih_crecimiento[cat] = 0
+
+        # === Componente 2: SPE 2019-2023 (ultimo ano publicado) ===
+        # Calculamos crecimiento por macro-categoria del indice.
+        # Usamos los datos que ya estan cargados en spe_vacantes_sector.
+        r = supabase.table("spe_vacantes_sector").select("seccion, anio, vacantes").execute()
+        # Agrupar por categoria del indice
+        spe_por_cat = defaultdict(lambda: {"inicio": 0, "fin": 0, "ultimo_anio": None, "primer_anio": None})
+        for row in r.data or []:
+            seccion = row.get("seccion")
+            anio = int(row.get("anio") or 0)
+            vac = int(row.get("vacantes") or 0)
+            if not seccion or not anio or not vac:
+                continue
+            cat = _INDICE_POR_SECCION_SPE.get(seccion, "OTROS_SERVICIOS")
+            # Tomar 2019 como inicio y el ultimo anio disponible como fin
+            if anio == 2019:
+                spe_por_cat[cat]["inicio"] += vac
+                spe_por_cat[cat]["primer_anio"] = 2019
+            if spe_por_cat[cat]["ultimo_anio"] is None or anio > spe_por_cat[cat]["ultimo_anio"]:
+                spe_por_cat[cat]["ultimo_anio"] = anio
+                spe_por_cat[cat]["fin"] = vac
+            elif anio == spe_por_cat[cat]["ultimo_anio"]:
+                spe_por_cat[cat]["fin"] += vac
+
+        spe_crecimiento = {}
+        for cat, v in spe_por_cat.items():
+            if v["inicio"] > 100 and v["fin"] > 0 and v["ultimo_anio"] and v["ultimo_anio"] > 2019:
+                # Cap al 1000% para evitar valores absurdos por datos faltantes
+                variacion = ((v["fin"] - v["inicio"]) / v["inicio"]) * 100
+                spe_crecimiento[cat] = min(1000.0, variacion)
+            else:
+                spe_crecimiento[cat] = 0
+
+        # === Componente 3: RUES por macro-categoria (CIIU -> categoria) ===
+        r = supabase.table("rues_empresas_nuevas").select("anio_matricula, ciiu2, empresas_nuevas").execute()
+        rues_por_cat = defaultdict(lambda: {"inicio": 0, "fin": 0, "ultimo_anio": None})
+        for row in r.data or []:
+            anio = int(row.get("anio_matricula") or 0)
+            ciiu2 = row.get("ciiu2")
+            emp = int(row.get("empresas_nuevas") or 0)
+            if not anio or not ciiu2 or not emp or anio > 2030:
+                continue
+            # Mapear CIIU 2-digitos a macro-categoria del indice
+            cat = _categoria_ciiu(ciiu2)
+            # Si la categoria no esta en _INDICE_CATEGORIAS, la descartamos
+            if cat not in _INDICE_CATEGORIAS:
+                continue
+            if anio == 2020:
+                rues_por_cat[cat]["inicio"] += emp
+            if rues_por_cat[cat]["ultimo_anio"] is None or anio > rues_por_cat[cat]["ultimo_anio"]:
+                rues_por_cat[cat]["ultimo_anio"] = anio
+                rues_por_cat[cat]["fin"] = emp
+            elif anio == rues_por_cat[cat]["ultimo_anio"]:
+                rues_por_cat[cat]["fin"] += emp
+
+        rues_crecimiento = {}
+        for cat, v in rues_por_cat.items():
+            if v["inicio"] > 10 and v["fin"] > 0 and v["ultimo_anio"] and v["ultimo_anio"] > 2020:
+                variacion = ((v["fin"] - v["inicio"]) / v["inicio"]) * 100
+                # Cap al +/-500% para evitar valores absurdos
+                rues_crecimiento[cat] = max(-500.0, min(500.0, variacion))
+            else:
+                rues_crecimiento[cat] = 0
+
+        # === Calcular score 0-100 por categoria ===
+        def _norm(v):
+            # Mapear -50% -> 0, 0% -> 50, +50% -> 100, cap a [0, 100]
+            return float(max(0, min(100, (v + 50))))
+
+        indices = []
+        for cat in _INDICE_CATEGORIAS:
+            geih_c = geih_crecimiento.get(cat, 0)
+            spe_c = spe_crecimiento.get(cat, 0)
+            # RUES ahora es por categoria (no nacional)
+            rues_c = rues_crecimiento.get(cat, 0)
+            score = 0.45 * _norm(geih_c) + 0.30 * _norm(spe_c) + 0.25 * _norm(rues_c)
+            if score >= 75:
+                nivel = "ALTA"
+                color = "alta"
+            elif score >= 50:
+                nivel = "MEDIA"
+                color = "media"
+            else:
+                nivel = "BAJA"
+                color = "baja"
+            # Tendencia: si GEIH esta creciendo mucho, tiende a crecer
+            if geih_c > 5:
+                tendencia = "crece"
+            elif geih_c < -5:
+                tendencia = "decline"
+            else:
+                tendencia = "estable"
+            indices.append({
+                "categoria": cat,
+                "categoria_nombre": _INDICE_NOMBRES.get(cat, cat),
+                "score": round(score, 1),
+                "nivel": nivel,
+                "color": color,
+                "tendencia": tendencia,
+                "geih_crecimiento_pct": round(geih_c, 1),
+                "spe_crecimiento_pct": round(spe_c, 1),
+                "rues_crecimiento_pct": round(rues_c, 1),
+            })
+        indices.sort(key=lambda x: -x["score"])
+
+        return {
+            "indices": indices,
+            "fuentes": {
+                "geih": f"{geih_por_cat[list(geih_por_cat.keys())[0]]['inicio_periodo'] if geih_por_cat else 'N/A'} -> {geih_por_cat[list(geih_por_cat.keys())[0]]['fin_periodo'] if geih_por_cat else 'N/A'}",
+                "spe": "2019 -> 2023 (ultimo publicado por UAESPE)",
+                "rues": "2020 -> 2026 (crecimiento por macro-categoria CIIU)",
+            },
+            "metodologia": "Score 0-100 = 45% crecimiento empleo GEIH + 30% crecimiento vacantes SPE + 25% crecimiento empresas RUES. Cada componente se normaliza con la formula min(100, max(0, variacion_pct + 50)) donde -50% = 0 y +50% = 100. Verde >= 75, Amarillo 50-74, Rojo < 50.",
+        }
+    except Exception as e:
+        print(f"[Dashboard] indice-oportunidad error: {e}")
+        return {"indices": [], "fuentes": {}, "metodologia": ""}
+
+
+# Mapeo codigo DIVIPOLA -> nombre departamento (para emicron_por_departamento_v2)
+_DIVIPOLA_NOMBRE = {
+    5: "Antioquia", 8: "Atlántico", 11: "Bogotá D.C.", 13: "Bolívar",
+    15: "Boyacá", 17: "Caldas", 18: "Caquetá", 19: "Casanare",
+    20: "Cauca", 21: "Cesar", 27: "Chocó", 23: "Córdoba",
+    25: "Cundinamarca", 41: "Huila", 44: "La Guajira", 47: "Magdalena",
+    50: "Meta", 52: "Nariño", 54: "Norte de Santander", 63: "Quindío",
+    66: "Risaralda", 68: "Santander", 70: "Sucre", 73: "Tolima",
+    76: "Valle del Cauca", 81: "Arauca", 85: "Casanare", 86: "Putumayo",
+    88: "San Andrés", 91: "Amazonas", 94: "Guainía", 95: "Guaviare",
+    97: "Vaupés", 99: "Vichada",
+}
+
+
+# 4 indicadores macro laborales clave del Banco Mundial para Colombia.
+# Se usa el mismo orden y nomenclatura amigable en backend y frontend.
+_MACRO_INDICADORES = {
+    "SL.UEM.TOTL.ZS": "Desempleo total (% fuerza laboral)",
+    "SL.EMP.SELF.ZS": "Trabajadores por cuenta propia (% del empleo)",
+    "SL.GDP.PCAP.EM.KD": "PIB por persona empleada (USD const. 2017)",
+    "SL.SRV.EMPL.ZS": "Empleo en servicios (% del total)",
+}
+
+def _calcular_macro_worldbank():
+    """Contexto macro laboral de Colombia 2010-2025 (World Bank).
+
+    Retorna exactamente los 4 indicadores clave solicitados, con su variación
+    2010-2025 (primer año disponible vs último). Los demás indicadores se
+    omiten para no dispersar el mensaje del dashboard.
+    """
+    try:
+        r = supabase.table("worldbank_colombia").select("*").execute()
+        if not r.data:
+            return {"indicadores": []}
+
+        series: dict[str, list[dict]] = {code: [] for code in _MACRO_INDICADORES}
+        for row in r.data:
+            code = row.get("indicator_code")
+            if code not in _MACRO_INDICADORES:
+                continue
+            val = row.get("value")
+            if val is None:
+                continue
+            try:
+                val = float(val)
+            except (TypeError, ValueError):
+                continue
+            series[code].append({"year": int(row.get("year")), "value": round(val, 2)})
+
+        indicadores = []
+        for code, puntos in series.items():
+            puntos.sort(key=lambda x: x["year"])
+            if not puntos:
+                continue
+            primero = puntos[0]
+            ultimo = puntos[-1]
+            cambio = round(ultimo["value"] - primero["value"], 2)
+            es_usd = _wb_unidad(code) == "USD"
+            indicadores.append({
+                "indicator_code": code,
+                "indicator_name": _MACRO_INDICADORES[code],
+                "unidad": _wb_unidad(code),
+                "anio_inicio": primero["year"],
+                "anio_fin": ultimo["year"],
+                "valor_inicio": primero["value"],
+                "valor_fin": ultimo["value"],
+                "variacion": cambio,
+                "datos": puntos,
+            })
+
+        # Orden fijo: desempleo, cuenta propia, PIB/empleado, servicios
+        orden = list(_MACRO_INDICADORES.keys())
+        indicadores.sort(key=lambda x: orden.index(x["indicator_code"]))
+        return {"indicadores": indicadores}
+    except Exception as e:
+        print(f"[Dashboard] macro-worldbank error: {e}")
+        return {"indicadores": []}
+
+
+def _wb_unidad(indicator_code: str) -> str:
+    """Devuelve la unidad de medida de un indicador del Banco Mundial.
+    La mayoría son %, pero el PIB va en USD."""
+    if indicator_code == "SL.GDP.PCAP.EM.KD":
+        return "USD"  # PIB por persona empleada (dólares constantes 2017)
+    return "porcentaje"
+
+
+def _calcular_informalidad_territorial():
+    """Micronegocios (informalidad) por departamento (EMICRON v2, 2022-2024).
+
+    Complementa el empleo formal por departamento con la dimensión informal.
+    Muestra el año real del dato, la variación 2022-2024 y el ingreso promedio
+    mensual del micronegocio típico del departamento cuando está disponible.
+    """
+    try:
+        r = supabase.table("emicron_por_departamento_v2").select("*").execute()
+        if not r.data:
+            return {"departamentos": []}
+
+        # Agrupar por dpto, usando solo años 2022-2024
+        por_depto = defaultdict(list)
+        for row in r.data:
+            dpto = int(row.get("dpto") or 0)
+            ano = int(row.get("ano") or 0)
+            if dpto == 0 or ano < 2022 or ano > 2024:
+                continue
+            por_depto[dpto].append({
+                "ano": ano,
+                "micronegocios": float(row.get("micronegocios") or 0),
+                "ingreso_promedio": float(row.get("ingreso_promedio") or 0) if row.get("ingreso_promedio") is not None else None,
+            })
+
+        resultado = []
+        for dpto_cod, puntos in por_depto.items():
+            nombre = _DIVIPOLA_NOMBRE.get(dpto_cod, f"Dpto {dpto_cod}")
+            puntos.sort(key=lambda x: x["ano"])
+            if not puntos:
+                continue
+            ultimo = puntos[-1]
+            primero_2022 = next((p for p in puntos if p["ano"] == 2022), None)
+            # Variación 2022->último año disponible
+            crec_pct = None
+            if primero_2022 and primero_2022["micronegocios"] > 0:
+                crec_pct = round(
+                    ((ultimo["micronegocios"] - primero_2022["micronegocios"]) / primero_2022["micronegocios"]) * 100, 1
+                )
+            resultado.append({
+                "departamento": nombre,
+                "micronegocios": int(ultimo["micronegocios"]),
+                "ano": ultimo["ano"],
+                "serie_anios": len(puntos),
+                "micronegocios_2022": int(primero_2022["micronegocios"]) if primero_2022 else None,
+                "micronegocios_2023": int(next((p["micronegocios"] for p in puntos if p["ano"] == 2023), 0)) or None,
+                "crecimiento_pct": crec_pct,
+                "ingreso_promedio_mensual": round(ultimo["ingreso_promedio"]) if ultimo.get("ingreso_promedio") else None,
+                "ingreso_disponible": ultimo.get("ingreso_promedio") is not None,
+            })
+        resultado.sort(key=lambda x: x["micronegocios"], reverse=True)
+        return {
+            "departamentos": resultado,
+            "periodo": "2022-2024",
+            "nota": "Micronegocios por departamento según EMICRON/DANE. Variación comparada con 2022.",
+        }
+    except Exception as e:
+        print(f"[Dashboard] informalidad-territorial error: {e}")
+        return {"departamentos": []}
+
+
+def _calcular_composicion_empleo_formal():
+    """Composición del empleo formal por tipo de cotizante (PILA).
+    Muestra dependientes, independientes, aprendices SENA, cooperados, etc."""
+    try:
+        r = supabase.table("pila_resumen_tipo").select("*").execute()
+        if not r.data:
+            return {"tipos": []}
+        total = sum(float(row.get("total_cotizantes") or 0) for row in r.data) or 1
+        tipos = []
+        for row in r.data:
+            cotizantes = float(row.get("total_cotizantes") or 0)
+            tipos.append({
+                "tipo": row.get("tipocotizantepiladesc", "Otro"),
+                "cotizantes": int(cotizantes),
+                "share_pct": round((cotizantes / total) * 100, 1),
+            })
+        tipos.sort(key=lambda x: x["cotizantes"], reverse=True)
+        return {"tipos": tipos, "total_cotizantes": int(total)}
+    except Exception as e:
+        print(f"[Dashboard] composicion-empleo error: {e}")
+        return {"tipos": []}
+
+
+def _calcular_sectores_crecimiento_geih(limit: int = 10):
+    """Sectores con mayor crecimiento de empleo real según GEIH (serie 2022-2026).
+
+    Reemplaza al widget SPE/SENA (que solo tenía 2019-2020) con datos más
+    actuales y representativos (encuesta nacional continua). Calcula el
+    crecimiento comparando el promedio de los primeros 3 meses vs últimos 3
+    meses disponibles, para suavizar ruido estacional.
+    """
+    try:
+        from app.data.ciiu_nombres import obtener_nombre_ciiu
+        r = supabase.table("geih_empleo_sector_mensual").select(
+            "rama_ciiu, empleo, periodo"
+        ).execute()
+        if not r.data:
+            return {"sectores_crecimiento": []}
+
+        # Agrupar empleo por rama_ciiu y periodo
+        por_sector: dict = {}
+        periodos = set()
+        for row in r.data:
+            rama = row.get("rama_ciiu")
+            periodo = row.get("periodo")
+            if rama is None or periodo is None:
+                continue
+            por_sector.setdefault(rama, []).append((periodo, float(row.get("empleo") or 0)))
+            periodos.add(periodo)
+
+        periodos_ordenados = sorted(periodos)
+        if len(periodos_ordenados) < 4:
+            return {"sectores_crecimiento": []}
+
+        crecimiento = []
+        for rama, puntos in por_sector.items():
+            puntos.sort(key=lambda x: x[0])
+            # Promediar primeros 3 y últimos 3 periodos para suavizar
+            n_ini = min(3, len(puntos))
+            n_fin = min(3, len(puntos))
+            empleo_ini = sum(p[1] for p in puntos[:n_ini]) / n_ini
+            empleo_fin = sum(p[1] for p in puntos[-n_fin:]) / n_fin
+            # Solo sectores con empleo significativo (>10.000) para evitar ruido
+            if empleo_fin < 10000:
+                continue
+            if empleo_ini <= 0:
+                continue
+            crec = ((empleo_fin - empleo_ini) / empleo_ini) * 100
+            crecimiento.append({
+                "rama_ciiu": rama,
+                "sector": obtener_nombre_ciiu(rama),
+                "variacion_pct": round(crec, 1),
+                "empleo_inicial": int(empleo_ini),
+                "empleo_final": int(empleo_fin),
+            })
+
+        # Ordenar por crecimiento descendente y tomar los top
+        crecimiento.sort(key=lambda x: x["variacion_pct"], reverse=True)
+        periodo_ini = periodos_ordenados[0]
+        periodo_fin = periodos_ordenados[-1]
+        return {
+            "sectores_crecimiento": crecimiento[:limit],
+            "periodo": f"{periodo_ini} a {periodo_fin}",
+        }
+    except Exception as e:
+        print(f"[Dashboard] sectores-crecimiento-geih error: {e}")
+        return {"sectores_crecimiento": []}
 
 
 def _calcular_spe_demanda(limit: int):
     try:
-        try:
-            r = supabase.table("spe_ape_inscritos_ocupacion").select("*").order("variacion_pct", desc=True, nullsfirst=False).limit(limit).execute()
-            rows = r.data or []
-            con_var = [x for x in rows if x.get("variacion_pct") is not None]
-            if len(con_var) < limit:
-                restantes = limit - len(con_var)
-                r2 = supabase.table("spe_ape_inscritos_ocupacion").select("*").order("inscritos_2020", desc=True).limit(restantes + 50).execute()
-                ids_vistos = {x["id"] for x in con_var}
-                extras = [x for x in r2.data if x["id"] not in ids_vistos][:restantes]
-                rows = con_var + extras
-            else:
-                rows = con_var[:limit]
-        except Exception:
-            r = supabase.table("spe_ape_inscritos_ocupacion").select("*").order("inscritos_2020", desc=True).limit(limit).execute()
-            rows = r.data or []
+        # Traer suficientes filas para compensar duplicados (~4x) y ordenar en Python.
+        # La capa SQLite no soporta NULLS LAST, así que filtramos NULL aquí.
+        r = supabase.table("spe_ape_inscritos_ocupacion").select("*").limit(limit * 20).execute()
+        rows = _dedup_spe(r.data or [])
+        # Separar ocupaciones con variación real (no NULL) y ordenar descendente.
+        # Solo nos interesan las que CRECIERON (variacion_pct > 0) para "demanda creciente".
+        con_var = [
+            x for x in rows
+            if x.get("variacion_pct") is not None and float(x.get("variacion_pct") or 0) > 0
+        ]
+        con_var.sort(key=lambda x: float(x.get("variacion_pct") or 0), reverse=True)
+
+        # Si no hay suficientes positivas, completamos con las de mayor demanda absoluta
+        # (inscritos_2020 más alto) para no dejar la lista vacía.
+        if len(con_var) < limit:
+            r2 = supabase.table("spe_ape_inscritos_ocupacion").select("*").order("inscritos_2020", desc=True).limit(limit * 20).execute()
+            rows2 = _dedup_spe(r2.data or [])
+            occ_vistos = {x.get("ocupacion") for x in con_var}
+            extras = [x for x in rows2 if x.get("ocupacion") not in occ_vistos][:limit - len(con_var)]
+            con_var = con_var + extras
+        rows = con_var[:limit]
         return {"ocupaciones_demanda_creciente": rows}
     except Exception as e:
         print(f"[Dashboard] spe-demanda error: {e}")
@@ -1503,11 +2113,14 @@ def _calcular_mapa_metricas_sync():
         for row in _dedup_filas(r_ocu.data or []):
             d = row["departamento"]
             agg[d]["departamento"] = d
-            agg[d]["ocupados"] += row.get("ocupados") or 0
-            agg[d]["sum_ingreso_prom"] += (row.get("ingreso_promedio") or 0) * (row.get("ocupados") or 0)
-            agg[d]["sum_ingreso_med"] += (row.get("ingreso_mediano") or 0) * (row.get("ocupados") or 0)
-            agg[d]["sum_formalidad"] += (row.get("tasa_formalidad") or 0) * (row.get("ocupados") or 0)
-            agg[d]["sum_mujeres_ocu"] += (row.get("mujeres_pct") or 0) * (row.get("ocupados") or 0)
+            # `ocupados` representa personas: redondear al cargar para evitar sumas con decimales
+            # que aparecen cuando la tabla geih_resumen_departamento se cargo multiples veces.
+            ocupados = float(row.get("ocupados") or 0)
+            agg[d]["ocupados"] += int(round(ocupados))
+            agg[d]["sum_ingreso_prom"] += (row.get("ingreso_promedio") or 0) * ocupados
+            agg[d]["sum_ingreso_med"] += (row.get("ingreso_mediano") or 0) * ocupados
+            agg[d]["sum_formalidad"] += (row.get("tasa_formalidad") or 0) * ocupados
+            agg[d]["sum_mujeres_ocu"] += (row.get("mujeres_pct") or 0) * ocupados
             agg[d]["sum_mujeres_cabeza"] += row.get("mujeres_cabeza_hogar_pct") or 0
             agg[d]["sum_edu_superior"] += row.get("pct_educacion_superior") or 0
             agg[d]["n"] += 1
@@ -1515,11 +2128,12 @@ def _calcular_mapa_metricas_sync():
                 agg[d]["nivel_educativo_etiqueta"] = row["nivel_educativo_etiqueta"]
         for row in _dedup_filas(r_des.data or []):
             d = row["departamento"]
+            no_ocu = float(row.get("no_ocupados") or 0)
             if d in agg:
-                agg[d]["no_ocupados"] += row.get("no_ocupados") or 0
+                agg[d]["no_ocupados"] += int(round(no_ocu))
             else:
                 agg[d]["departamento"] = d
-                agg[d]["no_ocupados"] = row.get("no_ocupados") or 0
+                agg[d]["no_ocupados"] = int(round(no_ocu))
 
         departamentos = []
         for d, a in agg.items():
@@ -1574,10 +2188,80 @@ def _calcular_mapa_metricas_sync():
         except Exception:
             pass
 
-        return {"departamentos": departamentos, "total": len(departamentos), "sector_lider_nacional": sector_lider_nacional}
+        # Sector dominante por departamento: promedio móvil 12 meses de GEIH por macrosector CIIU2
+        sector_dominante_por_depto = {}
+        try:
+            sector_dominante_por_depto = _calcular_sector_dominante_por_depto()
+        except Exception as e:
+            print(f"[Dashboard] sector-dominante error: {e}")
+
+        return {
+            "departamentos": departamentos,
+            "total": len(departamentos),
+            "sector_lider_nacional": sector_lider_nacional,
+            "sector_dominante_por_depto": sector_dominante_por_depto,
+        }
     except Exception as e:
         print(f"[Dashboard] mapa-metricas error: {e}")
-        return {"departamentos": [], "total": 0, "sector_lider_nacional": None}
+        return {"departamentos": [], "total": 0, "sector_lider_nacional": None, "sector_dominante_por_depto": {}}
+
+
+def _calcular_sector_dominante_por_depto():
+    """Calcula el macrosector con mayor empleo promedio por departamento usando
+    una ventana móvil de 12 meses de GEIH (CIIU2 amplios)."""
+    df = pd.read_csv(DATA_PROCESSED / "geih_empleo_depto_sector.csv")
+    df["dpto"] = df["dpto"].astype(int).astype(str).str.zfill(2)
+    df["periodo"] = df["periodo"].astype(str)
+    periodos = sorted(df["periodo"].unique())
+    if len(periodos) < 1:
+        return {}
+    ventana = periodos[-12:]
+    df_w = df[df["periodo"].isin(ventana)].copy()
+
+    def _broad_sector(codigo: int) -> str:
+        if codigo < 10: return "Agricultura"
+        if codigo < 40: return "Industria"
+        if codigo < 55: return "Comercio y transporte"
+        if codigo < 65: return "Alojamiento y restaurantes"
+        if codigo < 68: return "Información y comunicaciones"
+        if codigo < 77: return "Financieros e inmobiliarios"
+        if codigo < 84: return "Servicios profesionales"
+        if codigo < 85: return "Administración pública"
+        if codigo < 86: return "Educación"
+        if codigo < 88: return "Salud"
+        if codigo < 98: return "Servicios comunales, sociales y personales"
+        return "Otros"
+
+    DPTO_CODE_TO_NAME = {
+        "05": "ANTIOQUIA", "08": "ATLÁNTICO", "11": "BOGOTÁ", "13": "BOLÍVAR", "15": "BOYACÁ",
+        "17": "CALDAS", "18": "CAQUETÁ", "19": "CAUCA", "20": "CESAR", "23": "CÓRDOBA",
+        "25": "CUNDINAMARCA", "27": "CHOCÓ", "41": "HUILA", "44": "LA GUAJIRA", "47": "MAGDALENA",
+        "50": "META", "52": "NARIÑO", "54": "NORTE DE SANTANDER", "63": "QUINDÍO", "66": "RISARALDA",
+        "68": "SANTANDER", "70": "SUCRE", "73": "TOLIMA", "76": "VALLE DEL CAUCA", "81": "ARAUCA",
+        "85": "CASANARE", "86": "PUTUMAYO", "91": "AMAZONAS", "94": "GUAINÍA", "95": "GUAVIARE",
+        "97": "VAUPÉS", "99": "VICHADA", "88": "ARCHIPIÉLAGO DE SAN ANDRÉS",
+    }
+
+    df_w["sector"] = df_w["rama_ciiu"].fillna(0).astype(int).apply(_broad_sector)
+    agg = df_w.groupby(["dpto", "rama_ciiu", "sector"]).agg(empleo_sector=("empleo", "mean")).reset_index()
+    agg["empleo_sector"] = agg["empleo_sector"].round(0)
+    total_depto = agg.groupby("dpto")["empleo_sector"].sum().to_dict()
+    agg["pct_broad_total"] = agg.apply(lambda r: round(r["empleo_sector"] / max(total_depto[r["dpto"]], 1) * 100, 1), axis=1)
+    dominant = agg.loc[agg.groupby("dpto")["empleo_sector"].idxmax()]
+
+    out = {}
+    for _, r in dominant.iterrows():
+        depto_name = DPTO_CODE_TO_NAME.get(r["dpto"], r["dpto"])
+        out[depto_name] = {
+            "rama_ciiu": int(r["rama_ciiu"]),
+            "sector": r["sector"],
+            "empleo_sector": int(r["empleo_sector"]),
+            "pct_broad_total": r["pct_broad_total"],
+            "periodo_inicio": ventana[0],
+            "periodo_fin": ventana[-1],
+            "meses": len(ventana),
+        }
+    return out
 
 
 @router.get("/tendencia-empleo")
@@ -1708,7 +2392,7 @@ async def get_indice_prioridad():
         if n:
             des_map[dk] = float(n)
 
-    ultimo_anio = int(rues["anio_matricula"].max())
+    ultimo_anio = _ultimo_anio_rues(rues)
     nuevas_total_ultimo = rues[rues["anio_matricula"] == ultimo_anio]["empresas_nuevas"].sum()
 
     resultados = []
@@ -1764,3 +2448,85 @@ async def get_indice_prioridad():
         "total_empresas_nuevas_nacional": int(nuevas_total_ultimo),
         "nota": "Indice compuesto: >70 urgente, 50-70 atencion, <50 estable.",
     }
+
+
+# ============================================================================
+# EMICRON v2 - Estructura del empleo informal por sector
+# ============================================================================
+
+@router.get("/micronegocios")
+async def get_micronegocios(ano: int | None = None):
+    """Estructura sectorial de micronegocios (EMICRON 2022-2024).
+    Muestra cuantos micronegocios hay por sector (GRUPOS12), ingreso promedio,
+    adopcion de internet y acceso a credito. Complementa los datos de empleo
+    formal (PILA) con el empleo informal que PILA no captura."""
+    try:
+        if ano is None:
+            r_ano = supabase.table("emicron_resumen_nacional_v2").select("ano").order("ano", desc=True).limit(1).execute()
+            ano = r_ano.data[0]["ano"] if r_ano.data else 2024
+        r = supabase.table("emicron_por_sector_v2").select("*").eq("ano", ano).order("micronegocios", desc=True).execute()
+        if not r.data:
+            raise HTTPException(status_code=404, detail=f"Sin datos EMICRON para {ano}")
+        total = sum(int(row.get("micronegocios") or 0) for row in r.data)
+        return {
+            "ano": ano,
+            "total_micronegocios": total,
+            "sectores": [
+                {
+                    "grupos12": int(row.get("grupos12") or 0),
+                    "sector": row.get("sector"),
+                    "micronegocios": int(row.get("micronegocios") or 0),
+                    "pct_participacion": round(int(row.get("micronegocios") or 0) / total * 100, 1) if total else 0,
+                    "ingreso_promedio_mensual": int(row.get("ingreso_promedio") or 0),
+                    "pct_usa_internet": row.get("pct_usa_internet"),
+                    "pct_tiene_credito": row.get("pct_tiene_credito"),
+                }
+                for row in r.data
+            ],
+        }
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.get("/micronegocios/serie")
+async def get_micronegocios_serie():
+    """Evolucion de micronegocios por sector 2022-2024 (tendencia de creacion
+    de microempresas por sector). Util para Prediccion y Observatorio."""
+    try:
+        r = supabase.table("emicron_por_sector_v2").select("*").order("grupos12").order("ano").execute()
+        if not r.data:
+            raise HTTPException(status_code=404, detail="Sin datos EMICRON sectoriales")
+        # Agrupar por sector
+        sectores = {}
+        for row in r.data:
+            g = int(row.get("grupos12") or 0)
+            if g not in sectores:
+                sectores[g] = {"sector": row.get("sector"), "serie": []}
+            sectores[g]["serie"].append({
+                "ano": int(row.get("ano") or 0),
+                "micronegocios": int(row.get("micronegocios") or 0),
+                "ingreso_promedio": int(row.get("ingreso_promedio") or 0),
+            })
+        # Calcular crecimiento 2022->ultimo ano
+        resultado = []
+        for g, info in sorted(sectores.items()):
+            serie = info["serie"]
+            if len(serie) >= 2:
+                prim = serie[0]["micronegocios"]
+                ult = serie[-1]["micronegocios"]
+                crec = ((ult / prim) - 1) * 100 if prim else 0
+            else:
+                crec = None
+            resultado.append({
+                "grupos12": g,
+                "sector": info["sector"],
+                "serie": serie,
+                "crecimiento_pct": round(crec, 1) if crec is not None else None,
+            })
+        return {"sectores": sorted(resultado, key=lambda x: x["crecimiento_pct"] or -999, reverse=True)}
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))

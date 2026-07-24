@@ -5,6 +5,7 @@ Fuente: DANE, adaptación colombiana del ISIC Rev.4.
 """
 
 CIIU_NOMBRES = {
+    "0": "Sin clasificar",
     "1": "Agricultura, ganadería, caza y silvicultura",
     "2": "Silvicultura y extracción de madera",
     "3": "Pesca y acuicultura",
@@ -91,7 +92,8 @@ CIIU_NOMBRES = {
     "95": "Reparación de computadores y efectos personales",
     "96": "Otros servicios personales",
     "97": "Actividades de los hogares como empleadores",
-    "99": "Actividades de organizaciones y órganos extraterritoriales",
+    "98": "Actividades de organizaciones y órganos extraterritoriales",
+    "99": "Actividades no especificadas",
 }
 
 

@@ -61,12 +61,21 @@ def csv_to_records(path: Path, allowed_columns=None):
     return records
 
 
-def upload_table(table_name: str, records: list, batch_size=500):
-    """Sube registros a Supabase en lotes."""
+def upload_table(table_name: str, records: list, batch_size=500, truncate_first=False):
+    """Sube registros a Supabase en lotes.
+    Si truncate_first=True, borra las filas existentes antes de insertar
+    (util para recargar tablas sin chocar con unique constraints)."""
     if not records:
         return
-    
+
     print(f"\n[>] Subiendo {table_name}...")
+
+    if truncate_first:
+        try:
+            supabase.table(table_name).delete().neq("id", -1).execute()
+            print(f"  [OK] Tabla {table_name} vaciada (delete previo)")
+        except Exception as e:
+            print(f"  [WARN] No se pudo vaciar {table_name}: {e}")
     
     for i in range(0, len(records), batch_size):
         batch = records[i:i + batch_size]
@@ -85,7 +94,9 @@ def upload_table(table_name: str, records: list, batch_size=500):
                     break
 
 
-def main():
+def main(only_tables=None, truncate_tables=None):
+    only_tables = only_tables or None
+    truncate_tables = truncate_tables or set()
     # Mapeo archivo CSV → tabla Supabase + columnas permitidas
     tables = {
         # === CARGADAS ANTERIORMENTE ===
@@ -112,7 +123,7 @@ def main():
             'mod_lectura_critica_punt', 'mod_ingles_punt', 'mod_competen_ciudada_punt'
         ]),
         'spe_ape_inscritos_ocupacion.csv': ('spe_ape_inscritos_ocupacion', None),
-        'spe_ape_inscritos_nivel.csv': ('spe_ape_inscritos_nivel', None),
+        # spe_ape_inscritos_nivel fue DROP (duplicada, spe_ape_inscritos_ocupacion la supera).
         'ole_etdh_programas_activos.csv': ('ole_etdh_programas_activos', [
             'programa', 'institucion', 'departamento', 'municipio',
             'area_desempeno', 'tipo_certificado', 'escolaridad',
@@ -120,7 +131,7 @@ def main():
         ]),
         'ole_etdh_resumen_departamento_area.csv': ('ole_etdh_resumen_departamento_area', None),
         'dnp_medicion_desempeno_municipal.csv': ('dnp_medicion_desempeno_municipal', None),
-        'dnp_medicion_desempeno_ultimo.csv': ('dnp_medicion_desempeno_ultimo', None),
+        # dnp_medicion_desempeno_ultimo fue DROP (incompleto, solo 4 filas).
         'dnp_desempeno_departamento.csv': ('dnp_desempeno_departamento', None),
         
         # === NUEVAS TABLAS A CARGAR ===
@@ -152,16 +163,37 @@ def main():
         'esco_ocupacion_habilidades.csv': ('esco_ocupacion_habilidades', None),
         'esco_skill_relations.csv': ('esco_skill_relations', None),
         'esco_habilidades_verdes.csv': ('esco_habilidades_verdes', None),
-        'esco_habilidades_digitales.csv': ('esco_habilidades_digitales', None),
+        # esco_habilidades_digitales fue DROP (subset redundante de esco_habilidades).
         'esco_green_share_ocupaciones.csv': ('esco_green_share_ocupaciones', None),
+        # NOTA: esco_skills.csv fue DROP (duplicado de esco_habilidades).
         
         # EMICRON - Micronegocios
         'emicron_resumen_nacional.csv': ('emicron_resumen_nacional', None),
-        'emicron_por_sector.csv': ('emicron_por_sector', None),
+        # emicron_por_sector fue DROP (incompleta: solo 2 sectores de ~20).
         'emicron_emprendimiento.csv': ('emicron_emprendimiento', None),
         'emicron_por_departamento.csv': ('emicron_por_departamento', None),
-        'emicron_inclusion_financiera.csv': ('emicron_inclusion_financiera', None),
-        
+        # emicron_inclusion_financiera fue DROP (incompleta: solo 2 sectores).
+
+        # EMICRON v2 - Corregido con GRUPOS12 (13 sectores) + modulos nuevos
+        'emicron_por_sector_v2.csv': ('emicron_por_sector_v2', None),
+        'emicron_costos_sector.csv': ('emicron_costos_sector', None),
+        'emicron_ubicacion_sector.csv': ('emicron_ubicacion_sector', None),
+        'emicron_resumen_nacional_v2.csv': ('emicron_resumen_nacional_v2', None),
+        'emicron_por_departamento_v2.csv': ('emicron_por_departamento_v2', None),
+
+        # RNT - Registro Nacional de Turismo (MinCIT) - Emprende IA
+        'rnt_resumen_departamento_categoria.csv': ('rnt_resumen_departamento_categoria', None),
+        'rnt_resumen_municipio_categoria.csv': ('rnt_resumen_municipio_categoria', None),
+        'rnt_resumen_nacional_categoria.csv': ('rnt_resumen_nacional_categoria', None),
+        # rnt_establecimientos.csv es grande (245K filas); cargar aparte si se necesita detalle
+
+        # FINAGRO - Credito agropecuario - Emprende IA
+        'finagro_colocaciones_detalle.csv': ('finagro_colocaciones_detalle', None),
+        'finagro_resumen_departamento.csv': ('finagro_resumen_departamento', None),
+        'finagro_colocaciones_cadena.csv': ('finagro_colocaciones_cadena', None),
+        'finagro_resumen_nacional_anual.csv': ('finagro_resumen_nacional_anual', None),
+        'finagro_top_cadenas_departamento.csv': ('finagro_top_cadenas_departamento', None),
+
         # World Bank
         'worldbank_colombia.csv': ('worldbank_colombia', [
             'indicator_code', 'indicator_name', 'year', 'value', 'country'
@@ -192,9 +224,14 @@ def main():
         return
     
     for csv_file, (table_name, allowed_cols) in tables.items():
+        # Si se paso un filtro por argumento, solo cargar las tablas indicadas
+        if only_tables and table_name not in only_tables:
+            continue
         path = PROCESSED / csv_file
         records = csv_to_records(path, allowed_cols)
-        upload_table(table_name, records)
+        # Truncar antes de insertar para las tablas marcadas (evita duplicados)
+        truncate = table_name in truncate_tables
+        upload_table(table_name, records, truncate_first=truncate)
     
     print("\n" + "=" * 70)
     print("CARGA FINALIZADA")
@@ -202,4 +239,23 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    import sys
+    # Soporte para argumentos:
+    #   python src/load_to_supabase.py                          -> carga todo
+    #   python src/load_to_supabase.py finagro_colocaciones_detalle   -> solo esa tabla
+    #   python src/load_to_supabase.py rnt_resumen_departamento_categoria finagro_resumen_departamento
+    only_tables = set(sys.argv[1:]) if len(sys.argv) > 1 else None
+    # Tablas con unique constraint que conviene vaciar antes de recargar
+    truncate_tables = {
+        'rnt_resumen_departamento_categoria',
+        'rnt_resumen_municipio_categoria',
+        'rnt_resumen_nacional_categoria',
+        'finagro_resumen_departamento',
+        'finagro_colocaciones_cadena',
+        'finagro_resumen_nacional_anual',
+        'dnp_desempeno_departamento',
+        'emicron_por_sector_v2',
+        'emicron_costos_sector',
+        'emicron_resumen_nacional_v2',
+    }
+    main(only_tables=only_tables, truncate_tables=truncate_tables)

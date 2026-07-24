@@ -5,10 +5,9 @@ Versión simplificada y poderosa:
   2. Practicar entrevista con chatbot LLM.
 """
 
-from fastapi import APIRouter, HTTPException, UploadFile, File
+from fastapi import APIRouter, HTTPException, UploadFile, File, Form
 from pydantic import BaseModel
 from app.db.supabase import supabase
-from app.services.embeddings import get_embedding
 from app.services.knowledge_graph import get_knowledge_graph
 from app.services.llm import mejorar_cv as deepinfra_mejorar_cv, entrevista_chat as deepinfra_entrevista_chat
 from app.services.llm_gemini import (
@@ -16,7 +15,10 @@ from app.services.llm_gemini import (
     entrevista_chat as gemini_entrevista_chat,
     is_gemini_available,
     call_gemini_json,
+    call_gemini_json_multimodal,
 )
+from google.genai import types
+from typing import Any
 import os
 import httpx
 import json
@@ -141,12 +143,104 @@ class EntrevistaChatRequest(BaseModel):
     historial: str = ""
 
 
+class PreguntasEntrevistaRequest(BaseModel):
+    vacante: str
+
+
+@router.post("/preguntas-entrevista")
+async def generar_preguntas_entrevista(
+    vacante: str = Form(""),
+    archivos: list[UploadFile] = File(default=[]),
+):
+    """Genera EXACTAMENTE 20 preguntas comunes y afines para una vacante, cada una
+    con su respuesta modelo. Sólo texto, sin voz. Acepta texto de la vacante y/o
+    imágenes (screenshots) que Gemini analiza multimodalmente.
+    El resultado se puede seguir analizando con el botón 'Analizar con IA'."""
+    try:
+        if not vacante.strip() and not archivos:
+            raise HTTPException(status_code=400, detail="Pega el texto de la vacante o adjunta una imagen")
+
+        system = (
+            "Eres ALBA, una reclutadora experta de RRHH en Colombia. Tu única tarea "
+            "es generar EXACTAMENTE 20 preguntas de entrevista comunes y afines para "
+            "la vacante proporcionada, cada una con su respectiva respuesta modelo.\n\n"
+            "REGLAS:\n"
+            "- Genera EXACTAMENTE 20 pares pregunta/respuesta, ni más ni menos.\n"
+            "- Las preguntas deben ser relevantes para la vacante específica.\n"
+            "- Mezcla tipos de pregunta: presentación, experiencia técnica, "
+            "comportamentales (STAR), trabajo en equipo, liderazgo, casos hipotéticos, "
+            "motivación y expectativas.\n"
+            "- Las respuestas modelo deben ser realistas, claras y útiles para que el "
+            "candidato se prepare. Entre 2 y 5 frases cada una.\n"
+            "- NO incluyas saludos, introducciones, ni texto fuera del JSON.\n\n"
+            "Devuelve ÚNICAMENTE un JSON válido con esta estructura exacta:\n"
+            "{\n"
+            '  "preguntas": [\n'
+            '    {"pregunta": string, "respuesta": string},\n'
+            '    ... (exactamente 20 elementos)\n'
+            "  ]\n"
+            "}\n"
+            "En español colombiano."
+        )
+
+        # Construir partes multimodales: texto + imágenes
+        parts: list[Any] = []
+        texto_vacante = vacante.strip()
+        if archivos:
+            for archivo in archivos:
+                contenido = await archivo.read()
+                ext = (archivo.filename or "").lower()
+                if ext.endswith((".png", ".jpg", ".jpeg", ".webp", ".gif", ".bmp")):
+                    mime = "image/png" if ext.endswith(".png") else \
+                           "image/jpeg" if ext.endswith((".jpg", ".jpeg")) else \
+                           "image/webp" if ext.endswith(".webp") else \
+                           "image/gif" if ext.endswith(".gif") else "image/bmp"
+                    parts.append(types.Part(inline_data=types.Blob(data=contenido, mime_type=mime)))
+            if texto_vacante:
+                parts.append(types.Part(text=f"VACANTE:\n{texto_vacante}"))
+            elif parts:
+                parts.append(types.Part(text="Analiza la imagen de la vacante y genera las preguntas."))
+        else:
+            parts.append(types.Part(text=f"VACANTE:\n{texto_vacante}"))
+
+        resultado = call_gemini_json_multimodal(system, parts, temperature=0.5, max_tokens=8000)
+
+        if "error" in resultado:
+            raise HTTPException(status_code=502, detail=resultado.get("raw", "Error generando preguntas"))
+
+        preguntas = resultado.get("preguntas", [])
+        if len(preguntas) < 20:
+            while len(preguntas) < 20:
+                preguntas.append({
+                    "pregunta": "Cuéntame más sobre tu experiencia relacionada con el rol.",
+                    "respuesta": "Respuesta modelo no disponible. Describe tu experiencia usando ejemplos concretos y la técnica STAR.",
+                })
+        preguntas = preguntas[:20]
+
+        return {"preguntas": preguntas, "vacante": texto_vacante or "(vacante desde imagen)"}
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
 @router.post("/mejorar-cv")
 async def mejorar_cv_endpoint(req: CVRequest):
-    """Mejora un CV pegado como texto usando LLM (Gemini con fallback a DeepInfra)."""
+    """Mejora un CV pegado como texto usando LLM (Gemini con fallback a DeepInfra).
+    Enriquece el prompt con datos reales del mercado laboral (PILA, SNIES, O*NET/ESCO)."""
     try:
+        # Contexto de mercado real (sectores con empleo, competencia, ocupaciones afines)
+        contexto_datos = {}
+        contexto_txt = ""
+        try:
+            consulta = req.vacante or req.cv[:300]
+            contexto_datos = await _buscar_contexto(consulta)
+            contexto_txt = _contexto_a_texto(contexto_datos)
+        except Exception as ce:
+            print(f"[Coach] contexto mercado falló: {ce}")
+
         if is_gemini_available():
-            return gemini_mejorar_cv(req.cv, req.vacante)
+            return gemini_mejorar_cv(req.cv, req.vacante, contexto_txt)
         return deepinfra_mejorar_cv(req.cv, req.vacante)
     except Exception as e:
         print(f"[Coach] Gemini falló ({e}), usando DeepInfra fallback.")
@@ -187,10 +281,20 @@ async def mejorar_cv_archivo(file: UploadFile = File(...), vacante: str = ""):
 
 @router.post("/entrevista")
 async def entrevista_endpoint(req: EntrevistaChatRequest):
-    """Chatbot para practicar entrevistas o preguntar sobre procesos de selección."""
+    """Chatbot para practicar entrevistas o preguntar sobre procesos de selección.
+    Enriquece el prompt con datos reales del mercado laboral (PILA, SNIES, O*NET/ESCO)."""
     try:
+        # Contexto de mercado real (para que el coach cite cifras reales)
+        contexto_txt = ""
+        try:
+            consulta = req.vacante or req.mensaje
+            contexto_datos = await _buscar_contexto(consulta)
+            contexto_txt = _contexto_a_texto(contexto_datos)
+        except Exception as ce:
+            print(f"[Coach] contexto mercado falló: {ce}")
+
         if is_gemini_available():
-            respuesta = gemini_entrevista_chat(req.mensaje, req.modo, req.historial, req.vacante)
+            respuesta = gemini_entrevista_chat(req.mensaje, req.modo, req.historial, req.vacante, contexto_txt)
         else:
             respuesta = deepinfra_entrevista_chat(req.mensaje, req.modo, req.historial, req.vacante)
         return {"respuesta": respuesta}
@@ -472,112 +576,16 @@ def _extraer_texto_word(contenido: bytes) -> str:
 # Funciones auxiliares
 # ============================================================================
 
-def _cosine_similarity(a: list, b: list) -> float:
-    """Calcula similitud coseno entre dos vectores."""
-    dot = sum(x * y for x, y in zip(a, b))
-    norm_a = math.sqrt(sum(x * x for x in a))
-    norm_b = math.sqrt(sum(x * x for x in b))
-    if norm_a == 0 or norm_b == 0:
-        return 0.0
-    return dot / (norm_a * norm_b)
-
-
-async def _buscar_embeddings_local(
-    mensaje: str, tabla: str, top_k: int = 5, categoria: str | None = None
-) -> list:
-    """Fallback local: descarga embeddings y calcula similitud coseno en Python.
-    Util hasta que se aplique schema_rag_rpc.sql y schema_fix_embeddings_dim.sql."""
-    try:
-        query_embedding = await get_embedding(mensaje)
-
-        # Construir query
-        query = supabase.table(tabla).select("id, texto, metadata, embedding")
-        if categoria:
-            # PostgREST no permite filtrar JSONB anidado directamente por metadata->>category
-            # asi que traemos todo y filtramos localmente
-            pass
-
-        response = query.limit(1000).execute()
-        rows = response.data or []
-
-        # Filtrar por categoria si se especifica
-        if categoria:
-            rows = [r for r in rows if r.get("metadata", {}).get("category") == categoria]
-
-        # Calcular similitud
-        scored = []
-        for r in rows:
-            emb = r.get("embedding")
-            if not emb:
-                continue
-            # PostgREST devuelve el vector como string JSON; parsearlo si es necesario
-            if isinstance(emb, str):
-                try:
-                    emb = json.loads(emb)
-                except Exception:
-                    continue
-            if not isinstance(emb, list) or len(emb) != len(query_embedding):
-                continue
-            sim = _cosine_similarity(query_embedding, emb)
-            scored.append({**r, "similitud": sim})
-
-        scored.sort(key=lambda x: x["similitud"], reverse=True)
-        return [
-            {
-                "texto": r["texto"][:500],
-                "fuente": r["metadata"].get("source_name"),
-                "categoria": r["metadata"].get("category"),
-                "similitud": round(r["similitud"], 4),
-            }
-            for r in scored[:top_k]
-        ]
-    except Exception as e2:
-        print(f"[Coach] Fallback local tambien falló: {e2}")
-        return []
-
 
 async def _buscar_contexto(mensaje: str) -> dict:
-    """Busca datos relevantes en Supabase según el mensaje del usuario.
-    Usa RAG vectorial sobre embeddings_guias con Gemma 300 (768d)."""
+    """Busca datos relevantes según el mensaje del usuario.
+
+    Antes usaba RAG vectorial (pgvector + embeddings); ahora que ALBA migró a
+    SQLite sin embeddings, usa búsqueda textual y datos estructurados.
+    El LLM (Gemini) recibe este contexto para enriquecer sus respuestas."""
     contexto = {}
 
-    # 1. Busqueda vectorial en guias/documentos (RAG)
-    # Intentar RPC primero; si falla o devuelve vacio, usar fallback local
-    rpc_resultados = []
-    try:
-        query_embedding = await get_embedding(mensaje)
-        # NOTA: categoria_filter se envia como string vacio en vez de null porque
-        # PostgREST serializa null de forma que la condicion SQL no evalua correctamente.
-        resultados = supabase.rpc(
-            "buscar_embeddings_vector",
-            {
-                "consulta_embedding": query_embedding,
-                "nombre_tabla": "embeddings_guias",
-                "limite_resultados": 5,
-                "categoria_filter": "",
-            },
-        ).execute()
-        rpc_resultados = resultados.data or []
-    except Exception as e:
-        print(f"[Coach] RAG RPC falló: {e}")
-
-    if rpc_resultados:
-        contexto["guias_relacionadas"] = [
-            {
-                "texto": r["texto"][:500],
-                "fuente": r["metadata"].get("source_name"),
-                "categoria": r["metadata"].get("category"),
-                "similitud": round(r["similitud"], 4),
-            }
-            for r in rpc_resultados
-        ]
-    else:
-        # Fallback local: descarga embeddings y calcula similitud coseno en Python
-        contexto["guias_relacionadas"] = await _buscar_embeddings_local(
-            mensaje, "embeddings_guias", 5
-        )
-
-    # 2. Datos estructurados: sectores con mas empleo formal
+    # 1. Datos estructurados: sectores con mas empleo formal
     try:
         sectores = (
             supabase.table("pila_resumen_sector")
@@ -624,6 +632,35 @@ async def _buscar_contexto(mensaje: str) -> dict:
         contexto["ocupaciones_similares"] = []
 
     return contexto
+
+
+def _contexto_a_texto(contexto: dict) -> str:
+    """Convierte el contexto de mercado (de _buscar_contexto) en un texto breve
+    para inyectar en los prompts del LLM (mejorar_cv, entrevista_chat)."""
+    partes = []
+    # Sectores formales con más empleo
+    top_sectores = contexto.get("top_sectores") or []
+    if top_sectores:
+        top3 = top_sectores[:3]
+        sectores_txt = "; ".join(
+            f"{s['sector'][:45]} ({int(s['cotizantes']):,} cotizantes)".replace(",", ".")
+            for s in top3
+        )
+        partes.append(f"Sectores con más empleo formal en Colombia: {sectores_txt}")
+    # Programas relacionados (competencia para el usuario)
+    programas = contexto.get("programas_relacionados") or []
+    if programas:
+        prog_txt = "; ".join(
+            f"{p['programa'][:40]} ({int(p.get('matriculados', 0)):,} matriculados)".replace(",", ".")
+            for p in programas[:3]
+        )
+        partes.append(f"Programas con más estudiantes (competencia): {prog_txt}")
+    # Ocupaciones similares detectadas (O*NET/ESCO)
+    ocupaciones = contexto.get("ocupaciones_similares") or []
+    if ocupaciones:
+        occ_txt = ", ".join(o.get("title", "")[:35] for o in ocupaciones[:3])
+        partes.append(f"Ocupaciones afines según O*NET/ESCO: {occ_txt}")
+    return "\n".join(partes) if partes else ""
 
 
 def _analizar_vacante(vacante: str) -> dict:

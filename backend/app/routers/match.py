@@ -276,46 +276,137 @@ async def get_skills_gap(programa: str):
 
 @router.post("/persona")
 async def match_persona(req: PersonaRequest):
-    """Encuentra dónde encaja una persona según su perfil y habilidades."""
+    """Encuentra dónde encaja una persona según su perfil y habilidades.
+
+    Busca ocupaciones ESCO/O*NET usando el perfil del usuario (su descripción
+    profesional) y términos derivados de sus habilidades. Busca cursos SENA
+    por área de desempeño y programa."""
     try:
-        q = req.perfil[:40]
+        # Palabras genéricas de habilidades blandas que producen falsos positivos
+        # en búsquedas de ocupaciones (ej: "trabajo" → "trabajo social").
+        _STOPWORDS = {
+            "trabajo", "equipo", "comunicacion", "comunicación", "liderazgo",
+            "gestion", "gestión", "responsabilidad", "iniciativa", "proactivo",
+            "proactiva", "creatividad", "persona", "personas", "service",
+            "cliente", "clientes", "organizacion", "organización",
+            "experiencia", "conocimiento", "conocimientos", "manejo",
+            "habilidad", "habilidades", "capacidad", "actitud",
+        }
+        # Términos muy genéricos que producen muchos falsos positivos. Se buscan
+        # pero con menor prioridad (al final de la lista).
+        _TERMINOS_GENERICOS = {
+            "analisis", "análisis", "sistemas", "desarrollo", "gestión",
+            "administracion", "administración", "servicios",
+        }
 
-        # SPE demanda nacional
-        spe = supabase.table("spe_ape_inscritos_ocupacion").select("*").order("inscritos_2020", desc=True).limit(6).execute()
+        # Términos de búsqueda: extraer palabras significativas del perfil y habilidades.
+        # Separar términos específicos (prioridad alta) de genéricos (prioridad baja).
+        terminos_especificos: list[str] = []
+        terminos_genericos_encontrados: list[str] = []
+        todas_palabras: list[str] = []
+        if req.perfil:
+            todas_palabras.extend(req.perfil.split())
+        for hab in (req.habilidades or []):
+            todas_palabras.extend(hab.split())
+        for palabra in todas_palabras:
+            p = palabra.strip().lower()
+            if len(p) < 4 or p in _STOPWORDS:
+                continue
+            if p in _TERMINOS_GENERICOS:
+                if p not in terminos_genericos_encontrados:
+                    terminos_genericos_encontrados.append(p)
+            else:
+                if p not in terminos_especificos:
+                    terminos_especificos.append(p)
+        # Términos específicos primero, genéricos al final
+        terminos_unicos = terminos_especificos + terminos_genericos_encontrados
 
-        # SENA activos relacionados
-        sena = supabase.table("sena_programas_activos").select("*").ilike("programa", f"%{q}%").limit(8).execute()
-
-        # PILA sectores nacionales con demanda
-        pila = supabase.table("pila_resumen_sector").select("*").order("total_cotizantes", desc=True).limit(8).execute()
-
-        # Ocupaciones O*NET/ESCO relacionadas con el perfil
-        ocupaciones = []
+        # Buscar ocupaciones O*NET/ESCO: recopilar todas y rankear por relevancia
+        # (cuántos términos del perfil matchean). Así "ingeniero de datos" (matchea
+        # "datos" y "ingeniero") queda sobre "análisis sensorial" (solo "análisis").
+        ocupaciones_vistas: set = set()
+        ocupaciones_puntuadas: list[tuple[int, dict]] = []
         try:
-            onet = supabase.table("onet_occupations").select("*").ilike("title", f"%{q}%").limit(4).execute()
-            esco = supabase.table("esco_occupations").select("*").ilike("title", f"%{q}%").limit(4).execute()
-            for o in onet.data:
-                ocupaciones.append({"id": o.get("onet_code"), "title": o.get("title"), "source": "O*NET"})
-            for e in esco.data:
-                ocupaciones.append({"id": e.get("concept_uri"), "title": e.get("title"), "source": "ESCO"})
+            for termino in terminos_unicos[:6]:
+                if not termino or len(termino) < 3:
+                    continue
+                # O*NET (títulos en inglés)
+                onet = supabase.table("onet_occupations").select("*").ilike("title", f"%{termino}%").limit(5).execute()
+                for o in onet.data:
+                    title = o.get("title", "")
+                    if title and title not in ocupaciones_vistas:
+                        ocupaciones_vistas.add(title)
+                        # Score: términos específicos valen 2, genéricos valen 1
+                        title_lower = title.lower()
+                        score = sum(2 if t in terminos_especificos else 1 for t in terminos_unicos if t in title_lower)
+                        ocupaciones_puntuadas.append((score, {"id": o.get("onet_code"), "title": title, "source": "O*NET", "isco": o.get("isco_code")}))
+                # ESCO ocupaciones
+                esco = supabase.table("esco_ocupaciones").select("uri,nombre,codigo_isco").ilike("nombre", f"%{termino}%").limit(5).execute()
+                for e in esco.data:
+                    title = e.get("nombre", "")
+                    if title and title not in ocupaciones_vistas:
+                        ocupaciones_vistas.add(title)
+                        title_lower = title.lower()
+                        score = sum(2 if t in terminos_especificos else 1 for t in terminos_unicos if t in title_lower)
+                        ocupaciones_puntuadas.append((score, {"id": e.get("uri"), "title": title, "source": "ESCO", "isco": e.get("codigo_isco")}))
         except Exception:
             pass
 
-        # Score de empleabilidad proxy
-        empleabilidad = 50
-        if req.habilidades:
-            empleabilidad += min(25, len(req.habilidades) * 3)
-        empleabilidad += min(20, req.experiencia_anos * 2)
-        empleabilidad = min(95, empleabilidad)
+        # Ordenar por score de relevancia descendente (más términos matcheados primero)
+        ocupaciones_puntuadas.sort(key=lambda x: -x[0])
+        ocupaciones = [occ for _, occ in ocupaciones_puntuadas[:8]]
+
+        # Agregar salario real y empleo real GEIH por código ISCO
+        try:
+            iscos = [int(o.get("isco")) for o in ocupaciones if o.get("isco")]
+            salarios_map = {}
+            if iscos:
+                r_sal = supabase.table("geih_salario_ocupacion").select(
+                    "oficio_c8,salario_promedio,salario_mediano,empleo_total,confianza"
+                ).in_("oficio_c8", iscos).order("empleo_total", desc=True).execute()
+                for row in r_sal.data or []:
+                    cod = int(row.get("oficio_c8") or 0)
+                    if cod not in salarios_map:
+                        salarios_map[cod] = {
+                            "promedio": row.get("salario_promedio"),
+                            "mediano": row.get("salario_mediano"),
+                            "empleo_total": row.get("empleo_total"),
+                            "confianza": row.get("confianza"),
+                        }
+            for o in ocupaciones:
+                isco = o.get("isco")
+                datos = salarios_map.get(int(isco)) if isco else None
+                o["salario_mercado"] = datos
+        except Exception:
+            pass
+
+        # Buscar cursos SENA por programa y área de desempeño
+        cursos_vistos: set = set()
+        cursos: list[dict] = []
+        try:
+            for termino in terminos_unicos[:6]:
+                if not termino or len(termino) < 3:
+                    continue
+                # Buscar en programa Y en area_desempeno
+                sena_prog = supabase.table("sena_programas_activos").select("*").ilike("programa", f"%{termino}%").limit(3).execute()
+                sena_area = supabase.table("sena_programas_activos").select("*").ilike("area_desempeno", f"%{termino}%").limit(3).execute()
+                for s in (sena_prog.data + sena_area.data):
+                    prog = s.get("programa", "")
+                    if prog and prog not in cursos_vistos:
+                        cursos_vistos.add(prog)
+                        cursos.append({"programa": prog, "area": s.get("area_desempeno", "")})
+                    if len(cursos) >= 6:
+                        break
+                if len(cursos) >= 6:
+                    break
+        except Exception:
+            pass
 
         return {
             "perfil": req.perfil,
             "departamento": req.departamento,
-            "empleabilidad_score": empleabilidad,
-            "ocupaciones_sugeridas": ocupaciones[:6],
-            "demanda_spe": [{"ocupacion": s.get("ocupacion"), "inscritos": s.get("inscritos_2020")} for s in spe.data],
-            "sectores_demandados": [{"sector": p.get("actividadeconomicadesc"), "cotizantes": p.get("total_cotizantes")} for p in pila.data],
-            "cursos_sena_recomendados": [{"programa": s.get("programa"), "area": s.get("area_desempeno")} for s in sena.data[:6]],
+            "ocupaciones_sugeridas": ocupaciones[:8],
+            "cursos_sena_recomendados": cursos[:6],
         }
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
@@ -323,7 +414,11 @@ async def match_persona(req: PersonaRequest):
 
 @router.post("/empresa")
 async def match_empresa(req: EmpresaRequest):
-    """Muestra dónde encontrar talento para una empresa."""
+    """Muestra dónde encontrar talento para una empresa.
+
+    Demanda laboral medida con empleo real GEIH del último mes en lugar de
+    inscritos SPE de 2020. Incluye salarios reales de la ocupación si están
+    disponibles."""
     try:
         depto_norm = _norm(req.departamento)
         sector_q = req.sector[:30]
@@ -334,8 +429,45 @@ async def match_empresa(req: EmpresaRequest):
         # Cursos SENA activos
         sena = supabase.table("sena_programas_activos").select("*").ilike("programa", f"%{sector_q}%").limit(6).execute()
 
-        # SPE demanda nacional filtrada por ocupación
-        spe = supabase.table("spe_ape_inscritos_ocupacion").select("*").ilike("ocupacion", f"%{sector_q}%").order("inscritos_2020", desc=True).limit(6).execute()
+        # Demanda laboral real: ocupados GEIH del último periodo, filtrados por
+        # ocupaciones ESCO cuyo nombre coincide con el cargo/sector buscado.
+        empleo_total = 0
+        ocupaciones_demandadas: list[dict] = []
+        salario_ocupacion = None
+        try:
+            r_per = supabase.table("geih_empleo_sector_mensual").select("periodo").order("periodo", desc=True).limit(1).execute()
+            periodo = r_per.data[0]["periodo"] if r_per.data else None
+
+            # Buscar ocupaciones ESCO relacionadas
+            esco = supabase.table("esco_ocupaciones").select("nombre,codigo_isco").ilike("nombre", f"%{sector_q}%").limit(10).execute()
+            iscos = [int(e.get("codigo_isco")) for e in esco.data if e.get("codigo_isco")]
+
+            if periodo and iscos:
+                # Cruce GEIH: empleo por ocupación en el último periodo
+                r_emp = supabase.table("geih_salario_ocupacion").select(
+                    "oficio_c8,salario_promedio,salario_mediano,empleo_total,confianza"
+                ).in_("oficio_c8", iscos).order("empleo_total", desc=True).limit(6).execute()
+                for row in r_emp.data or []:
+                    empleo = int(row.get("empleo_total") or 0)
+                    if empleo > 0:
+                        empleo_total += empleo
+                        ocupaciones_demandadas.append({
+                            "ocupacion": next((e.get("nombre") for e in esco.data if int(e.get("codigo_isco") or 0) == int(row.get("oficio_c8") or 0)), f"CIUO {row.get('oficio_c8')}"),
+                            "empleo_total": empleo,
+                            "salario_promedio": row.get("salario_promedio"),
+                            "salario_mediano": row.get("salario_mediano"),
+                            "confianza": row.get("confianza"),
+                        })
+                # Salario de la ocupación principal (mayor empleo)
+                if r_emp.data:
+                    top = r_emp.data[0]
+                    salario_ocupacion = {
+                        "promedio": top.get("salario_promedio"),
+                        "mediano": top.get("salario_mediano"),
+                        "confianza": top.get("confianza"),
+                    }
+        except Exception:
+            pass
 
         # Graduados y matriculados
         total_graduados = sum(s.get("graduados", 0) or 0 for s in snies.data)
@@ -348,11 +480,12 @@ async def match_empresa(req: EmpresaRequest):
             "talento_disponible": {
                 "matriculados": total_matriculados,
                 "graduados_anuales": total_graduados,
-                "postulantes_spe": sum(s.get("inscritos_2020", 0) or 0 for s in spe.data),
+                "demanda_empleo_geih": empleo_total,
             },
             "programas_relacionados": [{"programa": s.get("programa"), "institucion": s.get("institucion"), "matriculados": s.get("matriculados")} for s in snies.data[:6]],
             "cursos_sena_disponibles": [{"programa": s.get("programa"), "area": s.get("area_desempeno")} for s in sena.data[:6]],
-            "postulantes_spe": [{"ocupacion": s.get("ocupacion"), "inscritos": s.get("inscritos_2020")} for s in spe.data],
+            "ocupaciones_demandadas_geih": ocupaciones_demandadas,
+            "salario_ocupacion": salario_ocupacion,
         }
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
@@ -491,16 +624,23 @@ async def get_ocupacion_esco(nombre: str):
             except Exception:
                 pass
 
-            # Salario real de GEIH (buscar por oficio similar)
+            # Salario real de GEIH vinculado a la ocupación por su código ISCO.
+            # Antes la query no filtraba por ocupación y devolvía siempre la fila
+            # con mayor empleo_total (mismo salario para todas las ocupaciones).
+            # Ahora usamos el codigo_isco de ESCO (campo oficio_c8 en GEIH).
             salario = None
             try:
-                r_sal = supabase.table("geih_salario_ocupacion").select("*").order("empleo_total", desc=True).limit(1).execute()
-                if r_sal.data:
-                    salario = {
-                        "promedio": r_sal.data[0].get("salario_promedio"),
-                        "mediano": r_sal.data[0].get("salario_mediano"),
-                        "empleo_total": r_sal.data[0].get("empleo_total"),
-                    }
+                isco = occ.get("codigo_isco")
+                if isco:
+                    r_sal = supabase.table("geih_salario_ocupacion").select(
+                        "salario_promedio,salario_mediano,empleo_total"
+                    ).eq("oficio_c8", int(isco)).limit(1).execute()
+                    if r_sal.data:
+                        salario = {
+                            "promedio": r_sal.data[0].get("salario_promedio"),
+                            "mediano": r_sal.data[0].get("salario_mediano"),
+                            "empleo_total": r_sal.data[0].get("empleo_total"),
+                        }
             except Exception:
                 pass
 

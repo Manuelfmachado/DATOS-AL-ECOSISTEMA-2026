@@ -10,7 +10,7 @@ except Exception as e:
 # Test a comprehensive list of candidate table names
 candidates = [
     # PILA - cotizantes por sector
-    'pila_resumen_sector', 'pila_resumen_tipo', 'pila_cotizantes_departamento',
+    'pila_resumen_sector', 'pila_cotizantes_departamento',  # pila_resumen_tipo fue DROP
     'pila_cotizantes_mensual', 'pila_ibc_promedio', 'pila_ingresos_departamento',
     'pila_cotizantes_actividad', 'pila_empleadores_sector',
     # GEIH - empleo
@@ -32,26 +32,26 @@ candidates = [
     'rues_empresas_nuevas', 'rues_resumen_camara_ciiu', 'rues_top_sectores_nacional',
     'rues_empresas_activas', 'rues_empresas_segun_tamano', 'rues_empresas_departamento',
     # SPE / APE
-    'spe_ape_inscritos_nivel', 'spe_ape_inscritos_ocupacion', 'spe_inscritos_areas',
+    'spe_ape_inscritos_ocupacion', 'spe_inscritos_areas',  # spe_ape_inscritos_nivel fue DROP
     'spe_vacantes', 'spe_contratos', 'spe_colocaciones',
     # Saber Pro / Educación
     'saberpro_resumen_programas', 'saberpro_puntaje_ies', 'saberpro_puntaje_departamento',
     'saber11_puntajes',
     # DNP / MDM
     'dnp_desempeno_departamento', 'dnp_medicion_desempeno_municipal',
-    'dnp_medicion_desempeno_ultimo',
+    # dnp_medicion_desempeno_ultimo fue DROP (incompleto).
     # EMICRON
-    'emicron_emprendimiento', 'emicron_inclusion_financiera',
-    'emicron_por_departamento', 'emicron_por_sector', 'emicron_resumen_nacional',
+    'emicron_emprendimiento',
+    'emicron_por_departamento', 'emicron_resumen_nacional',  # emicron_por_sector e inclusion_financiera fueron DROP
     # O*NET / ESCO
     'onet_education', 'onet_skills', 'onet_occupations', 'onet_work_activities',
-    'esco_skills', 'esco_ocupaciones', 'esco_ocupacion_habilidades',
-    'esco_habilidades', 'esco_habilidades_digitales', 'esco_habilidades_verdes',
+    'esco_skills', 'esco_ocupaciones', 'esco_ocupacion_habilidades',  # esco_skills fue DROP (duplicado de esco_habilidades)
+    'esco_habilidades', 'esco_habilidades_verdes',  # esco_habilidades_digitales fue DROP (subset redundante)
     'esco_skill_relations', 'esco_green_share_ocupaciones',
     # World Bank
     'worldbank_colombia',
     # Predicciones generadas
-    'predicciones_mundiales', 'predicciones_geih',
+    'predicciones_geih',  # predicciones_mundiales fue DROP (se lee del JSON)
     # Otros
     'mapeo_ocupaciones_spe', 'map_occupations',
     'contratos', 'vacantes_empleo', 'oferta_laboral',

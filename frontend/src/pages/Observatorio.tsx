@@ -62,6 +62,8 @@ export default function Observatorio() {
   const [deptoSeleccionado, setDeptoSeleccionado] = useState<string | null>(deptoDefault)
   const [selectedDepto, setSelectedDepto] = useState<string | null>(null)
   const [sectoresDepto, setSectoresDepto] = useState<any[] | null>(null)
+  const [micronegocios, setMicronegocios] = useState<any[] | null>(null)
+  const [verTodosSectores, setVerTodosSectores] = useState(false)
 
   useEffect(() => {
     if (deptoDefault) {
@@ -93,7 +95,15 @@ export default function Observatorio() {
           sectores_formales: d.sectores_formales?.sectores || [],
           spe: speDedup,
           mapa: d.mapa?.departamentos || [],
+          macro: d.macro_worldbank?.indicadores || [],
+          informalidad: d.informalidad_territorial?.departamentos || [],
+          composicion: d.composicion_formal?.tipos || [],
+          sectoresCrecimiento: d.sectores_crecimiento?.sectores_crecimiento || [],
+          sectoresCrecimientoPeriodo: d.sectores_crecimiento?.periodo || '',
+          resumenGenerado: d._generado || null,
+          indice_oportunidad: d.indice_oportunidad || null,
         })
+        setMicronegocios(d.micronegocios?.sectores || null)
       })
       .catch((e) => {
         console.error('[Observatorio]', e)
@@ -153,6 +163,7 @@ export default function Observatorio() {
   const brecha = data.brecha
   const formales = data.sectores_formales
   const spe = data.spe
+  const informalidad = data.informalidad
   const mapa = data.mapa
 
   // Procesar sectores formales PILA (nombres limpios + deduplicar)
@@ -168,23 +179,10 @@ export default function Observatorio() {
     .sort((a, b) => b.cotizantes - a.cotizantes)
     .slice(0, 8)
 
-  // Procesar mapa: empleo + salarios
+  // Procesar mapa: empleo por departamento (grafico principal)
   const deptosEmpleo = [...mapa]
     .filter((d: any) => d.ocupados > 0)
-
-  // Salarios: solo departamentos con muestra suficiente (>50K ocupados)
-  const deptosSalarioConfiable = [...mapa]
-    .filter((d: any) => d.ingreso_promedio > 0 && d.ocupados >= 50000)
-
-  const topSalarios = [...deptosSalarioConfiable]
-    .filter((d: any) => d.ingreso_promedio > 0)
-    .sort((a: any, b: any) => b.ingreso_promedio - a.ingreso_promedio)
-    .slice(0, 6)
-
-  const bottomSalarios = [...deptosSalarioConfiable]
-    .filter((d: any) => d.ingreso_promedio > 0)
-    .sort((a: any, b: any) => a.ingreso_promedio - b.ingreso_promedio)
-    .slice(0, 6)
+    .sort((a: any, b: any) => b.ocupados - a.ocupados)
 
   return (
     <div className="animate-fade-in space-y-5">
@@ -378,59 +376,6 @@ export default function Observatorio() {
       </div>
 
       {/* ================================================================ */}
-      {/* 3.1 Salarios por departamento (2 columnas) */}
-      {/* ================================================================ */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
-        {/* Mejores salarios */}
-        <div className="plate card p-5">
-          <div className="flex items-center justify-between mb-3 pb-2 border-b border-gold-500/20">
-            <h2 className="text-base font-bold text-white font-display flex items-center gap-2 whitespace-nowrap">
-              Salarios promedio más altos
-            </h2>
-            <AnalizarIAButton
-              dashboard="observatorio"
-              widgetTitle="Salarios promedio más altos"
-              widgetType="tabla"
-              data={topSalarios}
-            />
-          </div>
-          <p className="text-base text-slate-500 mb-2">Salario promedio mensual (GEIH) · solo deptos con +50 mil ocupados</p>
-          <div className="space-y-1">
-            {topSalarios.map((d: any, i: number) => (
-              <div key={i} className="flex justify-between items-center py-1.5 border-b border-white/[0.04] text-sm">
-                <span className="text-slate-300 truncate pr-2">{cleanDepto(d.departamento)}</span>
-                <span className="text-gold-400 font-bold">{formatCOP(d.ingreso_promedio)}</span>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        {/* Menores salarios */}
-        <div className="plate card p-5">
-          <div className="flex items-center justify-between mb-3 pb-2 border-b border-gold-500/20">
-            <h2 className="text-base font-bold text-white font-display flex items-center gap-2 whitespace-nowrap">
-              Salarios promedio más bajos
-            </h2>
-            <AnalizarIAButton
-              dashboard="observatorio"
-              widgetTitle="Salarios promedio más bajos"
-              widgetType="tabla"
-              data={bottomSalarios}
-            />
-          </div>
-          <p className="text-base text-slate-500 mb-2">Salario promedio mensual (GEIH) · solo deptos con +50 mil ocupados</p>
-          <div className="space-y-1">
-            {bottomSalarios.map((d: any, i: number) => (
-              <div key={i} className="flex justify-between items-center py-1.5 border-b border-white/[0.04] text-sm">
-                <span className="text-slate-300 truncate pr-2">{cleanDepto(d.departamento)}</span>
-                <span className="text-slate-400 font-bold">{formatCOP(d.ingreso_promedio)}</span>
-              </div>
-            ))}
-          </div>
-        </div>
-      </div>
-
-      {/* ================================================================ */}
       {/* 3.5 Empleo por sector departamental (GEIH depto-sector, 95K filas) */}
       {/* ================================================================ */}
       <div className="plate card p-5">
@@ -458,10 +403,20 @@ export default function Observatorio() {
             <select
               value={deptoSeleccionado || ''}
               onChange={(e) => cargarSectoresDepto(e.target.value)}
-              className="w-full md:w-1/2 bg-[#0a0f1f] text-slate-200 text-sm border border-amber-500/20 rounded-lg px-3 py-2.5 focus:outline-none focus:border-amber-500/50"
+              className="w-full md:w-1/2 bg-[#0a0f1f] text-white text-sm border border-amber-500/40 rounded-lg px-3 py-3 focus:outline-none focus:border-amber-500/80 focus:ring-1 focus:ring-amber-500/30 appearance-none cursor-pointer"
+              style={{
+                backgroundImage: `url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%23d4af37' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e")`,
+                backgroundPosition: 'right 0.75rem center',
+                backgroundRepeat: 'no-repeat',
+                backgroundSize: '1.2em 1.2em',
+                paddingRight: '2.5rem',
+              }}
             >
+              <option value="" disabled>
+                Selecciona un departamento
+              </option>
               {departamentosLista.map((d) => (
-                <option key={d.codigo} value={d.nombre}>
+                <option key={d.codigo} value={d.nombre} className="bg-[#0a0f1f] text-white">
                   {d.nombre}
                 </option>
               ))}
@@ -502,159 +457,303 @@ export default function Observatorio() {
       </div>
 
       {/* ================================================================ */}
-      {/* 4. Sectores formales PILA */}
+      {/* 3.6 Informalidad territorial (EMICRON) */}
       {/* ================================================================ */}
-      <div className="grid grid-cols-1 gap-5">
-        {/* Sectores formales PILA — ahora con gráfico de barras */}
+      {informalidad && informalidad.length > 0 && (
+        (() => {
+          const totalNacional = informalidad.reduce((a: number, d: any) => a + (d.micronegocios || 0), 0)
+          const anioFin: number = typeof informalidad[0]?.ano === 'number' ? informalidad[0].ano : new Date().getFullYear()
+          // Variacion real: comparamos el total del ultimo anio vs el primer anio disponible
+          const aniosSet = new Set<number>()
+          informalidad.forEach((d: any) => { if (typeof d.ano === 'number') aniosSet.add(d.ano) })
+          const aniosDisponibles: number[] = Array.from(aniosSet).sort((a, b) => a - b)
+          const anioInicio: number = aniosDisponibles[0] ?? anioFin - 2
+          const totalInicio = informalidad
+            .filter((d: any) => d.ano === anioInicio)
+            .reduce((a: number, d: any) => a + (d.micronegocios || 0), 0)
+          const totalFin = informalidad
+            .filter((d: any) => d.ano === anioFin)
+            .reduce((a: number, d: any) => a + (d.micronegocios || 0), 0)
+          const variacionNacional = totalInicio > 0 ? ((totalFin - totalInicio) / totalInicio) * 100 : null
+          return (
         <div className="plate card p-5 relative">
-          <div className="absolute top-4 right-4 z-10">
+          <div className="absolute top-3 right-3 z-10">
             <AnalizarIAButton
               dashboard="observatorio"
-              widgetTitle="Sectores formales PILA"
-              widgetType="tabla"
-              data={formalList}
+              widgetTitle="Informalidad territorial: micronegocios por departamento"
+              widgetType="grafico"
+              data={informalidad.slice(0, 15)}
             />
           </div>
           <div className="mb-3 pb-2 border-b border-gold-500/20 pr-28">
-            <h2 className="text-xl font-bold text-white font-display">Sectores formales</h2>
+            <h2 className="text-xl font-bold text-white font-display truncate min-w-0">
+              Dónde se concentran los micronegocios
+            </h2>
             <p className="text-base text-slate-300 mt-1">
-              {formalList.length > 0 ? `${compactNum(formalList.reduce((a: number, s: any) => a + (s.cotizantes || 0), 0))} cotizantes activos en PILA` : 'Personas cotizantes por actividad económica (PILA)'}
+              Los micronegocios son negocios con menos de 10 personas que no cotizan a seguridad social. Aquí ves los departamentos donde más se concentran.
             </p>
           </div>
-          <ResponsiveContainer width="100%" height={Math.max(280, (formalList.slice(0, 8).length) * 40)}>
+
+          <div className="mb-4">
+            <div className="rounded-lg bg-amber-500/10 border border-amber-500/20 p-4">
+              <p className="text-xs text-amber-300/80 uppercase tracking-wide font-semibold">Total nacional {anioFin}</p>
+              <p className="text-3xl font-bold text-white mt-1">{compactNum(totalNacional)}</p>
+              <p className="text-sm text-slate-400">micronegocios en todo el país</p>
+            </div>
+          </div>
+
+          <ResponsiveContainer width="100%" height={Math.max(300, Math.min(informalidad.length, 15) * 28)}>
             <BarChart
-              data={formalList.slice(0, 8).map((s: any) => ({
-                name: s.sector,
-                cotizantes: s.cotizantes,
+              data={informalidad.slice(0, 15).map((d: any) => ({
+                name: cleanDepto(d.departamento),
+                micronegocios: d.micronegocios || 0,
               }))}
               layout="vertical"
               margin={{ left: 10, right: 40 }}
             >
               <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.04)" horizontal={false} />
               <XAxis type="number" stroke="#cbd5e1" tick={{ fill: '#cbd5e1', fontSize: 12, fontWeight: 600 }} tickFormatter={(v) => compactNum(v)} />
-              <YAxis type="category" dataKey="name" stroke="#e2e8f0" tick={{ fill: '#e2e8f0', fontSize: 13, fontWeight: 600 }} width={200} interval={0} />
-              <Tooltip {...chartTooltip} formatter={(v: number) => [v.toLocaleString(), 'Cotizantes']} />
-              <Bar dataKey="cotizantes" radius={[0, 4, 4, 0]}>
-                {formalList.slice(0, 8).map((_: any, i: number) => (
-                  <Cell key={i} fill={i < 3 ? '#d4af37' : i < 5 ? '#3b82f6' : '#64748b'} />
+              <YAxis type="category" dataKey="name" stroke="#e2e8f0" tick={{ fill: '#e2e8f0', fontSize: 11, fontWeight: 600 }} width={130} interval={0} />
+              <Tooltip {...chartTooltip} formatter={(v: number) => [compactNum(v), 'Micronegocios']} />
+              <Bar dataKey="micronegocios" radius={[0, 4, 4, 0]}>
+                {informalidad.slice(0, 15).map((_: any, i: number) => (
+                  <Cell key={i} fill={i < 3 ? '#22c55e' : i < 6 ? '#06b6d4' : '#64748b'} />
                 ))}
               </Bar>
             </BarChart>
           </ResponsiveContainer>
         </div>
-      </div>
+          )
+        })()
+      )}
 
       {/* ================================================================ */}
-      {/* 5. Brecha oferta vs demanda */}
+      {/* 4. Sectores con más empleo (GEIH) */}
       {/* ================================================================ */}
-      {brecha && (
-        <div className="plate card p-5">
-          <div className="flex items-center justify-between mb-3 pb-2 border-b border-gold-500/20 gap-3">
-            <div className="min-w-0">
-              <h2 className="text-2xl font-bold text-white font-display truncate">Brecha: oferta educativa vs demanda laboral</h2>
-              <p className="text-base text-slate-300 mt-1">
-                Compara cuántos estudiantes se forman en cada área contra cuántos empleos reales hay.
-              </p>
-            </div>
-            <div className="flex-shrink-0">
-              <AnalizarIAButton
+      {kpi.top_sectores_empleo && kpi.top_sectores_empleo.length > 0 && (
+        (() => {
+          const top5 = kpi.top_sectores_empleo.slice(0, 5)
+          const totalTop5 = top5.reduce((a: number, s: any) => a + (s.empleo || 0), 0)
+          const totalNacional = kpi.ocupados_totales || kpi.empleo_nacional || 0
+          const listaVisible = verTodosSectores ? kpi.top_sectores_empleo : top5
+          const maxEmp = Math.max(...kpi.top_sectores_empleo.map((x: any) => x.empleo || 0), 1)
+          return (
+        <div className="plate card p-5 relative">
+          <div className="absolute top-4 right-4 z-10">
+            <AnalizarIAButton
               dashboard="observatorio"
-              widgetTitle="Brecha oferta vs demanda"
-              widgetType="grafico"
-              data={{ sobre: brecha.top_sobre_oferta, sub: brecha.top_sub_oferta }}
+              widgetTitle="Sectores con más empleo (GEIH)"
+              widgetType="tabla"
+              data={kpi.top_sectores_empleo}
             />
           </div>
+          <div className="mb-3 pb-2 border-b border-gold-500/20 pr-28">
+            <h2 className="text-xl font-bold text-white font-display">Sectores que más emplean</h2>
+            <p className="text-base text-slate-300 mt-1">
+              Cuántas personas ocupadas tiene cada sector económico del país.
+              {kpi.periodo && (
+                <span className="text-slate-400"> · Dato de {kpi.periodo} (GEIH).</span>
+              )}
+              {totalTop5 > 0 && totalNacional > 0 && (
+                <span className="block text-slate-400 mt-1">
+                  Los 5 principales concentran <span className="text-gold-400 font-semibold">{compactNum(totalTop5)} personas</span> ({((totalTop5 / totalNacional) * 100).toFixed(1)}% del empleo nacional).
+                </span>
+              )}
+            </p>
+          </div>
+          <div className="space-y-1.5">
+            {listaVisible.map((s: any, i: number) => {
+              return (
+                <div key={i} className="group flex items-center gap-3 rounded-lg px-3 py-2 hover:bg-white/[0.03] transition-colors">
+                  <span className={`w-6 h-6 rounded-full flex items-center justify-center text-xs flex-shrink-0 font-bold border ${i < 3 ? 'bg-gold-500/10 border-gold-500/40 text-gold-400' : 'bg-dark-800 border-gold-500/30 text-gold-400'}`}>{i + 1}</span>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-baseline justify-between gap-3 mb-1">
+                      <span className="text-sm text-slate-200 font-medium leading-snug truncate">{s.rama_ciiu_nombre || `Sector ${s.rama_ciiu}`}</span>
+                      <span className="font-bold text-sm flex-shrink-0 text-slate-200">{compactNum(s.empleo)} <span className="text-xs text-slate-500 font-normal">personas</span></span>
+                    </div>
+                    <div className="h-1.5 w-full bg-white/[0.04] rounded-full overflow-hidden">
+                      <div className="h-full rounded-full bg-gradient-to-r from-gold-500/60 to-gold-400" style={{ width: `${Math.min(100, (s.empleo / maxEmp) * 100)}%` }} />
+                    </div>
+                  </div>
+                </div>
+              )
+            })}
+          </div>
+          {kpi.top_sectores_empleo.length > 5 && (
+            <button
+              type="button"
+              onClick={() => setVerTodosSectores((v) => !v)}
+              className="mt-4 w-full text-sm text-gold-400 hover:text-gold-300 font-semibold py-2 border border-gold-500/30 rounded-lg hover:bg-gold-500/5 transition-colors"
+            >
+              {verTodosSectores
+                ? `Ver solo los 5 principales`
+                : `Ver los ${kpi.top_sectores_empleo.length} sectores`}
+            </button>
+          )}
         </div>
+          )
+        })()
+      )}
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-            <div className="bg-red-500/10 border border-red-500/20 rounded-lg p-3">
-              <p className="text-base text-slate-200">
-                <span className="text-red-400 font-bold">Sobre-formación:</span> hay más graduados que empleos disponibles. 
-                Más difícil conseguir trabajo en esa área.
+      {/* ================================================================ */}
+      {/* 5. El trabajo informal también mueve la economía */}
+      {/* ================================================================ */}
+      {micronegocios && micronegocios.length > 0 && (
+        (() => {
+          const total = micronegocios.reduce((a: number, s: any) => a + (s.empleo_informal || s.micronegocios || 0), 0)
+          const anio = data.micronegocios?.ano || micronegocios[0]?.ano
+          return (
+        <div className="grid grid-cols-1 gap-5">
+          <div className="plate card p-5 relative">
+            <div className="absolute top-3 right-3 z-10">
+              <AnalizarIAButton
+                dashboard="observatorio"
+                widgetTitle="Empleo informal: micronegocios por sector"
+                widgetType="grafico"
+                data={micronegocios.slice(0, 10)}
+              />
+            </div>
+            <div className="mb-3 pb-2 border-b border-gold-500/20 pr-28">
+              <h2 className="text-xl font-bold text-white font-display">El trabajo informal también mueve la economía</h2>
+              <p className="text-base text-slate-300 mt-1">
+                Los micronegocios son negocios con menos de 10 personas que no cotizan a seguridad social. Aquí ves en qué sectores se concentran.
               </p>
             </div>
-            <div className="bg-cyan-500/10 border border-cyan-500/20 rounded-lg p-3">
-              <p className="text-base text-slate-200">
-                <span className="text-cyan-400 font-bold">Oportunidad:</span> hay más empleos que graduados. 
-                Buena opción para estudiar o buscar trabajo.
-              </p>
+
+            <div className="mb-4">
+              <div className="rounded-lg bg-amber-500/10 border border-amber-500/20 p-4">
+                <p className="text-xs text-amber-300/80 uppercase tracking-wide font-semibold">Total pais</p>
+                <p className="text-3xl font-bold text-white mt-1">{compactNum(total)}</p>
+                <p className="text-sm text-slate-400">micronegocios{anio ? ` · ${anio}` : ''}</p>
+              </div>
+            </div>
+
+            <ResponsiveContainer width="100%" height={Math.max(320, micronegocios.slice(0, 10).length * 42)}>
+              <BarChart
+                data={micronegocios.slice(0, 10).map((s: any) => ({
+                  name: s.sector || '',
+                  micronegocios: s.micronegocios,
+                  participacion: s.pct_participacion,
+                }))}
+                layout="vertical"
+                margin={{ left: 10, right: 40 }}
+              >
+                <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.04)" horizontal={false} />
+                <XAxis type="number" stroke="#cbd5e1" tick={{ fill: '#cbd5e1', fontSize: 13, fontWeight: 600 }} tickFormatter={(v) => compactNum(v)} />
+                <YAxis type="category" dataKey="name" stroke="#e2e8f0" tick={{ fill: '#e2e8f0', fontSize: 13, fontWeight: 600 }} width={260} interval={0} />
+                <Tooltip {...chartTooltip} formatter={(v: number, _n: any, p: any) => [`${compactNum(v)} (${p.payload.participacion?.toFixed(1) || 0}%)`, 'Micronegocios']} />
+                <Bar dataKey="micronegocios" radius={[0, 4, 4, 0]}>
+                  {micronegocios.slice(0, 10).map((_: any, i: number) => (
+                    <Cell key={i} fill={i < 3 ? '#22c55e' : i < 6 ? '#06b6d4' : '#64748b'} />
+                  ))}
+                </Bar>
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+        </div>
+          )
+        })()
+      )}
+
+      {/* ================================================================ */}
+      {/* 6. Indice de Oportunidad Laboral (GEIH + SPE + RUES) */}
+      {/* ================================================================ */}
+      {data.indice_oportunidad?.indices && data.indice_oportunidad.indices.length > 0 && (
+        <div className="plate card p-5 relative">
+          <div className="absolute top-3 right-3 z-10">
+            <AnalizarIAButton
+              dashboard="observatorio"
+              widgetTitle="Indice de Oportunidad Laboral"
+              widgetType="tabla"
+              data={data.indice_oportunidad.indices}
+            />
+          </div>
+          <div className="mb-4 pb-3 border-b border-gold-500/20 pr-28">
+            <h2 className="text-2xl font-bold text-white font-display">Indice de Oportunidad Laboral</h2>
+            <p className="text-base text-slate-300 mt-2">
+              Para cada area del conocimiento, calculamos un puntaje <span className="text-gold-400 font-semibold">0-100</span> combinando tres senales oficiales:
+            </p>
+            <p className="text-sm text-slate-400 mt-1">
+              <span className="text-blue-300 font-semibold">Empleo real (GEIH)</span> &middot; <span className="text-purple-300 font-semibold">Vacantes registradas (SPE)</span> &middot; <span className="text-emerald-300 font-semibold">Nuevas empresas (RUES)</span>
+            </p>
+            <p className="text-sm text-slate-400 mt-1">
+              Cuanto mas alto el puntaje, mas oportunidades laborales tiene el area.
+            </p>
+            <div className="grid grid-cols-3 gap-2 mt-3 text-sm">
+              <div className="bg-emerald-500/10 border border-emerald-500/30 rounded-lg p-2 text-center">
+                <div className="text-emerald-400 font-bold">75-100</div>
+                <div className="text-emerald-300/80 text-xs">Alta oportunidad</div>
+              </div>
+              <div className="bg-amber-500/10 border border-amber-500/30 rounded-lg p-2 text-center">
+                <div className="text-amber-400 font-bold">50-74</div>
+                <div className="text-amber-300/80 text-xs">Oportunidad media</div>
+              </div>
+              <div className="bg-rose-500/10 border border-rose-500/30 rounded-lg p-2 text-center">
+                <div className="text-rose-400 font-bold">0-49</div>
+                <div className="text-rose-300/80 text-xs">Baja oportunidad</div>
+              </div>
             </div>
           </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-            {/* Sobre-oferta */}
-            <div>
-              <div className="flex items-center gap-2 mb-3">
-                <span className="w-3 h-3 rounded-full bg-red-500" />
-                <h3 className="text-base font-bold text-red-400">Sobrea formación</h3>
-              </div>
-              <div className="space-y-2">
-                {brecha.top_sobre_oferta?.map((b: any) => (
-                  <div key={b.categoria} className="bg-white/[0.02] rounded-lg p-3 border border-red-900/20">
-                    <div className="flex justify-between items-center mb-2">
-                      <span className="text-base text-slate-200 font-bold">{b.categoria?.replace(/_/g, ' ')}</span>
-                      <span className="text-sm font-bold text-red-400">+{b.desajuste?.toFixed(1)}%</span>
+          <div className="space-y-3">
+            {data.indice_oportunidad.indices.map((idx: any) => (
+              <div key={idx.categoria} className="rounded-lg p-4 border border-white/10">
+                <div className="flex items-start gap-4">
+                  <div className="flex-shrink-0 text-center">
+                    <div className={`text-3xl font-bold ${idx.color === 'alta' ? 'text-emerald-400' : idx.color === 'media' ? 'text-amber-400' : 'text-rose-400'}`}>
+                      {idx.score.toFixed(0)}<span className="text-base text-slate-500">/100</span>
                     </div>
-                    <div className="space-y-1">
-                      <div className="flex items-center gap-2">
-                        <span className="text-base text-blue-400 w-14">Oferta</span>
-                        <div className="flex-1 h-2.5 bg-dark-900 rounded-full overflow-hidden">
-                          <div className="h-full bg-blue-500 rounded-full" style={{ width: `${b.oferta_share}%` }} />
+                    <div className={`text-[10px] uppercase tracking-wider font-bold ${idx.color === 'alta' ? 'text-emerald-400' : idx.color === 'media' ? 'text-amber-400' : 'text-rose-400'}`}>
+                      {idx.color === 'alta' ? 'Oportunidad alta' : idx.color === 'media' ? 'Oportunidad media' : 'Oportunidad baja'}
+                    </div>
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-baseline justify-between gap-3 mb-2">
+                      <span className="text-lg font-bold text-white truncate">{idx.categoria_nombre}</span>
+                      <span className={`text-sm font-bold flex-shrink-0 ${idx.tendencia === 'crece' ? 'text-emerald-400' : idx.tendencia === 'decline' ? 'text-rose-400' : 'text-slate-400'}`}>
+                        {idx.tendencia === 'crece' ? '↑' : idx.tendencia === 'decline' ? '↓' : '→'} {idx.tendencia === 'crece' ? 'Creciendo' : idx.tendencia === 'decline' ? 'En declive' : 'Estable'}
+                      </span>
+                    </div>
+                    <div className="grid grid-cols-3 gap-2 text-xs">
+                      <div className="bg-black/20 rounded p-2">
+                        <div className="text-slate-400 text-[10px] uppercase tracking-wide">Empleo</div>
+                        <div className="text-slate-500 text-[10px]">(2022-2026)</div>
+                        <div className={`font-bold text-sm ${idx.geih_crecimiento_pct >= 0 ? 'text-emerald-400' : 'text-rose-400'}`}>
+                          {idx.geih_crecimiento_pct >= 0 ? '+' : ''}{idx.geih_crecimiento_pct.toFixed(1)}%
                         </div>
-                        <span className="text-base text-blue-400 font-bold w-10 text-right">{b.oferta_share?.toFixed(0)}%</span>
                       </div>
-                      <div className="flex items-center gap-2">
-                        <span className="text-base text-amber-400 w-14">Demanda</span>
-                        <div className="flex-1 h-2.5 bg-dark-900 rounded-full overflow-hidden">
-                          <div className="h-full bg-amber-500 rounded-full" style={{ width: `${b.demanda_share}%` }} />
+                      <div className="bg-black/20 rounded p-2">
+                        <div className="text-slate-400 text-[10px] uppercase tracking-wide">Vacantes</div>
+                        <div className="text-slate-500 text-[10px]">(2019-2023)</div>
+                        <div className={`font-bold text-sm ${idx.spe_crecimiento_pct >= 0 ? 'text-emerald-400' : 'text-rose-400'}`}>
+                          {idx.spe_crecimiento_pct >= 0 ? '+' : ''}{idx.spe_crecimiento_pct.toFixed(1)}%
                         </div>
-                        <span className="text-base text-amber-400 font-bold w-10 text-right">{b.demanda_share?.toFixed(0)}%</span>
+                      </div>
+                      <div className="bg-black/20 rounded p-2">
+                        <div className="text-slate-400 text-[10px] uppercase tracking-wide">Empresas</div>
+                        <div className="text-slate-500 text-[10px]">(2020-2026)</div>
+                        <div className={`font-bold text-sm ${idx.rues_crecimiento_pct >= 0 ? 'text-emerald-400' : 'text-rose-400'}`}>
+                          {idx.rues_crecimiento_pct >= 0 ? '+' : ''}{idx.rues_crecimiento_pct.toFixed(1)}%
+                        </div>
                       </div>
                     </div>
                   </div>
-                ))}
+                </div>
               </div>
-            </div>
-
-            {/* Sub-oferta */}
-            <div>
-              <div className="flex items-center gap-2 mb-3">
-                <span className="w-3 h-3 rounded-full bg-cyan-400" />
-                <h3 className="text-base font-bold text-cyan-400">Oportunidad</h3>
-              </div>
-              <div className="space-y-2">
-                {brecha.top_sub_oferta?.map((b: any) => (
-                  <div key={b.categoria} className="bg-white/[0.02] rounded-lg p-3 border border-cyan-900/20">
-                    <div className="flex justify-between items-center mb-2">
-                      <span className="text-base text-slate-200 font-bold">{b.categoria?.replace(/_/g, ' ')}</span>
-                      <span className="text-sm font-bold text-cyan-400">{b.desajuste?.toFixed(1)}%</span>
-                    </div>
-                    <div className="space-y-1">
-                      <div className="flex items-center gap-2">
-                        <span className="text-base text-blue-400 w-14">Oferta</span>
-                        <div className="flex-1 h-2.5 bg-dark-900 rounded-full overflow-hidden">
-                          <div className="h-full bg-blue-500 rounded-full" style={{ width: `${b.oferta_share}%` }} />
-                        </div>
-                        <span className="text-base text-blue-400 font-bold w-10 text-right">{b.oferta_share?.toFixed(0)}%</span>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <span className="text-base text-amber-400 w-14">Demanda</span>
-                        <div className="flex-1 h-2.5 bg-dark-900 rounded-full overflow-hidden">
-                          <div className="h-full bg-amber-500 rounded-full" style={{ width: `${b.demanda_share}%` }} />
-                        </div>
-                        <span className="text-base text-amber-400 font-bold w-10 text-right">{b.demanda_share?.toFixed(0)}%</span>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
+            ))}
           </div>
+          <details className="mt-4">
+            <summary className="text-slate-400 text-xs cursor-pointer hover:text-slate-200">Como se calcula este puntaje?</summary>
+            <p className="text-slate-500 text-xs mt-2 leading-relaxed">
+              {data.indice_oportunidad.metodologia}
+              <br /><br />
+              <span className="text-slate-400">Periodos de los datos:</span> GEIH {data.indice_oportunidad.fuentes?.geih} &middot; SPE {data.indice_oportunidad.fuentes?.spe} &middot; RUES {data.indice_oportunidad.fuentes?.rues}.
+            </p>
+          </details>
         </div>
       )}
 
       {/* ================================================================ */}
-      {/* 6. Prioridad de intervención departamental */}
+      {/* 7. Prioridad de intervención departamental */}
       {/* ================================================================ */}
       {prior?.departamentos && (
         <div className="plate card p-5">

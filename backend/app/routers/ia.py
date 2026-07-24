@@ -12,6 +12,93 @@ from app.services.llm import call_llm_text
 router = APIRouter(prefix="/api/ia", tags=["ia"])
 
 
+# ---------------------------------------------------------------------------
+# Catálogo de metadatos por widget: fuente, período, qué significan las columnas.
+# Se inyecta en el prompt del LLM para que sus respuestas sean precisas y no
+# malinterprete los datos crudos del JSON.
+# ---------------------------------------------------------------------------
+_WIDGET_META: dict[str, dict[str, str]] = {
+    "Ocupaciones con mayor demanda creciente": {
+        "fuente": "Agencia Pública de Empleo (APE) del SENA — inscritos por ocupación",
+        "periodo": "Variación entre 2019 y 2020 (pandemia). Son los únicos años disponibles en la fuente SPE/APE.",
+        "columnas": "inscritos_2019/inscritos_2020 = personas inscritas buscando empleo; variacion_pct = crecimiento porcentual; nivel = calificación (técnicos, profesionales, etc.)",
+        "caveat": "El crecimiento puede deberse a baja base en 2019 (pocos inscritos). Una ocupación con 10→133 inscritos sube 1230% pero sigue siendo nicho pequeño.",
+    },
+    "Actividades económicas en alza": {
+        "fuente": "Agencia Pública de Empleo (APE) del SENA",
+        "periodo": "2019-2020",
+        "columnas": "variacion_pct = crecimiento de inscritos; nivel = calificación",
+        "caveat": "Variación sobre base 2019; cuidado con crecimientos altos sobre bases pequeñas.",
+    },
+    "Sectores con mayor crecimiento de empleo": {
+        "fuente": "GEIH-DANE — Gran Encuesta Integrada de Hogares (encuesta continua nacional)",
+        "periodo": " Serie mensual 2022 a 2026 (4 años). El crecimiento compara el promedio de los primeros 3 meses vs los últimos 3 meses.",
+        "columnas": "variacion_pct = crecimiento porcentual real del empleo; empleo_inicial/empleo_final = personas ocupadas al inicio y fin del período; sector = nombre CIIU; rama_ciiu = código.",
+        "caveat": "Son sectores económicos (CIIU rev. 4), no ocupaciones individuales. El crecimiento es de personas ocupadas, no de vacantes. Sectores con poco empleo inicial pueden mostrar crecimientos altos en términos relativos.",
+    },
+    "Brecha oferta vs demanda": {
+        "fuente": "Oferta: SNIES (matriculados por núcleo de conocimiento). Demanda: PILA (cotizantes por actividad CIIU).",
+        "periodo": "SNIES y PILA más reciente disponible.",
+        "columnas": "oferta_share = % de estudiantes en esa área; demanda_share = % de empleo formal en esa área; desajuste = oferta - demanda (positivo=sobre-formación, negativo=oportunidad).",
+        "caveat": "Compara estructura de formación vs empleo formal. Los porcentajes son shares relativos, no absolutos.",
+    },
+    "Contexto macro laboral 2010-2025": {
+        "fuente": "World Bank Open Data — indicadores laborales de Colombia",
+        "periodo": "2010-2024 (15 años)",
+        "columnas": "value = valor del indicador; unidad puede ser % o USD (PIB). Los de empleo por sector (agro/industria/servicios) suman ~100%.",
+        "caveat": "Datos del Banco Mundial, comparables internacionalmente. El PIB por persona empleada va en USD constantes 2017, no en %.",
+    },
+    "Composición del empleo formal": {
+        "fuente": "PILA — Plan Integrado de Aportes Laborales",
+        "periodo": "Cotizaciones mensuales acumuladas (anualizadas)",
+        "columnas": "share_pct = % del total de cotizaciones; cotizantes = número de cotizaciones (no personas únicas).",
+        "caveat": "Los totales son cotizaciones mensuales acumuladas: un trabajador con 12 meses genera 12 cotizaciones. La PEA de Colombia es ~26M; el total de cotizaciones es ~99M por esto. El share_pct sí es comparable.",
+    },
+    "Informalidad: micronegocios por departamento": {
+        "fuente": "EMICRON-DANE — Encuesta de Micronegocios",
+        "periodo": "2021-2024",
+        "columnas": "micronegocios = número de micronegocios informales por departamento; crecimiento_pct = variación entre primer y último año.",
+        "caveat": "Micronegocios = unidades económicas pequeñas que no cotizan a PILA (informalidad).",
+    },
+    "Tendencias del empleo": {
+        "fuente": "GEIH-DANE — Gran Encuesta Integrada de Hogares",
+        "periodo": "2022-2026",
+        "columnas": "empleo = personas ocupadas por sector; tendencia = crece/declina/estable.",
+        "caveat": "Serie mensual reciente; para perspectiva histórica más larga ver el widget de Banco Mundial.",
+    },
+    "Empleo por departamento": {
+        "fuente": "GEIH-DANE",
+        "periodo": "Más reciente",
+        "columnas": "ocupados = personas ocupadas; ingreso_promedio = salario promedio mensual COP.",
+    },
+    "Sectores formales": {
+        "fuente": "PILA — cotizantes por actividad económica (CIIU)",
+        "periodo": "Acumulado",
+        "columnas": "cotizantes = cotizaciones mensuales; actividadeconomicadesc = sector CIIU.",
+        "caveat": "Cotizaciones acumuladas, no personas únicas.",
+    },
+    "Preguntas y respuestas de entrevista": {
+        "fuente": "Generadas por Gemini 2.5 Flash-Lite a partir de una vacante pegada por el usuario.",
+        "periodo": "No aplica (generación instantánea).",
+        "columnas": "pregunta = pregunta de entrevista; respuesta = respuesta modelo sugerida por ALBA.",
+        "caveat": "Las respuestas son modelos genéricos: el candidato debe adaptarlas con ejemplos propios (técnica STAR). Las preguntas se generan en función de la vacante proporcionada.",
+    },
+}
+
+
+def _meta_widget(widget_title: str) -> str:
+    """Devuelve un texto descriptivo del widget para enriquecer el prompt del LLM."""
+    meta = _WIDGET_META.get(widget_title)
+    if not meta:
+        return ""
+    partes = [f"- Fuente: {meta['fuente']}", f"- Período: {meta['periodo']}"]
+    if meta.get("columnas"):
+        partes.append(f"- Significado de columnas: {meta['columnas']}")
+    if meta.get("caveat"):
+        partes.append(f"- Nota importante: {meta['caveat']}")
+    return "\n".join(partes)
+
+
 class AnalizarWidgetRequest(BaseModel):
     """Request para analizar un widget específico del dashboard."""
     dashboard: str  # Nombre del dashboard (ej: "observatorio", "prediccion")
@@ -68,7 +155,10 @@ REGLAS OBLIGATORIAS:
 - **Tipo**: {req.widget_type}
 - **Filtros activos**: {req.filters or "Ninguno"}
 
-## Datos del widget
+## Metadatos del widget (fuente, período y significado de los datos)
+{_meta_widget(req.widget_title) or "No hay metadatos disponibles para este widget."}
+
+## Datos del widget (JSON)
 {req.data}{historial_txt}
 
 ## Pregunta del usuario

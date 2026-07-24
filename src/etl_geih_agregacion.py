@@ -164,20 +164,21 @@ def procesar_mes(carpeta_mes, ano, mes):
                 info_depto['mes'] = mes
                 resultado['_informalidad_depto'] = info_depto[['periodo', 'ano', 'mes', 'DPTO', 'empleo', 'informales', 'tasa_informalidad']]
 
-            # Salario por ocupacion (ultima foto)
+            # Salario por ocupacion (acumulando muestra ponderada mes a mes)
             if 'OFICIO_C8' in occ.columns and 'INGLABO' in occ.columns:
                 occ['OFICIO_C8'] = pd.to_numeric(occ['OFICIO_C8'], errors='coerce')
                 sal_ocup = occ_valid.groupby('OFICIO_C8').apply(
                     lambda g: pd.Series({
-                        'salario_promedio': (g['INGLABO'] * g['FEX_C18']).sum() / g['FEX_C18'].sum() if g['FEX_C18'].sum() > 0 else np.nan,
-                        'salario_mediano': g['INGLABO'].median(),
+                        'sum_ingreso_ponderado': (g['INGLABO'] * g['FEX_C18']).sum(),
+                        'sum_fex': g['FEX_C18'].sum(),
+                        'mediana_ingreso': g['INGLABO'].median(),
                         'empleo_total': g['FEX_C18'].sum(),
                         'ocupados_muestra': len(g),
                     })
                 ).reset_index()
-                sal_ocup['salario_promedio'] = sal_ocup['salario_promedio'].round(0)
-                sal_ocup['salario_mediano'] = sal_ocup['salario_mediano'].round(0)
                 sal_ocup['periodo'] = periodo
+                sal_ocup['ano'] = ano
+                sal_ocup['mes'] = mes
                 resultado['_salario_ocupacion'] = sal_ocup
 
             # Empleo por nivel educativo
@@ -293,13 +294,58 @@ def main():
     guardar_df(informalidad_depto, 'geih_informalidad_mensual.csv', ['ano', 'mes', 'DPTO'])
     guardar_df(matriz_depto_sector, 'geih_empleo_depto_sector.csv', ['ano', 'mes', 'dpto', 'rama_ciiu'])
 
-    # Salario por ocupacion: usar solo el mes mas reciente
+    # Salario por ocupacion: promedio movil 12 meses + confianza
     if salario_ocupacion:
         df_sal = pd.concat(salario_ocupacion, ignore_index=True)
-        periodo_max = df_sal['periodo'].max()
-        df_sal_reciente = df_sal[df_sal['periodo'] == periodo_max].copy()
+        # Ordenar y asignar ranking de periodos (meses consecutivos)
+        df_sal['periodo_dt'] = pd.to_datetime(df_sal['periodo'], format='%Y-%m', errors='coerce')
+        df_sal = df_sal.dropna(subset=['periodo_dt']).sort_values(['OFICIO_C8', 'periodo_dt'])
+        df_sal['mes_idx'] = df_sal.groupby('OFICIO_C8').cumcount() + 1
+        n_periodos = df_sal['periodo_dt'].dt.to_period('M').nunique()
+        ventana = min(12, max(1, n_periodos - 1))
+
+        # Calcular sumas acumuladas por ocupacion
+        g = df_sal.groupby('OFICIO_C8')
+        df_sal['sum_ingreso_acum'] = g['sum_ingreso_ponderado'].cumsum()
+        df_sal['sum_fex_acum'] = g['sum_fex'].cumsum()
+        df_sal['muestra_acum'] = g['ocupados_muestra'].cumsum()
+
+        # Tomar el ultimo periodo de cada ocupacion y restar la ventana anterior
+        ultimos = df_sal.groupby('OFICIO_C8').last().reset_index()
+        anteriores = df_sal[df_sal['mes_idx'] == df_sal['mes_idx'] - ventana]
+        anteriores = anteriores.set_index('OFICIO_C8')[['sum_ingreso_acum', 'sum_fex_acum', 'muestra_acum']].rename(
+            columns=lambda c: c + '_prev')
+        ultimos = ultimos.set_index('OFICIO_C8')
+        ultimos = ultimos.join(anteriores, how='left')
+
+        ultimos['sum_ingreso_ventana'] = ultimos['sum_ingreso_acum'] - ultimos['sum_ingreso_acum_prev'].fillna(0)
+        ultimos['sum_fex_ventana'] = ultimos['sum_fex_acum'] - ultimos['sum_fex_acum_prev'].fillna(0)
+        ultimos['muestra_ventana'] = (ultimos['muestra_acum'] - ultimos['muestra_acum_prev'].fillna(0)).astype(int)
+
+        ultimos['salario_promedio'] = (ultimos['sum_ingreso_ventana'] / ultimos['sum_fex_ventana'].replace(0, np.nan)).round(0)
+        ultimos['salario_mediano'] = df_sal.groupby('OFICIO_C8')['mediana_ingreso'].median().round(0)
+        ultimos['empleo_total'] = ultimos['sum_fex_ventana'].round(0).astype('Int64')
+
+        # Confianza segun tamano de muestra real y empleo estimado
+        def _confianza(row):
+            muestra = int(row['muestra_ventana'] or 0)
+            empleo = float(row['empleo_total'] or 0)
+            if muestra < 30 or empleo < 5000:
+                return "baja"
+            if muestra < 100 or empleo < 20000:
+                return "media"
+            return "alta"
+        ultimos['confianza'] = ultimos.apply(_confianza, axis=1)
+
+        df_sal_reciente = ultimos.reset_index()[[
+            'OFICIO_C8', 'salario_promedio', 'salario_mediano', 'empleo_total',
+            'ocupados_muestra', 'muestra_ventana', 'confianza', 'periodo'
+        ]].copy()
+        df_sal_reciente['ocupados_muestra'] = df_sal_reciente['ocupados_muestra'].fillna(0).astype(int)
+        df_sal_reciente['muestra_ventana'] = df_sal_reciente['muestra_ventana'].fillna(0).astype(int)
+        df_sal_reciente = df_sal_reciente[df_sal_reciente['OFICIO_C8'].notna() & (df_sal_reciente['OFICIO_C8'] != 0)]
         df_sal_reciente.to_csv(os.path.join(PROCESSED, 'geih_salario_ocupacion.csv'), index=False, encoding='utf-8-sig')
-        print(f'[OK] geih_salario_ocupacion.csv: {len(df_sal_reciente)} filas (foto: {periodo_max})')
+        print(f'[OK] geih_salario_ocupacion.csv: {len(df_sal_reciente)} filas (promedio movil {ventana} meses, foto: {ultimos["periodo"].iloc[0] if not ultimos.empty else "n/a"})')
 
     guardar_df(nivel_educativo, 'geih_empleo_nivel_educativo.csv', ['periodo', 'nivel_educativo'])
 
