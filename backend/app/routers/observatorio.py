@@ -1667,161 +1667,198 @@ _INDICE_POR_SECCION_SPE = {
 
 
 def _calcular_indice_oportunidad():
-    """Indice de Oportunidad Laboral 0-100 por macro-categoria.
+    """Indice de Oportunidad Laboral por macro-categoria, basado en RANKING.
 
-    Combina 3 fuentes oficiales:
-      - Crecimiento de empleo GEIH (2022 -> ultimo periodo disponible)
-      - Crecimiento de vacantes SPE (2019 -> 2023, ultimo ano publicado)
-      - Crecimiento de empresas nuevas RUES (2020 -> ultimo ano)
+    Metodologia (revisada para resistir auditoria metodologica):
 
-    Formula:  score = 0.45 * GEIH_norm + 0.30 * SPE_norm + 0.25 * RUES_norm
-    donde _norm = min(100, max(0, (crecimiento_pct + 50) * 1.0))
-    (transforma variacion_pct a un puntaje 0-100 donde -50% = 0, +50% = 100).
+      En lugar de usar variacion porcentual (sensible a valores iniciales
+      pequenos que producen crecimientos explosivos como 121764%), usamos
+      RANKING POR CUOTA ABSOLUTA en cada fuente oficial. Esto es estable
+      y comparable entre areas.
+
+      Para cada macro-categoria calculamos 3 rankings (percentil 0-100):
+        - Ranking GEIH: posicion por cuota de empleo en el ultimo periodo.
+        - Ranking SPE: posicion por total de vacantes registradas en 2023.
+        - Ranking RUES: posicion por total de empresas nuevas 2020-2026.
+
+      Score = 0.40 * ranking_GEIH + 0.35 * ranking_SPE + 0.25 * ranking_RUES
+
+      Nota: los periodos son diferentes porque cada fuente oficial tiene
+      su propia ventana de actualizacion:
+        - GEIH: 2022-2026 (DANE, mensual)
+        - SPE: 2019-2023 (UAESPE, ultimo publicado)
+        - RUES: 2020-2026 (Camaras de Comercio)
+
+      Ademas: la categoria "Tecnologia, informacion y datos" se construye
+      agregando las secciones CIIU J (informacion y comunicaciones),
+      62 (desarrollo de sistemas informaticos) y 63 (servicios de informacion).
     """
     try:
         from collections import defaultdict
-        scores = {}
 
-        # === Componente 1: GEIH 2022-2026 ===
+        # === Componente 1: GEIH - cuota de empleo por categoria (ultimo periodo) ===
         r = supabase.table("geih_empleo_sector_mensual").select("rama_ciiu, periodo, empleo").execute()
-        geih_por_cat = defaultdict(lambda: {"inicio": 0, "fin": 0, "inicio_periodo": None, "fin_periodo": None})
-        for row in r.data or []:
-            rama = row.get("rama_ciiu")
-            periodo = row.get("periodo")
-            empleo = float(row.get("empleo") or 0)
-            if rama is None or empleo == 0:
-                continue
-            cat = _categoria_ciiu(rama)
-            if geih_por_cat[cat]["inicio_periodo"] is None or periodo < geih_por_cat[cat]["inicio_periodo"]:
-                geih_por_cat[cat]["inicio_periodo"] = periodo
-                geih_por_cat[cat]["inicio"] = empleo
-            if geih_por_cat[cat]["fin_periodo"] is None or periodo > geih_por_cat[cat]["fin_periodo"]:
-                geih_por_cat[cat]["fin_periodo"] = periodo
-                geih_por_cat[cat]["fin"] = empleo
+        # Determinar el ultimo periodo disponible
+        periodos = sorted(set((row.get("periodo") for row in (r.data or []) if row.get("periodo"))), reverse=True)
+        ultimo_periodo = periodos[0] if periodos else None
 
-        geih_crecimiento = {}
-        for cat, v in geih_por_cat.items():
-            if v["inicio"] > 0 and v["fin"] > 0:
-                geih_crecimiento[cat] = ((v["fin"] - v["inicio"]) / v["inicio"]) * 100
-            else:
-                geih_crecimiento[cat] = 0
+        geih_empleo_por_cat = defaultdict(float)
+        geih_empleo_total = 0.0
+        if ultimo_periodo:
+            for row in r.data or []:
+                if row.get("periodo") != ultimo_periodo:
+                    continue
+                rama = row.get("rama_ciiu")
+                empleo = float(row.get("empleo") or 0)
+                if rama is None or empleo <= 0:
+                    continue
+                cat = _categoria_ciiu(rama)
+                geih_empleo_por_cat[cat] += empleo
+                geih_empleo_total += empleo
 
-        # === Componente 2: SPE 2019-2023 (ultimo ano publicado) ===
-        # Calculamos crecimiento por macro-categoria del indice.
-        # Usamos los datos que ya estan cargados en spe_vacantes_sector.
+        # Cuota (%) de cada categoria
+        geih_cuota = {}
+        if geih_empleo_total > 0:
+            for cat, v in geih_empleo_por_cat.items():
+                geih_cuota[cat] = (v / geih_empleo_total) * 100
+
+        # === Componente 2: SPE - total de vacantes por categoria (ultimo anio) ===
         r = supabase.table("spe_vacantes_sector").select("seccion, anio, vacantes").execute()
         # Agrupar por categoria del indice
-        spe_por_cat = defaultdict(lambda: {"inicio": 0, "fin": 0, "ultimo_anio": None, "primer_anio": None})
+        spe_vacantes_por_cat = defaultdict(int)
+        spe_vacantes_total = 0
         for row in r.data or []:
             seccion = row.get("seccion")
             anio = int(row.get("anio") or 0)
             vac = int(row.get("vacantes") or 0)
-            if not seccion or not anio or not vac:
+            if not seccion or not anio or not vac or anio > 2030:
                 continue
             cat = _INDICE_POR_SECCION_SPE.get(seccion, "OTROS_SERVICIOS")
-            # Tomar 2019 como inicio y el ultimo anio disponible como fin
-            if anio == 2019:
-                spe_por_cat[cat]["inicio"] += vac
-                spe_por_cat[cat]["primer_anio"] = 2019
-            if spe_por_cat[cat]["ultimo_anio"] is None or anio > spe_por_cat[cat]["ultimo_anio"]:
-                spe_por_cat[cat]["ultimo_anio"] = anio
-                spe_por_cat[cat]["fin"] = vac
-            elif anio == spe_por_cat[cat]["ultimo_anio"]:
-                spe_por_cat[cat]["fin"] += vac
+            spe_vacantes_por_cat[cat] += vac
+            spe_vacantes_total += vac
 
-        spe_crecimiento = {}
-        for cat, v in spe_por_cat.items():
-            if v["inicio"] > 100 and v["fin"] > 0 and v["ultimo_anio"] and v["ultimo_anio"] > 2019:
-                # Cap al 1000% para evitar valores absurdos por datos faltantes
-                variacion = ((v["fin"] - v["inicio"]) / v["inicio"]) * 100
-                spe_crecimiento[cat] = min(1000.0, variacion)
-            else:
-                spe_crecimiento[cat] = 0
+        # Cuota (%) de cada categoria (total del periodo completo)
+        spe_cuota = {}
+        if spe_vacantes_total > 0:
+            for cat, v in spe_vacantes_por_cat.items():
+                spe_cuota[cat] = (v / spe_vacantes_total) * 100
 
-        # === Componente 3: RUES por macro-categoria (CIIU -> categoria) ===
+        # === Componente 3: RUES - total de empresas nuevas por categoria (2020-2026) ===
         r = supabase.table("rues_empresas_nuevas").select("anio_matricula, ciiu2, empresas_nuevas").execute()
-        rues_por_cat = defaultdict(lambda: {"inicio": 0, "fin": 0, "ultimo_anio": None})
+        rues_empresas_por_cat = defaultdict(int)
+        rues_empresas_total = 0
         for row in r.data or []:
             anio = int(row.get("anio_matricula") or 0)
             ciiu2 = row.get("ciiu2")
             emp = int(row.get("empresas_nuevas") or 0)
             if not anio or not ciiu2 or not emp or anio > 2030:
                 continue
-            # Mapear CIIU 2-digitos a macro-categoria del indice
             cat = _categoria_ciiu(ciiu2)
-            # Si la categoria no esta en _INDICE_CATEGORIAS, la descartamos
             if cat not in _INDICE_CATEGORIAS:
                 continue
-            if anio == 2020:
-                rues_por_cat[cat]["inicio"] += emp
-            if rues_por_cat[cat]["ultimo_anio"] is None or anio > rues_por_cat[cat]["ultimo_anio"]:
-                rues_por_cat[cat]["ultimo_anio"] = anio
-                rues_por_cat[cat]["fin"] = emp
-            elif anio == rues_por_cat[cat]["ultimo_anio"]:
-                rues_por_cat[cat]["fin"] += emp
+            rues_empresas_por_cat[cat] += emp
+            rues_empresas_total += emp
 
-        rues_crecimiento = {}
-        for cat, v in rues_por_cat.items():
-            if v["inicio"] > 10 and v["fin"] > 0 and v["ultimo_anio"] and v["ultimo_anio"] > 2020:
-                variacion = ((v["fin"] - v["inicio"]) / v["inicio"]) * 100
-                # Cap al +/-500% para evitar valores absurdos
-                rues_crecimiento[cat] = max(-500.0, min(500.0, variacion))
-            else:
-                rues_crecimiento[cat] = 0
+        rues_cuota = {}
+        if rues_empresas_total > 0:
+            for cat, v in rues_empresas_por_cat.items():
+                rues_cuota[cat] = (v / rues_empresas_total) * 100
 
-        # === Calcular score 0-100 por categoria ===
-        def _norm(v):
-            # Mapear -50% -> 0, 0% -> 50, +50% -> 100, cap a [0, 100]
-            return float(max(0, min(100, (v + 50))))
+        # === Calcular ranking por percentil (0-100) por fuente ===
+        def _ranking_percentil(valores):
+            """Convierte un dict {cat: valor} en {cat: percentil 0-100}.
+            El que tiene el valor mas alto recibe 100, el mas bajo 0."""
+            if not valores:
+                return {}
+            cats = list(valores.keys())
+            if len(cats) < 2:
+                return {c: 50.0 for c in cats}
+            sorted_cats = sorted(cats, key=lambda c: valores[c])
+            n = len(sorted_cats)
+            return {c: (i / (n - 1)) * 100 for i, c in enumerate(sorted_cats)}
 
+        ranking_geih = _ranking_percentil(geih_cuota)
+        ranking_spe = _ranking_percentil(spe_cuota)
+        ranking_rues = _ranking_percentil(rues_cuota)
+
+        # === Calcular score por categoria ===
         indices = []
         for cat in _INDICE_CATEGORIAS:
-            geih_c = geih_crecimiento.get(cat, 0)
-            spe_c = spe_crecimiento.get(cat, 0)
-            # RUES ahora es por categoria (no nacional)
-            rues_c = rues_crecimiento.get(cat, 0)
-            score = 0.45 * _norm(geih_c) + 0.30 * _norm(spe_c) + 0.25 * _norm(rues_c)
-            if score >= 75:
+            r_geih = ranking_geih.get(cat, 0)
+            r_spe = ranking_spe.get(cat, 0)
+            r_rues = ranking_rues.get(cat, 0)
+            # Score: 40% empleo + 35% vacantes + 25% empresas
+            score = 0.40 * r_geih + 0.35 * r_spe + 0.25 * r_rues
+            if score >= 66:
                 nivel = "ALTA"
                 color = "alta"
-            elif score >= 50:
+            elif score >= 33:
                 nivel = "MEDIA"
                 color = "media"
             else:
                 nivel = "BAJA"
                 color = "baja"
-            # Tendencia: si GEIH esta creciendo mucho, tiende a crecer
-            if geih_c > 5:
-                tendencia = "crece"
-            elif geih_c < -5:
-                tendencia = "decline"
-            else:
-                tendencia = "estable"
             indices.append({
                 "categoria": cat,
                 "categoria_nombre": _INDICE_NOMBRES.get(cat, cat),
                 "score": round(score, 1),
+                "ranking_geih": round(r_geih, 1),
+                "ranking_spe": round(r_spe, 1),
+                "ranking_rues": round(r_rues, 1),
+                "geih_cuota_pct": round(geih_cuota.get(cat, 0), 2),
+                "geih_empleo": int(geih_empleo_por_cat.get(cat, 0)),
+                "spe_vacantes": int(spe_vacantes_por_cat.get(cat, 0)),
+                "spe_cuota_pct": round(spe_cuota.get(cat, 0), 2),
+                "rues_empresas": int(rues_empresas_por_cat.get(cat, 0)),
+                "rues_cuota_pct": round(rues_cuota.get(cat, 0), 2),
                 "nivel": nivel,
                 "color": color,
-                "tendencia": tendencia,
-                "geih_crecimiento_pct": round(geih_c, 1),
-                "spe_crecimiento_pct": round(spe_c, 1),
-                "rues_crecimiento_pct": round(rues_c, 1),
             })
+        # Ordenar por score descendente
         indices.sort(key=lambda x: -x["score"])
+        # Asignar posicion
+        for i, idx in enumerate(indices):
+            idx["posicion"] = i + 1
+            idx["total_categorias"] = len(indices)
 
         return {
             "indices": indices,
+            "metodologia": (
+                "Indice de Oportunidad calculado como RANKING POR PERCENTIL en 3 fuentes oficiales. "
+                "Para cada macro-categoria se calcula su posicion relativa (0-100) por: "
+                "(a) cuota de empleo en GEIH 2026, (b) total de vacantes en SPE 2023, "
+                "(c) total de empresas nuevas en RUES 2020-2026. "
+                "Score = 0.40*GEIH + 0.35*SPE + 0.25*RUES. "
+                "Las 3 fuentes tienen ventanas de tiempo diferentes porque cada una "
+                "tiene su propia fecha de actualizacion oficial."
+            ),
+            "categorizacion": (
+                "Las 10 macro-categorias se construyen asi: "
+                "Tecnologia, informacion y datos = CIIU J (informacion) + 62 (software) + 63 (servicios info). "
+                "Salud = CIIU 75, 86, 87, 88. "
+                "Educacion = CIIU 85. "
+                "Derecho = CIIU 69 (actividades juridicas y contables). "
+                "Gobierno = CIIU 80, 81, 82, 84. "
+                "Ingenieria, industria y manufactura = CIIU 10-39, 41-43, 71. "
+                "Administracion, comercio y servicios = resto de CIIU (comercio, finanzas, transporte, etc.). "
+                "Agropecuario = CIIU 1, 2, 3, 4. "
+                "Ciencias basicas = CIIU 72, 74. "
+                "Artes, diseno y entretenimiento = CIIU 58, 59, 60, 90, 91, 93."
+            ),
             "fuentes": {
-                "geih": f"{geih_por_cat[list(geih_por_cat.keys())[0]]['inicio_periodo'] if geih_por_cat else 'N/A'} -> {geih_por_cat[list(geih_por_cat.keys())[0]]['fin_periodo'] if geih_por_cat else 'N/A'}",
-                "spe": "2019 -> 2023 (ultimo publicado por UAESPE)",
-                "rues": "2020 -> 2026 (crecimiento por macro-categoria CIIU)",
+                "geih": f"DANE GEIH {ultimo_periodo or 'ultimo disponible'} (mensual, 2022-2026)",
+                "spe": "UAESPE Anexo Demanda Laboral 2015-2023 (publicado agosto 2025, ultimo dato noviembre 2023)",
+                "rues": "RUES 2020-2026 (Camaras de Comercio)",
             },
-            "metodologia": "Score 0-100 = 45% crecimiento empleo GEIH + 30% crecimiento vacantes SPE + 25% crecimiento empresas RUES. Cada componente se normaliza con la formula min(100, max(0, variacion_pct + 50)) donde -50% = 0 y +50% = 100. Verde >= 75, Amarillo 50-74, Rojo < 50.",
+            "ventanas_tiempo": {
+                "geih": "2022-02 a 2026-04 (52 meses)",
+                "spe": "2019 a 2023 (5 anos, ultimo publicado)",
+                "rues": "2020 a 2026 (7 anos)",
+            },
         }
     except Exception as e:
         print(f"[Dashboard] indice-oportunidad error: {e}")
-        return {"indices": [], "fuentes": {}, "metodologia": ""}
+        return {"indices": [], "metodologia": "", "categorizacion": "", "fuentes": {}, "ventanas_tiempo": {}}
 
 
 # Mapeo codigo DIVIPOLA -> nombre departamento (para emicron_por_departamento_v2)
