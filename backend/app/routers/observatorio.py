@@ -1301,6 +1301,10 @@ async def get_dashboard():
         # 7. SPE demanda (Supabase)
         spe = _calcular_spe_demanda(15)
 
+        # 7b. Sectores con mayor crecimiento de empleo real (GEIH DANE)
+        # Reemplaza al widget de inscritos SPE por algo respaldado en la GEIH.
+        sectores_crecimiento = _calcular_sectores_crecimiento_geih(12)
+
         # 8. Mapa metricas (Supabase + CSV fallback)
         mapa = _calcular_mapa_metricas_sync()
 
@@ -1312,6 +1316,7 @@ async def get_dashboard():
             "brecha": brecha,
             "sectores_formales": formales,
             "spe": spe,
+            "sectores_crecimiento": sectores_crecimiento,
             "mapa": mapa,
         }
         return result

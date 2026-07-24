@@ -100,7 +100,6 @@ export default function Observatorio() {
           composicion: d.composicion_formal?.tipos || [],
           sectoresCrecimiento: d.sectores_crecimiento?.sectores_crecimiento || [],
           sectoresCrecimientoPeriodo: d.sectores_crecimiento?.periodo || '',
-          resumenGenerado: d._generado || null,
         })
         setMicronegocios(d.micronegocios?.sectores || null)
       })
@@ -306,33 +305,42 @@ export default function Observatorio() {
       })()}
 
       {/* ================================================================ */}
-      {/* 2.6 Actividades económicas en alza (debajo de sectores emergentes) */}
+      {/* 2.6 Actividades económicas en alza (GEIH DANE) */}
       {/* ================================================================ */}
-      <div className="plate card p-5 relative">
-        <div className="absolute top-4 right-4 z-10">
-          <AnalizarIAButton
-            dashboard="observatorio"
-            widgetTitle="Actividades económicas en alza"
-            widgetType="tabla"
-            data={spe.slice(0, 8)}
-          />
-        </div>
-        <div className="mb-3 pb-2 border-b border-gold-500/20 pr-28">
-          <h2 className="text-xl font-bold text-white font-display">Actividades económicas en alza</h2>
-          <p className="text-base text-slate-300 mt-1">Crecimiento real de empleo por sector (GEIH 2022-2025)</p>
-        </div>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
-          {spe.slice(0, 8).map((o: any, i: number) => (
-            <div key={i} className="flex items-center gap-3 bg-white/[0.02] rounded-lg p-3 border border-cyan-500/20">
-              <span className="w-7 h-7 rounded-full bg-dark-800 border border-cyan-500/30 flex items-center justify-center text-xs text-cyan-400 flex-shrink-0">{i + 1}</span>
-              <div className="min-w-0 flex-1">
-                <p className="text-base text-slate-200 font-medium truncate">{o.ocupacion}</p>
-                <p className="text-cyan-400 font-bold text-sm">+{Number(o.variacion_pct).toFixed(0)}%</p>
+      {data.sectoresCrecimiento && data.sectoresCrecimiento.length > 0 && (
+        <div className="plate card p-5 relative">
+          <div className="absolute top-4 right-4 z-10">
+            <AnalizarIAButton
+              dashboard="observatorio"
+              widgetTitle="Actividades económicas en alza"
+              widgetType="tabla"
+              data={data.sectoresCrecimiento}
+            />
+          </div>
+          <div className="mb-3 pb-2 border-b border-gold-500/20 pr-28">
+            <h2 className="text-xl font-bold text-white font-display">Actividades económicas en alza</h2>
+            <p className="text-base text-slate-300 mt-1">
+              Crecimiento real de empleo por actividad económica según la GEIH del DANE
+              {data.sectoresCrecimientoPeriodo ? ` (${data.sectoresCrecimientoPeriodo})` : ''}.
+            </p>
+            <p className="text-xs text-slate-500 mt-1">
+              Se compara el promedio de los primeros 3 meses vs los últimos 3 meses disponibles para
+              suavizar el ruido estacional. Solo se incluyen actividades con al menos 10.000 ocupados.
+            </p>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+            {data.sectoresCrecimiento.slice(0, 8).map((o: any, i: number) => (
+              <div key={i} className="flex items-center gap-3 bg-white/[0.02] rounded-lg p-3 border border-cyan-500/20">
+                <span className="w-7 h-7 rounded-full bg-dark-800 border border-cyan-500/30 flex items-center justify-center text-xs text-cyan-400 flex-shrink-0">{i + 1}</span>
+                <div className="min-w-0 flex-1">
+                  <p className="text-base text-slate-200 font-medium truncate" title={o.sector}>{o.sector}</p>
+                  <p className="text-cyan-400 font-bold text-sm">+{Number(o.variacion_pct).toFixed(1)}%</p>
+                </div>
               </div>
-            </div>
-          ))}
+            ))}
+          </div>
         </div>
-      </div>
+      )}
 
       {/* ================================================================ */}
       {/* 3. Territorio laboral: empleo por departamento (ancho completo) */}
