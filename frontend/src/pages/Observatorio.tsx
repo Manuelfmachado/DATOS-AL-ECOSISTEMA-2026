@@ -101,7 +101,6 @@ export default function Observatorio() {
           sectoresCrecimiento: d.sectores_crecimiento?.sectores_crecimiento || [],
           sectoresCrecimientoPeriodo: d.sectores_crecimiento?.periodo || '',
           resumenGenerado: d._generado || null,
-          indice_oportunidad: d.indice_oportunidad || null,
         })
         setMicronegocios(d.micronegocios?.sectores || null)
       })
@@ -656,131 +655,7 @@ export default function Observatorio() {
       )}
 
       {/* ================================================================ */}
-      {/* 6. Indice de Oportunidad Laboral (GEIH + SPE + RUES) */}
-      {/* ================================================================ */}
-      {data.indice_oportunidad?.indices && data.indice_oportunidad.indices.length > 0 && (
-        <div className="plate card p-5 relative">
-          <div className="absolute top-3 right-3 z-10">
-            <AnalizarIAButton
-              dashboard="observatorio"
-              widgetTitle="Indice de Oportunidad Laboral"
-              widgetType="tabla"
-              data={data.indice_oportunidad.indices}
-            />
-          </div>
-          <div className="mb-4 pb-3 border-b border-gold-500/20 pr-28">
-            <h2 className="text-2xl font-bold text-white font-display">Indice de Oportunidad Laboral</h2>
-            <p className="text-base text-slate-300 mt-2">
-              Para cada area del conocimiento, combinamos tres senales oficiales para dar un puntaje 0-100
-              y una posicion relativa entre las 10 areas. Las areas con mayor oportunidad concentran
-              mas empleo, mas vacantes y mas empresas nuevas.
-            </p>
-            <div className="grid grid-cols-3 gap-2 mt-3 text-sm">
-              <div className="bg-slate-800/40 border border-white/10 rounded-lg p-2 text-center">
-                <div className="text-slate-300 font-bold text-sm leading-tight">40% Empleo</div>
-                <div className="text-slate-500 text-[10px]">GEIH 2026</div>
-              </div>
-              <div className="bg-slate-800/40 border border-white/10 rounded-lg p-2 text-center">
-                <div className="text-slate-300 font-bold text-sm leading-tight">35% Vacantes</div>
-                <div className="text-slate-500 text-[10px]">SPE 2023</div>
-              </div>
-              <div className="bg-slate-800/40 border border-white/10 rounded-lg p-2 text-center">
-                <div className="text-slate-300 font-bold text-sm leading-tight">25% Empresas</div>
-                <div className="text-slate-500 text-[10px]">RUES 2020-2026</div>
-              </div>
-            </div>
-          </div>
-          <div className="space-y-3">
-            {data.indice_oportunidad.indices.map((idx: any) => {
-              const colorClass =
-                idx.color === 'alta' ? 'border-emerald-500/30 bg-emerald-500/5' :
-                idx.color === 'media' ? 'border-amber-500/30 bg-amber-500/5' :
-                'border-rose-500/30 bg-rose-500/5'
-              const nivelColor =
-                idx.color === 'alta' ? 'text-emerald-400' :
-                idx.color === 'media' ? 'text-amber-400' :
-                'text-rose-400'
-              const nivelTexto =
-                idx.color === 'alta' ? 'Alta oportunidad' :
-                idx.color === 'media' ? 'Oportunidad media' :
-                'Baja oportunidad'
-              // Calcular barra de progreso (posicion N de M)
-              const posPct = idx.total_categorias > 1
-                ? ((idx.total_categorias - idx.posicion) / (idx.total_categorias - 1)) * 100
-                : 50
-              return (
-                <div key={idx.categoria} className={`rounded-lg p-4 border ${colorClass}`}>
-                  <div className="flex items-start gap-4">
-                    <div className="flex-shrink-0 text-center">
-                      <div className={`text-3xl font-bold ${nivelColor}`}>
-                        #{idx.posicion}
-                      </div>
-                      <div className="text-xs text-slate-500 mt-0.5">de {idx.total_categorias}</div>
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-baseline justify-between gap-3 mb-2">
-                        <span className="text-lg font-bold text-white truncate">{idx.categoria_nombre}</span>
-                        <span className={`text-xs uppercase tracking-wider font-bold flex-shrink-0 ${nivelColor}`}>
-                          {nivelTexto}
-                        </span>
-                      </div>
-                      {/* Barra de posicion relativa */}
-                      <div className="h-2 w-full bg-white/[0.05] rounded-full overflow-hidden mb-3">
-                        <div
-                          className={`h-full rounded-full ${idx.color === 'alta' ? 'bg-emerald-500' : idx.color === 'media' ? 'bg-amber-500' : 'bg-rose-500'}`}
-                          style={{ width: `${posPct}%` }}
-                        />
-                      </div>
-                      <div className="grid grid-cols-3 gap-2 text-xs">
-                        <div className="bg-black/20 rounded p-2">
-                          <div className="text-slate-400 text-[10px] uppercase tracking-wide">Empleo (GEIH)</div>
-                          <div className="text-white font-bold text-sm">{idx.geih_cuota_pct.toFixed(1)}%</div>
-                          <div className="text-slate-500 text-[10px]">{compactNum(idx.geih_empleo)} personas</div>
-                          <div className={`text-[10px] font-semibold mt-1 ${nivelColor}`}>
-                            Rank {idx.ranking_geih.toFixed(0)}/100
-                          </div>
-                        </div>
-                        <div className="bg-black/20 rounded p-2">
-                          <div className="text-slate-400 text-[10px] uppercase tracking-wide">Vacantes (SPE)</div>
-                          <div className="text-white font-bold text-sm">{idx.spe_cuota_pct.toFixed(1)}%</div>
-                          <div className="text-slate-500 text-[10px]">{compactNum(idx.spe_vacantes)} vacantes</div>
-                          <div className={`text-[10px] font-semibold mt-1 ${nivelColor}`}>
-                            Rank {idx.ranking_spe.toFixed(0)}/100
-                          </div>
-                        </div>
-                        <div className="bg-black/20 rounded p-2">
-                          <div className="text-slate-400 text-[10px] uppercase tracking-wide">Empresas (RUES)</div>
-                          <div className="text-white font-bold text-sm">{idx.rues_cuota_pct.toFixed(1)}%</div>
-                          <div className="text-slate-500 text-[10px]">{compactNum(idx.rues_empresas)} empresas</div>
-                          <div className={`text-[10px] font-semibold mt-1 ${nivelColor}`}>
-                            Rank {idx.ranking_rues.toFixed(0)}/100
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              )
-            })}
-          </div>
-          <details className="mt-4">
-            <summary className="text-slate-400 text-xs cursor-pointer hover:text-slate-200">Como se calcula este puntaje?</summary>
-            <div className="text-slate-500 text-xs mt-2 leading-relaxed space-y-2">
-              <p>{data.indice_oportunidad.metodologia}</p>
-              <p className="mt-2"><span className="text-slate-400">Como se construye cada categoria:</span> {data.indice_oportunidad.categorizacion}</p>
-              <p className="mt-2"><span className="text-slate-400">Fuentes:</span></p>
-              <ul className="list-disc list-inside ml-2 space-y-0.5">
-                <li>GEIH: {data.indice_oportunidad.fuentes?.geih}</li>
-                <li>SPE: {data.indice_oportunidad.fuentes?.spe}</li>
-                <li>RUES: {data.indice_oportunidad.fuentes?.rues}</li>
-              </ul>
-            </div>
-          </details>
-        </div>
-      )}
-
-      {/* ================================================================ */}
-      {/* 7. Prioridad de intervención departamental */}
+      {/* 6. Prioridad de intervención departamental */}
       {/* ================================================================ */}
       {prior?.departamentos && (
         <div className="plate card p-5">
