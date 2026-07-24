@@ -792,15 +792,19 @@ def _categoria_ciiu(ciiu_code: str) -> str:
     """Mapea un codigo CIIU a una macro-categoria.
     Primero intenta con la tabla principal (_CIIU_TO_CAT).
     Si no hay match, cae a una sub-categoria mas especifica (manufactura, minas, etc.)
-    para que el 'OTROS' residual sea minimo y util para el usuario."""
-    code = str(ciiu_code).strip()
-    # Acepta tanto codigos de 1 digito (1, 2, 5) como de 2 (01, 10) o 4 digitos (0110, 1001)
-    code2 = code[:2] if len(code) >= 1 else code
-    if code2.isdigit():
-        cat = _CIIU_TO_CAT.get(code2)
+    para que el 'OTROS' residual sea minimo y util para el usuario.
+    Acepta int, float (ej. 1.0), str numerico ('1', '01', '0110')."""
+    # Normalizar a entero para manejar floats como 1.0 -> "1" (no "1.")
+    try:
+        code_int = int(float(str(ciiu_code).strip()))
+        code = str(code_int)
+    except (ValueError, TypeError):
+        return "OTROS"
+    if len(code) >= 1 and code.isdigit():
+        cat = _CIIU_TO_CAT.get(code)
         if cat:
             return cat
-        return _CIIU_SUBGRUPO.get(code2, "OTROS")
+        return _CIIU_SUBGRUPO.get(code, "OTROS")
     return "OTROS"
 
 
@@ -1654,7 +1658,10 @@ _INDICE_POR_SECCION_SPE = {
     "J": "TECNOLOGIA",    # Informacion
     "K": "ADMINISTRACION",# Finanzas
     "L": "ADMINISTRACION",# Inmobiliarias
-    "M": "ADMINISTRACION",# Profesionales
+    "M": "DERECHO",      # Actividades profesionales, cientificas y tecnicas
+                        # (incluye juridicas, contables, ingenieria tecnica, etc.)
+                        # Se asigna a DERECHO porque es la categoria mas representativa
+                        # de las actividades profesionales en el SNIES.
     "N": "ADMINISTRACION",# Servicios admin
     "O": "GOBIERNO",      # Adm publica
     "P": "EDUCACION",
